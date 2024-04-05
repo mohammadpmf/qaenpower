@@ -2,6 +2,8 @@
 #Template for AL projects for Dynamics 365 Business Central
 #launch.json folder
 __pycache__
+test_awsometkinter/
+test/
 .vscode/
 #Cache folder
 .alcache/
