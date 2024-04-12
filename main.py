@@ -1,4 +1,5 @@
 from authentication import *
+from tkinter import ttk
 
 connection = Connection()
 
@@ -30,11 +31,16 @@ admin_window.withdraw()
 staff_window = Toplevel(root)
 staff_window.title('صفحه کارمندان')
 staff_window.config(bg=BG)
-staff_window.resizable(False, False)
+# staff_window.resizable(False, False)
 # staff_window.geometry()
 staff_window.protocol("WM_DELETE_WINDOW", root.destroy)
 staff_window.withdraw()
-
+tab_bar_staff_window = ttk.Notebook(staff_window)
+tabs_list = []
+for i in range(10):
+    tabs_list.append(ttk.Frame(tab_bar_staff_window))
+    tab_bar_staff_window.add(tabs_list[i], text =f'بخش {i+1}')
+tab_bar_staff_window.pack(expand = 1, fill ="both")
 
 rf = RegistrationForm(connection, root, admin_window, staff_window)
 rf.grid()

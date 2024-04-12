@@ -21,17 +21,17 @@ from tkinter import *
 #         self.frame.grid(row=1, column=1)
 
 class Counter():
-    def __init__(self, root=Tk, counter_number=1):
+    def __init__(self, root=Tk, counter_number=1, *args, **kwargs):
         self.root = root
         self.counter_number = counter_number
         self.frame = Frame(self.root, bg='light green')
-        self.label = Label(self.frame, text=f"کنتور {self.counter_number}", bg='light green')
-        self.entry_input = Entry(self.frame, bg='light green')
-        self.entry_output = Entry(self.frame, bg='light green')
-        self.btn_copy = Button(self.frame, text='copy', bg='darkcyan')
+        self.label = Label(self.frame, text=f"کنتور {self.counter_number}", bg='light green', *args, **kwargs)
+        self.entry_input = Entry(self.frame, bg='light green', *args, **kwargs)
+        self.entry_output = Entry(self.frame, bg='light green', *args, **kwargs)
+        self.btn_copy = Button(self.frame, text='copy', bg='darkcyan', *args, **kwargs)
         self.frame_result = Frame(self.frame, bg='white', padx=16, pady=8)
-        self.state = Label(self.frame_result, text='سالم')
-        self.smiley = Label(self.frame_result, text='☺', bg='green')
+        self.state = Label(self.frame_result, text='سالم', *args, **kwargs)
+        self.smiley = Label(self.frame_result, text='☺', bg='green', *args, **kwargs)
         self.label.grid(row=1, column=3)
         self.entry_input.grid(row=1, column=2)
         self.entry_output.grid(row=1, column=1)
