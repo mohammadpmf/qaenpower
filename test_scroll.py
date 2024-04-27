@@ -3,6 +3,7 @@ import tkinter as tk
 from counter import Counter
 
 root = Tk()
+root.geometry('1024x720')
 
 # main
 frame = Frame(root)
@@ -29,7 +30,7 @@ my_canvas.bind(
 second_frame = Frame(my_canvas, width = 1000, height = 100)
 for i in range(10):
     for j in range(4):
-        c = Counter(second_frame, counter_number=i*4+j, font=('B Nazanin', 18))
+        c = Counter(second_frame, name=i*4+j, font=('B Nazanin', 18))
         c.grid(row=i, column=j)
 
 my_canvas.create_window((0, 0), window=second_frame, anchor="nw")

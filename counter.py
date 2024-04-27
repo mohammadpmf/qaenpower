@@ -3,23 +3,27 @@ from tkinter import *
 BG  = 'light green'
 BG2 = 'darkcyan'
 BG3 = 'green'
+FONT = ('B Nazanin', 12)
+NORMAL_FG = "black"
+DISABLED_FG = "#aaaaaa"
+
 CNF_ENTRY = {
     'bg': BG,
-    'readonlybackground': 'gray',
-    'disabledbackground': 'gray',
-    'font': ('B Nazanin', 24),
+    'readonlybackground': '#cccccc',
+    'disabledbackground': '#cccccc',
+    'font': FONT,
 }
 CNF_CHB = {
     'bg': BG,
-    'font': ('B Nazanin', 24),
+    'font': FONT,
 }
 CNF_BTN = {
     'bg': BG2,
-    'font': ('B Nazanin', 24),
+    'font': FONT,
 }
 CNF_LBL = {
     'bg': BG,
-    'font': ('B Nazanin', 24),
+    'font': FONT,
 }
 CNF_GRID={
     'padx': 4,
@@ -47,7 +51,7 @@ CNF_GRID={
 #         self.smiley.grid(row=1, column=1)
 #         self.frame.grid(row=1, column=1)
 
-class Counter():
+class Counter__():
     def __init__(self, root=Tk, counter_number=1, *args, **kwargs):
         self.root = root
         self.counter_number = counter_number
@@ -85,21 +89,20 @@ class Counter():
         self.alarm_lower_bound = alarm_lower_bound          # if not in range => bg red
         self.alarm_upper_bound = alarm_upper_bound          # if not in range => bg red
         self.formula = formula
-        self.frame = Frame(self.root, bg=BG)
-        self.label = Label(self.frame, text=f"کنتور {self.name}", cnf=CNF_LBL, *args, **kwargs)
+        self.frame = LabelFrame(self.root, text=f"کنتور {self.name}", cnf=CNF_LBL, padx=10, pady=6, labelanchor='n', bg=BG, *args, **kwargs)
         if self.type_=='fixed':
             pass
         elif self.type_=='calculating':
             pass
         elif self.type_=='counter':
-            self.btn_copy = Button(self.frame, text='کپی', cnf=CNF_BTN, command=self.copy_down)
-            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY)
-            self.entry_previous_counter = Entry(self.frame, cnf=CNF_ENTRY)
-            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY, state='readonly')
+            self.btn_copy = Button(self.frame, text='کپی', cnf=CNF_BTN, command=self.copy_down, *args, **kwargs)
+            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
+            self.entry_previous_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
+            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY, state='readonly', *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
-            self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB, variable=self.boolean_var_bad, text='خرابی کنتور', command=self.check)
+            self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB, variable=self.boolean_var_bad, text='خرابی کنتور', command=self.check, *args, **kwargs)
+            self.entries = [self.entry_previous_counter, self.entry_current_counter, self.entry_workout]
 
-            self.label.grid(row=1, column=1, columnspan=3, cnf=CNF_GRID)
             self.btn_copy.grid(row=1, column=3, cnf=CNF_GRID)
             self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID)
             self.entry_current_counter.grid(row=2, column=2, columnspan=2, cnf=CNF_GRID)
@@ -121,6 +124,11 @@ class Counter():
             self.entry_workout.config(state='readonly')
             self.entry_current_counter.config(state='normal')
             self.entry_previous_counter.config(state='normal')
+        for entry in self.entries:
+            if entry['state']=='normal':
+                entry.config(fg=NORMAL_FG)
+            else:
+                entry.config(fg=DISABLED_FG)
 
 
     def grid(self, *args, **kwargs):
