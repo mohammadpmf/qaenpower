@@ -1,4 +1,7 @@
 from tkinter import *
+from PIL import Image, ImageTk
+from entry_with_placeholder import EntryWithPlaceholder as Entry
+
 
 BG  = 'light green'
 BG2 = 'darkcyan'
@@ -6,12 +9,17 @@ BG3 = 'green'
 FONT = ('B Nazanin', 12)
 NORMAL_FG = "black"
 DISABLED_FG = "#aaaaaa"
+DISABLED_BG = '#cccccc'
+WARNING_COLOR = 'yellow'
+ALARM_COLOR = 'red'
 
 CNF_ENTRY = {
     'bg': BG,
-    'readonlybackground': '#cccccc',
-    'disabledbackground': '#cccccc',
+    'readonlybackground': DISABLED_BG,
+    'disabledbackground': DISABLED_BG,
     'font': FONT,
+    'justify': 'c',
+    'width': 12,
 }
 CNF_CHB = {
     'bg': BG,
@@ -22,6 +30,12 @@ CNF_BTN = {
     'font': FONT,
 }
 CNF_LBL = {
+    'bg': BG,
+    'font': FONT,
+    'disabledforeground': DISABLED_FG,
+    'justify': 'c',
+}
+CNF_LBL_FRM = {
     'bg': BG,
     'font': FONT,
 }
@@ -78,6 +92,9 @@ class Counter():
     def __init__(self, root=Tk, name='', type_='counter', unit='', default='', variable_name='',
                  warning_lower_bound='', warning_upper_bound='', alarm_lower_bound='', alarm_upper_bound='',
                  formula='', *args, **kwargs):
+        self.img = Image.open('copy-icon.png')
+        self.img = self.img.resize((20, 20))
+        self.img = ImageTk.PhotoImage(self.img)
         self.root = root
         self.name = name
         self.type_ = type_          # counter                   -   fixed                -  calculating
@@ -89,16 +106,19 @@ class Counter():
         self.alarm_lower_bound = alarm_lower_bound          # if not in range => bg red
         self.alarm_upper_bound = alarm_upper_bound          # if not in range => bg red
         self.formula = formula
-        self.frame = LabelFrame(self.root, text=f"کنتور {self.name}", cnf=CNF_LBL, padx=10, pady=6, labelanchor='n', bg=BG, *args, **kwargs)
+        self.frame = LabelFrame(self.root, text=f"کنتور {self.name}", cnf=CNF_LBL_FRM, padx=16, pady=8, labelanchor='n', bg=BG, *args, **kwargs)
         if self.type_=='fixed':
             pass
         elif self.type_=='calculating':
+            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
             pass
         elif self.type_=='counter':
-            self.btn_copy = Button(self.frame, text='کپی', cnf=CNF_BTN, command=self.copy_down, *args, **kwargs)
-            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
-            self.entry_previous_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
-            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY, state='readonly', *args, **kwargs)
+            self.btn_copy = Button(self.frame, image=self.img, cnf=CNF_BTN, command=self.copy_down, *args, **kwargs)
+            self.entry_current_counter = Entry(self.frame, placeholder='شماره کنتور فعلی', cnf=CNF_ENTRY, *args, **kwargs)
+            # self.entry_previous_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
+            self.entry_previous_counter = Label(self.frame, cnf=CNF_LBL, text='کارکرد روز قبل', *args, **kwargs)
+            self.entry_workout = Entry(self.frame, placeholder='کارکرد کنتور', cnf=CNF_ENTRY, *args, **kwargs) # وقتی همینجا استیت رو میذاشتم پلیس هولدر رو نمینوشت. به خاطر همین تو خط بعد گذاشتمش.
+            self.entry_workout.config(state='readonly')
             self.boolean_var_bad = BooleanVar(self.frame)
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB, variable=self.boolean_var_bad, text='خرابی کنتور', command=self.check, *args, **kwargs)
             self.entries = [self.entry_previous_counter, self.entry_current_counter, self.entry_workout]
@@ -107,23 +127,25 @@ class Counter():
             self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID)
             self.entry_current_counter.grid(row=2, column=2, columnspan=2, cnf=CNF_GRID)
             self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID)
-            self.entry_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID)
+            self.entry_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID, sticky='ew')
     
     def copy_down(self):
         self.boolean_var_bad.set(False)
         self.check()
         self.entry_current_counter.delete(0, END)
-        self.entry_current_counter.insert(0, self.entry_previous_counter.get())
+        # self.entry_current_counter.insert(0, self.entry_previous_counter.get())
+        self.entry_current_counter.insert(0, self.entry_previous_counter['text'])
     
     def check(self):
         if self.boolean_var_bad.get():
             self.entry_workout.config(state='normal')
             self.entry_current_counter.config(state='readonly')
-            self.entry_previous_counter.config(state='readonly')
+            # self.entry_previous_counter.config(state='readonly')
+            self.entry_previous_counter.config(state='disabled', bg=DISABLED_BG)
         else:
             self.entry_workout.config(state='readonly')
             self.entry_current_counter.config(state='normal')
-            self.entry_previous_counter.config(state='normal')
+            self.entry_previous_counter.config(state='normal', bg=BG)
         for entry in self.entries:
             if entry['state']=='normal':
                 entry.config(fg=NORMAL_FG)

@@ -13,7 +13,7 @@ s_width = root.winfo_screenwidth()
 s_height = root.winfo_screenheight()
 # root.geometry(f"{s_width//2}x{s_height//2}+{s_width//4}+{s_height//5}")
 root.geometry(f"+{s_width//3}+{s_height//4}")
-
+root.withdraw()
 
 
 ############################################## admin_window ##############################################
@@ -21,9 +21,9 @@ admin_window = Toplevel(root)
 admin_window.title('صفحه مدیریت')
 admin_window.config(bg=BG)
 admin_window.resizable(False, False)
-# admin_window.geometry()
+admin_window.geometry(f"+{s_width//4}+0")
 admin_window.protocol("WM_DELETE_WINDOW", root.destroy)
-admin_window.withdraw()
+# admin_window.withdraw()
 
 
 
