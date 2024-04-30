@@ -241,7 +241,17 @@ class RegistrationForm():
 
     # part functions
     def create_part(self):
-        print('part created')
+        title = self.entry_part_name.get().strip()
+        if title=="":
+            msb.showwarning("هشدار", "نام بخش نمیتواند خالی باشد.")
+            return
+        result_message, _ = self.connection.create_part(title)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"بخش {title} با موفقیت ساخته شد.")
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
+
 
 
 

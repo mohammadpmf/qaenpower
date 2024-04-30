@@ -96,5 +96,15 @@ class Connection():
     def update_counter(self):
         pass
 
+    def create_part(self, title):
+        query = "INSERT INTO `qaenpower`.`parts` (`title`) VALUES (%s);"
+        try:
+            self.cursor.execute(query, title)
+            self.connection.commit()
+            return ("ok", 0)
+        except pymysql.err.IntegrityError as error:
+            return (f"بخش {title} قبلا ثبت شده است", error)
+
+
 if __name__ == "__main__":
     c = Connection()
