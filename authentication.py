@@ -93,6 +93,12 @@ class RegistrationForm():
         # frame_counter
         self.frame_counter = Frame(self.frame_add_counter, bg=BG)
         self.frame_counter.grid()
+        self.label_counter_part = Label(self.frame_counter, text="بخش کنتور", cnf=CNF_LABEL)
+        self.entry_counter_part = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center')
+        self.entry_counter_part.bind("<<ComboboxSelected>>", self.show_places_of_this_part)
+        self.label_counter_place = Label(self.frame_counter, text="مکان کنتور", cnf=CNF_LABEL)
+        self.entry_counter_place = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center')
+
         self.label_counter_name = Label(self.frame_counter, text="نام کنتور", cnf=CNF_LABEL)
         self.entry_counter_name = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER, justify='right')
         self.label_counter_type = Label(self.frame_counter, text="نوع کنتور", cnf=CNF_LABEL)
@@ -100,57 +106,61 @@ class RegistrationForm():
         self.entry_counter_type.insert(0, COUNTER_TYPES[0])
         self.entry_counter_type.config(state='readonly')
         self.entry_counter_type.bind("<<ComboboxSelected>>", self.check_counter_type)
-        self.label_unit = Label(self.frame_counter, text="واحد اندازه گیری", cnf=CNF_LABEL)
-        self.entry_unit = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-        self.label_default_value = Label(self.frame_counter, text="مقدار پیش فرض", cnf=CNF_LABEL)
-        self.entry_default_value = ttk.Combobox(self.frame_counter, values=DEFAULT_VALUES, font=FONT, width=WORDS_WIDTH, justify='center')
-        self.entry_default_value.insert(0, DEFAULT_VALUES[0])
-        self.entry_default_value.config(state='readonly')
-        self.label_variable_name = Label(self.frame_counter, text="نام متغیر", cnf=CNF_LABEL)
-        self.entry_variable_name = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-        self.label_warning_lower_bound = Label(self.frame_counter, text="حد پایین هشدار", cnf=CNF_LABEL)
-        self.entry_warning_lower_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-        self.label_warning_upper_bound = Label(self.frame_counter, text="حد بالای هشدار", cnf=CNF_LABEL)
-        self.entry_warning_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-        self.label_alarm_lower_bound = Label(self.frame_counter, text="حد پایین خطر", cnf=CNF_LABEL)
-        self.entry_alarm_lower_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-        self.label_alarm_upper_bound = Label(self.frame_counter, text="حد بالای خطر", cnf=CNF_LABEL)
-        self.entry_alarm_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-        self.label_formula = Label(self.frame_counter, text="فرمول", cnf=CNF_LABEL)
-        self.entry_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+        self.label_counter_unit = Label(self.frame_counter, text="واحد اندازه گیری", cnf=CNF_LABEL)
+        self.entry_counter_unit = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+        self.label_counter_default_value = Label(self.frame_counter, text="مقدار پیش فرض", cnf=CNF_LABEL)
+        self.entry_counter_default_value = ttk.Combobox(self.frame_counter, values=DEFAULT_VALUES, font=FONT, width=WORDS_WIDTH, justify='center')
+        self.entry_counter_default_value.insert(0, DEFAULT_VALUES[0])
+        self.entry_counter_default_value.config(state='readonly')
+        self.label_counter_variable_name = Label(self.frame_counter, text="نام متغیر", cnf=CNF_LABEL)
+        self.entry_counter_variable_name = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+        self.label_counter_warning_lower_bound = Label(self.frame_counter, text="حد پایین هشدار", cnf=CNF_LABEL)
+        self.entry_counter_warning_lower_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+        self.label_counter_warning_upper_bound = Label(self.frame_counter, text="حد بالای هشدار", cnf=CNF_LABEL)
+        self.entry_counter_warning_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+        self.label_counter_alarm_lower_bound = Label(self.frame_counter, text="حد پایین خطر", cnf=CNF_LABEL)
+        self.entry_counter_alarm_lower_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+        self.label_counter_alarm_upper_bound = Label(self.frame_counter, text="حد بالای خطر", cnf=CNF_LABEL)
+        self.entry_counter_alarm_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+        self.label_counter_formula = Label(self.frame_counter, text="فرمول", cnf=CNF_LABEL)
+        self.entry_counter_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
         self.btn_counter_register = Button(self.frame_counter, text='ایجاد کنتور', cnf=CNF_BTN, command=self.create_counter)
         self.btn_counter_back = Button(self.frame_counter, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
-        self.label_counter_name.grid(row=1, column=7, cnf=CNF_GRID)
-        self.entry_counter_name.grid(row=1, column=5, cnf=CNF_GRID)
-        self.label_counter_type.grid(row=3, column=7, cnf=CNF_GRID)
-        self.entry_counter_type.grid(row=3, column=5, cnf=CNF_GRID)
-        self.label_unit.grid(row=5, column=7, cnf=CNF_GRID)
-        self.entry_unit.grid(row=5, column=5, cnf=CNF_GRID)
-        self.label_default_value.grid(row=7, column=7, cnf=CNF_GRID)
-        self.entry_default_value.grid(row=7, column=5, cnf=CNF_GRID)
-        self.label_variable_name.grid(row=9, column=7, cnf=CNF_GRID)
-        self.entry_variable_name.grid(row=9, column=5, cnf=CNF_GRID)
-        self.label_warning_lower_bound.grid(row=11, column=7, cnf=CNF_GRID)
-        self.entry_warning_lower_bound.grid(row=11, column=5, cnf=CNF_GRID)
-        self.label_warning_upper_bound.grid(row=11, column=3, cnf=CNF_GRID)
-        self.entry_warning_upper_bound.grid(row=11, column=1, cnf=CNF_GRID)
-        self.label_alarm_lower_bound.grid(row=13, column=7, cnf=CNF_GRID)
-        self.entry_alarm_lower_bound.grid(row=13, column=5, cnf=CNF_GRID)
-        self.label_alarm_upper_bound.grid(row=13, column=3, cnf=CNF_GRID)
-        self.entry_alarm_upper_bound.grid(row=13, column=1, cnf=CNF_GRID)
-        self.label_formula.grid(row=15, column=7, cnf=CNF_GRID)
-        self.entry_formula.grid(row=15, column=5, cnf=CNF_GRID)
+        self.label_counter_part.grid(row=1, column=7, cnf=CNF_GRID)
+        self.entry_counter_part.grid(row=1, column=5, cnf=CNF_GRID)
+        self.label_counter_place.grid(row=1, column=3, cnf=CNF_GRID)
+        self.entry_counter_place.grid(row=1, column=1, cnf=CNF_GRID)
+        self.label_counter_name.grid(row=3, column=7, cnf=CNF_GRID)
+        self.entry_counter_name.grid(row=3, column=5, cnf=CNF_GRID)
+        self.label_counter_type.grid(row=3, column=3, cnf=CNF_GRID)
+        self.entry_counter_type.grid(row=3, column=1, cnf=CNF_GRID)
+        self.label_counter_unit.grid(row=5, column=7, cnf=CNF_GRID)
+        self.entry_counter_unit.grid(row=5, column=5, cnf=CNF_GRID)
+        self.label_counter_default_value.grid(row=5, column=3, cnf=CNF_GRID)
+        self.entry_counter_default_value.grid(row=5, column=1, cnf=CNF_GRID)
+        self.label_counter_variable_name.grid(row=9, column=7, cnf=CNF_GRID)
+        self.entry_counter_variable_name.grid(row=9, column=5, cnf=CNF_GRID)
+        self.label_counter_warning_lower_bound.grid(row=11, column=7, cnf=CNF_GRID)
+        self.entry_counter_warning_lower_bound.grid(row=11, column=5, cnf=CNF_GRID)
+        self.label_counter_warning_upper_bound.grid(row=11, column=3, cnf=CNF_GRID)
+        self.entry_counter_warning_upper_bound.grid(row=11, column=1, cnf=CNF_GRID)
+        self.label_counter_alarm_lower_bound.grid(row=13, column=7, cnf=CNF_GRID)
+        self.entry_counter_alarm_lower_bound.grid(row=13, column=5, cnf=CNF_GRID)
+        self.label_counter_alarm_upper_bound.grid(row=13, column=3, cnf=CNF_GRID)
+        self.entry_counter_alarm_upper_bound.grid(row=13, column=1, cnf=CNF_GRID)
+        self.label_counter_formula.grid(row=15, column=7, cnf=CNF_GRID)
+        self.entry_counter_formula.grid(row=15, column=5, cnf=CNF_GRID)
         self.btn_counter_register.grid(row=17, column=7, cnf=CNF_GRID)
         self.btn_counter_back.grid(row=17, column=5, cnf=CNF_GRID)
         self.entry_counter_name.bind('<Return>', lambda e: self.entry_counter_type.focus_set())
-        self.entry_counter_type.bind('<Return>', lambda e: self.entry_unit.focus_set())
-        self.entry_unit.bind('<Return>', lambda e: self.entry_default_value.focus_set())
-        self.entry_default_value.bind('<Return>', lambda e: self.entry_variable_name.focus_set())
-        self.entry_variable_name.bind('<Return>', lambda e: self.entry_warning_lower_bound.focus_set())
-        self.entry_warning_lower_bound.bind('<Return>', lambda e: self.entry_warning_upper_bound.focus_set())
-        self.entry_warning_upper_bound.bind('<Return>', lambda e: self.entry_alarm_lower_bound.focus_set())
-        self.entry_alarm_lower_bound.bind('<Return>', lambda e: self.entry_alarm_upper_bound.focus_set())
-        self.entry_alarm_upper_bound.bind('<Return>', lambda e: exit())
+        self.entry_counter_type.bind('<Return>', lambda e: self.entry_counter_unit.focus_set())
+        self.entry_counter_unit.bind('<Return>', lambda e: self.entry_counter_default_value.focus_set())
+        self.entry_counter_default_value.bind('<Return>', lambda e: self.entry_counter_variable_name.focus_set())
+        self.entry_counter_variable_name.bind('<Return>', lambda e: self.entry_counter_warning_lower_bound.focus_set())
+        self.entry_counter_warning_lower_bound.bind('<Return>', lambda e: self.entry_counter_warning_upper_bound.focus_set())
+        self.entry_counter_warning_upper_bound.bind('<Return>', lambda e: self.entry_counter_alarm_lower_bound.focus_set())
+        self.entry_counter_alarm_lower_bound.bind('<Return>', lambda e: self.entry_counter_alarm_upper_bound.focus_set())
+        self.entry_counter_alarm_upper_bound.bind('<Return>', lambda e: exit())
 
 
         # frame_part
@@ -188,11 +198,19 @@ class RegistrationForm():
 
 
 
-        self.refresh_parts_in_places_section()
+        self.refresh_parts_values_in_comboboxes()
 
 
-
-
+    def show_places_of_this_part(self, event=None):
+        part_name = self.entry_counter_part.get()
+        part_id, part_name = self.connection.get_part_by_title(part_name)
+        places = self.connection.get_all_places_by_part_id(part_id)
+        values = []
+        for place_id, place_title, place_part in places:
+            values.append(place_title)
+        self.entry_counter_place.config(state='normal', values=values)
+        self.entry_counter_place.delete(0, END)
+        self.entry_counter_place.config(state='readonly')
     # user functions
     def show_password(self):
         if self.bv_show_password.get():
@@ -253,10 +271,82 @@ class RegistrationForm():
 
     # counter functions
     def create_counter(self):
+        part = self.entry_counter_part.get()
+        place = self.entry_counter_place.get()
+        name = self.entry_counter_name.get().strip()
+        type_ = self.entry_counter_type.get()
+        unit = self.entry_counter_unit.get().strip()
+        default_value = self.entry_counter_default_value.get()
+        variable_name = self.entry_counter_variable_name.get().strip()
+        warning_lower_bound = self.entry_counter_warning_lower_bound.get().strip()
+        warning_upper_bound = self.entry_counter_warning_upper_bound.get().strip()
+        alarm_lower_bound = self.entry_counter_alarm_lower_bound.get().strip()
+        alarm_upper_bound = self.entry_counter_alarm_upper_bound.get().strip()
+        formula = self.entry_counter_formula.get().strip()
+        if part == "":
+            msb.showwarning("هشدار", "کنتور مربوط به کدام بخش است؟")
+            self.entry_counter_part.focus_set()
+            return
+        if place == "":
+            msb.showwarning("هشدار", "کنتور مربوط به کدام مکان است؟")
+            self.entry_counter_place.focus_set()
+            return
+        if name == "":
+            msb.showwarning("هشدار", "نام کنتور را وارد کنید.")
+            self.entry_counter_name.focus_set()
+            return
+        if unit == "":
+            unit=None
+        if variable_name == "":
+            msb.showwarning("هشدار", "نام متغیر را تعیین کنید.")
+            self.entry_counter_variable_name.focus_set()
+            return
+        if warning_lower_bound == "":
+            warning_lower_bound=None
+        else:
+            try:
+                warning_lower_bound = float(warning_lower_bound)
+            except:
+                msb.showwarning("هشدار", "لطفا حد پایین هشدار را به صورت عددی وارد کنید.")
+                self.entry_counter_warning_lower_bound.focus_set()
+                return
+        if warning_upper_bound == "":
+            warning_upper_bound=None
+        else:
+            try:
+                warning_upper_bound = float(warning_upper_bound)
+            except:
+                msb.showwarning("هشدار", "لطفا حد بالای هشدار را به صورت عددی وارد کنید.")
+                self.entry_counter_warning_upper_bound.focus_set()
+                return
+        if alarm_lower_bound == "":
+            alarm_lower_bound=None
+        else:
+            try:
+                alarm_lower_bound = float(alarm_lower_bound)
+            except:
+                msb.showwarning("هشدار", "لطفا حد پایین خطر را به صورت عددی وارد کنید.")
+                self.entry_counter_alarm_lower_bound.focus_set()
+                return
+        if alarm_upper_bound == "":
+            alarm_upper_bound=None
+        else:
+            try:
+                alarm_upper_bound = float(alarm_upper_bound)
+            except:
+                msb.showwarning("هشدار", "لطفا حد بالای خطر را به صورت عددی وارد کنید.")
+                self.entry_counter_alarm_upper_bound.focus_set()
+                return
+        self.connection.create_counter()
         print('counter created')
 
     def check_counter_type(self, event=None):
-        print(self.entry_counter_type.get())
+        counter_type = self.entry_counter_type.get()
+        if counter_type==COUNTER_TYPES[1]:
+            self.entry_counter_formula.delete(0, END)
+            self.entry_counter_formula.config(state='readonly')
+        else:
+            self.entry_counter_formula.config(state='normal')
 
     # part functions
     def create_part(self):
@@ -267,18 +357,20 @@ class RegistrationForm():
         result_message, _ = self.connection.create_part(title)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"بخش {title} با موفقیت ساخته شد.")
-            self.refresh_parts_in_places_section()
+            self.refresh_parts_values_in_comboboxes()
         else:
             msb.showerror("خطا", result_message)
             print(_)
 
-    def refresh_parts_in_places_section(self, event=None):
+    def refresh_parts_values_in_comboboxes(self, event=None):
         parts = self.connection.get_all_parts()
         values = []
         for part_id, part_name in parts:
             values.append(part_name)
         self.entry_place_part_name.config(state='normal', values=values)
         self.entry_place_part_name.config(state='readonly')
+        self.entry_counter_part.config(state='normal', values=values)
+        self.entry_counter_part.config(state='readonly')
 
     # place functions
     def refresh_places_frame_after_selecting_part(self, event=None):

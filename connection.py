@@ -90,7 +90,12 @@ class Connection():
         return ("ok", 0)
         
 
-    def insert_counter(self):
+    def create_counter(self):
+#         query = "INSERT INTO `qaenpower`.`counters` \
+# (`name`, `type_`, `unit`, `default_value`, `variable_name`, `warning_lower_bound`, `warning_upper_bound`,\
+#  `alarm_lower_bound`, `alarm_upper_bound`, `formula`, `part`, `place`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+#         values = name, type_, unit, default_value, variable_name, warning_lower_bound
+
         pass
 
     def update_counter(self):
@@ -129,6 +134,11 @@ class Connection():
     def get_all_parts(self):
         query = "SELECT * FROM `qaenpower`.`parts`;"
         self.cursor.execute(query)
+        return self.cursor.fetchall()
+    
+    def get_all_places_by_part_id(self, part_id):
+        query = "SELECT * FROM `qaenpower`.`places` WHERE `part`=%s;"
+        self.cursor.execute(query, part_id)
         return self.cursor.fetchall()
 
 if __name__ == "__main__":
