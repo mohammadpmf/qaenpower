@@ -105,6 +105,31 @@ class Connection():
         except pymysql.err.IntegrityError as error:
             return (f"بخش {title} قبلا ثبت شده است", error)
 
+    def create_place(self, title, part):
+        query = "INSERT INTO `qaenpower`.`places` (`title`, `part`) VALUES (%s, %s);"
+        values = title, part
+        try:
+            self.cursor.execute(query, values)
+            self.connection.commit()
+            return ("ok", 0)
+        except pymysql.err.IntegrityError as error:
+            part_id, part_name = self.get_part_by_id(part)
+            return (f"مکان {title} برای بخش {part_name} قبلا ثبت شده است", error)
+        
+    def get_part_by_id(self, id_):
+        query = "SELECT * FROM `qaenpower`.`parts` WHERE id=%s;"
+        self.cursor.execute(query, id_)
+        return self.cursor.fetchone()
+
+    def get_part_by_title(self, title):
+        query = "SELECT * FROM `qaenpower`.`parts` WHERE title=%s;"
+        self.cursor.execute(query, title)
+        return self.cursor.fetchone()
+        
+    def get_all_parts(self):
+        query = "SELECT * FROM `qaenpower`.`parts`;"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
 
 if __name__ == "__main__":
     c = Connection()

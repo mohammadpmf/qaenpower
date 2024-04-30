@@ -167,8 +167,28 @@ class RegistrationForm():
         self.btn_part_back.grid(row=17, column=5, cnf=CNF_GRID)
 
         # frame_place
+        self.frame_place = Frame(self.frame_add_place, bg=BG)
+        self.frame_place.place(relx=0.4, rely=0.04, relwidth=1, relheight=1)
+        self.label_place_part_name = Label(self.frame_place, text="نام بخش", cnf=CNF_LABEL)
+        self.entry_place_part_name = ttk.Combobox(self.frame_place, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
+        self.entry_place_part_name.bind("<<ComboboxSelected>>", self.refresh_places_frame_after_selecting_part)
+        self.label_place_name = Label(self.frame_place, text="نام مکان", cnf=CNF_LABEL)
+        self.entry_place_name = Entry(self.frame_place, cnf=CNF_ENTRY_COUNTER, justify='right', state='readonly')
+        self.btn_place_register = Button(self.frame_place, text='ایجاد مکان جدید', cnf=CNF_BTN, command=self.create_place)
+        self.btn_place_back = Button(self.frame_place, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
+
+        self.label_place_part_name.grid(row=1, column=7, cnf=CNF_GRID)
+        self.entry_place_part_name.grid(row=1, column=5, cnf=CNF_GRID)
+        self.label_place_name.grid(row=3, column=7, cnf=CNF_GRID)
+        self.entry_place_name.grid(row=3, column=5, cnf=CNF_GRID)
+        self.btn_place_register.grid(row=17, column=7, cnf=CNF_GRID)
+        self.btn_place_back.grid(row=17, column=5, cnf=CNF_GRID)
 
 
+
+
+
+        self.refresh_parts_in_places_section()
 
 
 
@@ -238,7 +258,6 @@ class RegistrationForm():
     def check_counter_type(self, event=None):
         print(self.entry_counter_type.get())
 
-
     # part functions
     def create_part(self):
         title = self.entry_part_name.get().strip()
@@ -248,11 +267,43 @@ class RegistrationForm():
         result_message, _ = self.connection.create_part(title)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"بخش {title} با موفقیت ساخته شد.")
+            self.refresh_parts_in_places_section()
         else:
             msb.showerror("خطا", result_message)
             print(_)
 
+    def refresh_parts_in_places_section(self, event=None):
+        parts = self.connection.get_all_parts()
+        values = []
+        for part_id, part_name in parts:
+            values.append(part_name)
+        self.entry_place_part_name.config(state='normal', values=values)
+        self.entry_place_part_name.config(state='readonly')
 
+    # place functions
+    def refresh_places_frame_after_selecting_part(self, event=None):
+        part = self.entry_place_part_name.get()
+        if part=="":
+            self.entry_place_name.config(state='normal')
+            self.entry_place_name.delete(0, END)
+            self.entry_place_name.config(state='readonly')
+        else:
+            self.entry_place_name.config(state='normal')
+
+
+    def create_place(self):
+        title = self.entry_place_name.get().strip()
+        part = self.entry_place_part_name.get()
+        if title=="" or part=="":
+            msb.showwarning("هشدار", "نام مکان یا بخش نمیتواند خالی باشد.")
+            return
+        part_id, _ = self.connection.get_part_by_title(part)
+        result_message, _ = self.connection.create_place(title, part_id)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"مکان {title} در بخش {part} با موفقیت ساخته شد.")
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
 
 
 
