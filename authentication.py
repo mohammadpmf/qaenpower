@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox as msb
 from connection import Connection
 
-BG='light blue'
+BG='#333333'
 FG='orange'
 FONT = ('B Nazanin', 24)
 PADX = 10
