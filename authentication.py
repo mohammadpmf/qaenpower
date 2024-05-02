@@ -337,8 +337,12 @@ class RegistrationForm():
                 msb.showwarning("هشدار", "لطفا حد بالای خطر را به صورت عددی وارد کنید.")
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
-        self.connection.create_counter()
-        print('counter created')
+        result_message, _ = self.connection.create_counter(name, type_, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"کنتور {name} با موفقیت ساخته شد.")
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
 
     def check_counter_type(self, event=None):
         counter_type = self.entry_counter_type.get()

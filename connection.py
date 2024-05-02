@@ -91,14 +91,12 @@ class Connection():
         self.connection.commit()
         return ("ok", 0)
         
-
-    def create_counter(self):
-#         query = "INSERT INTO `qaenpower`.`counters` \
-# (`name`, `type_`, `unit`, `default_value`, `variable_name`, `warning_lower_bound`, `warning_upper_bound`,\
-#  `alarm_lower_bound`, `alarm_upper_bound`, `formula`, `part`, `place`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
-#         values = name, type_, unit, default_value, variable_name, warning_lower_bound
-
-        pass
+    def create_counter(self, name, type_, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place):
+        query = "INSERT INTO `qaenpower`.`counters` (`name`, `type_`, `unit`, `default_value`, `variable_name`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `formula`, `part`, `place`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+        values = name, type_, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place
+        self.cursor.execute(query, values)
+        self.connection.commit()
+        return ("ok", 0)
 
     def update_counter(self):
         pass
