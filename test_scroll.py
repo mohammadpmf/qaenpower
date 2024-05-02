@@ -50,19 +50,21 @@ class Part:
         self.frame1.pack(*args, **kwargs)
 
 
-staff_window = Tk()
-tab_bar_staff_window = ttk.Notebook(staff_window)
-tabs_list = []
-parts=[]
-for i in range(10):
-    tabs_list.append(ttk.Frame(tab_bar_staff_window))
-    tabs_list[i].pack()
-    tab_bar_staff_window.add(tabs_list[i], text =f'بخش {i+1}')
-    parts.append(Part(tabs_list[i], [(1,2,3,4),(1,2), (1,2,3), (1,), (1,2,3,4,5,6)]))
-    # parts[i].grid(row=1, column=1)
-    parts[i].pack()
-    # parts[i].place(width=1024, height=400)
-# tab_bar_staff_window.place(x=200, y=40, width=1000, height=800)
-tab_bar_staff_window.pack(expand=True, fill='both')
-staff_window.geometry(f"{WIDTH}x{HEIGHT}")
-staff_window.mainloop()
+
+if __name__ == "__main__":
+    staff_window = Tk()
+    tab_bar_staff_window = ttk.Notebook(staff_window)
+    tabs_list = []
+    parts=[]
+    for i in range(10):
+        tabs_list.append(ttk.Frame(tab_bar_staff_window))
+        tabs_list[i].pack()
+        tab_bar_staff_window.add(tabs_list[i], text =f'بخش {i+1}')
+        parts.append(Part(tabs_list[i], [(1,2,3,4),(1,2), (1,2,3), (1,), (1,2,3,4,5,6)]))
+        # parts[i].grid(row=1, column=1)
+        parts[i].pack()
+        # parts[i].place(width=1024, height=400)
+    # tab_bar_staff_window.place(x=200, y=40, width=1000, height=800)
+    tab_bar_staff_window.pack(expand=True, fill='both')
+    staff_window.geometry(f"{WIDTH}x{HEIGHT}")
+    staff_window.mainloop()

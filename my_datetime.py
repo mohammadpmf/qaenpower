@@ -1,3 +1,4 @@
+from datetime import datetime
 from tkinter import *
 from tkinter import ttk
 import jdatetime
@@ -30,6 +31,17 @@ weekdays = {
     5: 'پنجشنبه',
     6: 'جمعه',
 }
+
+
+def get_jnow():
+    '''
+    get date_time of now in jalali format
+    '''
+    gnow = datetime.now()
+    jnow = jdatetime.GregorianToJalali(gnow.year, gnow.month, gnow.day)
+    jnow = jdatetime.datetime(jnow.jyear, jnow.jmonth, jnow.jday, gnow.hour, gnow.minute, gnow.second)
+    return jnow
+
 
 class DatePicker:
     days_list = [i for i in range(1, 32)]

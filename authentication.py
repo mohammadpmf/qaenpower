@@ -94,10 +94,10 @@ class RegistrationForm():
         self.frame_counter = Frame(self.frame_add_counter, bg=BG)
         self.frame_counter.grid()
         self.label_counter_part = Label(self.frame_counter, text="بخش کنتور", cnf=CNF_LABEL)
-        self.entry_counter_part = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center')
+        self.entry_counter_part = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
         self.entry_counter_part.bind("<<ComboboxSelected>>", self.show_places_of_this_part)
         self.label_counter_place = Label(self.frame_counter, text="مکان کنتور", cnf=CNF_LABEL)
-        self.entry_counter_place = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center')
+        self.entry_counter_place = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
 
         self.label_counter_name = Label(self.frame_counter, text="نام کنتور", cnf=CNF_LABEL)
         self.entry_counter_name = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER, justify='right')
@@ -337,6 +337,11 @@ class RegistrationForm():
                 msb.showwarning("هشدار", "لطفا حد بالای خطر را به صورت عددی وارد کنید.")
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
+        if formula == "" and type_ in [COUNTER_TYPES[0], COUNTER_TYPES[2]]:
+            msb.showwarning("هشدار", "برای کنتورهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد.")
+            self.entry_counter_formula.focus_set()
+            return
+
         result_message, _ = self.connection.create_counter(name, type_, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"کنتور {name} با موفقیت ساخته شد.")

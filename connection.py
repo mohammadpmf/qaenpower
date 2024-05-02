@@ -20,17 +20,10 @@ class Connection():
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `part` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE, INDEX `part_idx` (`part` ASC) VISIBLE, UNIQUE INDEX `place_part` (`title` ASC, `part` ASC) INVISIBLE, CONSTRAINT `part` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type_` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) NULL, `warning_upper_bound` DECIMAL(20,10) NULL, `alarm_lower_bound` DECIMAL(20,10) NULL, `alarm_upper_bound` DECIMAL(20,10) NULL, `formula` VARCHAR(255) NOT NULL, `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE, UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) INVISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type_` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `previous_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, `current_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `counter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
-        # query = "ALTER TABLE `qaenpower`.`counters` ADD COLUMN `b` DECIMAL(20,10) UNSIGNED NULL AFTER `place`, ADD COLUMN `a` DECIMAL(20,10) UNSIGNED NULL AFTER `b`, CHANGE COLUMN `warning_lower_bound` `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL DEFAULT NULL , CHANGE COLUMN `warning_upper_bound` `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL DEFAULT NULL , CHANGE COLUMN `alarm_lower_bound` `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL DEFAULT NULL , CHANGE COLUMN `alarm_upper_bound` `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL DEFAULT NULL ;"
-        # self.cursor.execute(query)
-        # query = "ALTER TABLE `qaenpower`.`counters` CHANGE COLUMN `b` `b` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0 , CHANGE COLUMN `a` `a` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0 ;"
-        # self.cursor.execute(query)
-        # query = "ALTER TABLE `qaenpower`.`counters` ADD UNIQUE INDEX `counter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE;"
-        # self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `amount` INT UNSIGNED NOT NULL, `date_time` DATETIME NOT NULL, `counter` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE, CONSTRAINT `counter` FOREIGN KEY (`counter`) REFERENCES `qaenpower`.`counters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) UNSIGNED NOT NULL, `date_time` DATETIME NOT NULL, `counter` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `counter` FOREIGN KEY (`counter`) REFERENCES `qaenpower`.`counters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
         self.cursor.execute(query)
-
 
     def create_user(self, name, surname, username, password):
         query = "INSERT INTO `qaenpower`.`users` (`name`, `surname`, `username`, `password`) VALUES (%s, %s, %s, %s);"
@@ -163,6 +156,13 @@ class Connection():
         query = "SELECT * FROM `qaenpower`.`places` WHERE `part`=%s;"
         self.cursor.execute(query, part_id)
         return self.cursor.fetchall()
+    
+    def get_all_counters_of_this_part_and_place(self, part_id, place_id):
+        query = "SELECT * FROM `qaenpower`.`counters` WHERE `part`=%s AND `place`=%s;"
+        values = part_id, place_id
+        self.cursor.execute(query, values)
+        return self.cursor.fetchall()
+
 
 if __name__ == "__main__":
     c = Connection()
