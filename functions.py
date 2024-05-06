@@ -29,6 +29,15 @@ def hash_password(password: str, salt="mohammad pourmohammadi fallah"):
     hashed_password = hashed_password.hexdigest()
     return hashed_password
 
+
+def round3(number:float) -> float|int:
+    number = float(number)
+    number = round(number, 3)
+    if int(number)==number:
+        return int(number)
+    return number
+    
+
 if __name__=='__main__':
     print(hash_password('a', '1'))
     word='salam'
