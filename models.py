@@ -11,11 +11,17 @@ class Staff():
         self.wrong_times=wrong_times
         self.id=id
 
+    def __str__(self):
+        return f"{self.name} {self.surname}"
+
 
 class Part():
     def __init__(self, title, id=None):
         self.title=title
         self.id=id
+
+    def __str__(self):
+        return f"{self.title}"
 
 
 class Place():
@@ -23,12 +29,15 @@ class Place():
         self.title=title
         self.part_id=part_id
         self.id=id
+    
+    def __str__(self):
+        return f"{self.title}"
 
 
 class Counter():
     def __init__(self, part, place, name, variable_name, previous_value=0, current_value=0, formula='',
                  type='counter', default_value=0, unit=None, warning_lower_bound=None,
-                 warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None):
+                 warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None):
         self.part = part
         self.place = place
         self.name = name
@@ -44,6 +53,10 @@ class Counter():
         self.alarm_lower_bound = alarm_lower_bound          # if not in range => bg red
         self.alarm_upper_bound = alarm_upper_bound          # if not in range => bg red
         self.id = id
+        self.place_title = place_title
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 class CounterLog():
@@ -55,3 +68,6 @@ class CounterLog():
             self.date_time=get_jnow()
         self.counter_id=counter_id
         self.id=id
+
+    def __str__(self):
+        return f"{self.value}"

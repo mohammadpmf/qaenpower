@@ -64,10 +64,11 @@ class DatePicker:
         self.combo_month.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_day.bind("<<ComboboxSelected>>", self.check_date)
         self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", font=FONT)
-        self.combo_year.grid(row=1, column=1, cnf=CNF_GRID)
-        self.combo_month.grid(row=1, column=2, cnf=CNF_GRID)
-        self.combo_day.grid(row=1, column=3, cnf=CNF_GRID)
-        self.label_date.grid(row=2, column=1, columnspan=3, cnf=CNF_GRID)
+        self.btn_confirm = Button(self.frame, text="تایید تاریخ", font=FONT, command=self.confirm)
+        self.combo_year.grid(row=1, column=5, cnf=CNF_GRID)
+        self.combo_month.grid(row=1, column=7, cnf=CNF_GRID)
+        self.combo_day.grid(row=1, column=9, cnf=CNF_GRID)
+        self.label_date.grid(row=1, column=3, cnf=CNF_GRID)
     
     def check_date(self, event=None):
         y = self.year.get()
@@ -80,12 +81,24 @@ class DatePicker:
                 date = jdatetime.date(int(y), int(m), int(d))
                 temp = f"{'تاریخ':10} {weekdays.get(date.weekday())} {d} {month_names.get(int(m))} {y}"
                 self.label_date.config(text=temp)
+                self.btn_confirm.grid(row=1, column=1, cnf=CNF_GRID)
         except ValueError:
             temp = "!!! تاریخ نامعتبر !!!"
             self.label_date.config(text=temp)
+            self.btn_confirm.grid_forget()
+
+    def confirm(self):
+        date = self.label_date['text'] 
+        print(date)
 
     def grid(self, *args, **kwargs):
         self.frame.grid(*args, **kwargs)
+    
+    def pack(self, *args, **kwargs):
+        self.frame.pack(*args, **kwargs)
+
+    def place(self, *args, **kwargs):
+        self.frame.place(*args, **kwargs)
 
 if __name__ == '__main__':
     root = Tk()

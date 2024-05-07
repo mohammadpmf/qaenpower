@@ -1,39 +1,7 @@
-from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox as msb
+from ui_settings import *
 from connection import Connection
+from functions import what_is_variable_name_problem, what_is_formula_problem
 
-BG='#333333'
-FG='orange'
-FONT = ('B Nazanin', 24)
-PADX = 10
-PADY = 5
-WORDS_WIDTH=15
-COUNTER_TYPES = ['کنتور', 'ثابت', 'محاسباتی']
-DEFAULT_VALUES = ['0', 'مقدار کنتور روز قبل', 'خالی']
-CNF_BTN = {
-    'bg': BG,
-    'fg': FG,
-    'font': FONT,
-    'padx': PADX,
-    'pady': PADY,
-}
-CNF_LABEL=CNF_BTN.copy()
-CNF_CHB=CNF_BTN.copy()
-CNF_ENTRY = {
-    'bg': BG,
-    'fg': FG,
-    'font': FONT,
-}
-CNF_ENTRY_USER = CNF_ENTRY.copy()
-CNF_ENTRY_COUNTER = CNF_ENTRY_USER.copy()
-CNF_ENTRY_COUNTER['width']=WORDS_WIDTH
-
-
-CNF_GRID = {
-    'padx': PADX,
-    'pady': PADY+5,
-}
 
 class RegistrationForm():
     def __init__(self, connection: Connection, root:Tk, admin_window:Toplevel, staff_window:Tk):
@@ -124,6 +92,8 @@ class RegistrationForm():
         self.entry_counter_alarm_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
         self.label_counter_formula = Label(self.frame_counter, text="فرمول", cnf=CNF_LABEL)
         self.entry_counter_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+        self.label_counter_formula_parameters = Label(self.frame_counter, text="متغیرهای فرمول", cnf=CNF_LABEL)
+        self.entry_counter_formula_parameters = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
         self.btn_counter_register = Button(self.frame_counter, text='ایجاد کنتور', cnf=CNF_BTN, command=self.create_counter)
         self.btn_counter_back = Button(self.frame_counter, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
         self.label_counter_part.grid(row=1, column=7, cnf=CNF_GRID)
@@ -150,6 +120,8 @@ class RegistrationForm():
         self.entry_counter_alarm_upper_bound.grid(row=13, column=1, cnf=CNF_GRID)
         self.label_counter_formula.grid(row=15, column=7, cnf=CNF_GRID)
         self.entry_counter_formula.grid(row=15, column=5, cnf=CNF_GRID)
+        self.label_counter_formula_parameters.grid(row=15, column=3, cnf=CNF_GRID)
+        self.entry_counter_formula_parameters.grid(row=15, column=1, cnf=CNF_GRID)
         self.btn_counter_register.grid(row=17, column=7, cnf=CNF_GRID)
         self.btn_counter_back.grid(row=17, column=5, cnf=CNF_GRID)
         self.entry_counter_name.bind('<Return>', lambda e: self.entry_counter_type.focus_set())
@@ -161,7 +133,6 @@ class RegistrationForm():
         self.entry_counter_warning_upper_bound.bind('<Return>', lambda e: self.entry_counter_alarm_lower_bound.focus_set())
         self.entry_counter_alarm_lower_bound.bind('<Return>', lambda e: self.entry_counter_alarm_upper_bound.focus_set())
         self.entry_counter_alarm_upper_bound.bind('<Return>', lambda e: exit())
-
 
         # frame_part
         self.frame_part = Frame(self.frame_add_part, bg=BG)
@@ -211,6 +182,7 @@ class RegistrationForm():
         self.entry_counter_place.config(state='normal', values=values)
         self.entry_counter_place.delete(0, END)
         self.entry_counter_place.config(state='readonly')
+    
     # user functions
     def show_password(self):
         if self.bv_show_password.get():
@@ -274,7 +246,7 @@ class RegistrationForm():
         part = self.entry_counter_part.get()
         place = self.entry_counter_place.get()
         name = self.entry_counter_name.get().strip()
-        type_ = self.entry_counter_type.get()
+        type = self.entry_counter_type.get()
         unit = self.entry_counter_unit.get().strip()
         default_value = self.entry_counter_default_value.get()
         variable_name = self.entry_counter_variable_name.get().strip()
@@ -283,6 +255,7 @@ class RegistrationForm():
         alarm_lower_bound = self.entry_counter_alarm_lower_bound.get().strip()
         alarm_upper_bound = self.entry_counter_alarm_upper_bound.get().strip()
         formula = self.entry_counter_formula.get().strip()
+        formula_parameters = self.entry_counter_formula_parameters.get().strip()
         if part == "":
             msb.showwarning("هشدار", "کنتور مربوط به کدام بخش است؟")
             self.entry_counter_part.focus_set()
@@ -292,13 +265,15 @@ class RegistrationForm():
             self.entry_counter_place.focus_set()
             return
         if name == "":
-            msb.showwarning("هشدار", "نام کنتور را وارد کنید.")
+            msb.showwarning("هشدار", "نام کنتور را وارد کنید")
             self.entry_counter_name.focus_set()
             return
         if unit == "":
             unit=None
-        if variable_name == "":
-            msb.showwarning("هشدار", "نام متغیر را تعیین کنید.")
+        counters_variable_names = self.connection.get_all_counters_variable_names()
+        problem = what_is_variable_name_problem(variable_name, counters_variable_names)
+        if problem:
+            msb.showwarning("هشدار", problem)
             self.entry_counter_variable_name.focus_set()
             return
         if warning_lower_bound == "":
@@ -307,7 +282,7 @@ class RegistrationForm():
             try:
                 warning_lower_bound = float(warning_lower_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد پایین هشدار را به صورت عددی وارد کنید.")
+                msb.showwarning("هشدار", "لطفا حد پایین هشدار را به صورت عددی وارد کنید")
                 self.entry_counter_warning_lower_bound.focus_set()
                 return
         if warning_upper_bound == "":
@@ -316,7 +291,7 @@ class RegistrationForm():
             try:
                 warning_upper_bound = float(warning_upper_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد بالای هشدار را به صورت عددی وارد کنید.")
+                msb.showwarning("هشدار", "لطفا حد بالای هشدار را به صورت عددی وارد کنید")
                 self.entry_counter_warning_upper_bound.focus_set()
                 return
         if alarm_lower_bound == "":
@@ -325,7 +300,7 @@ class RegistrationForm():
             try:
                 alarm_lower_bound = float(alarm_lower_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد پایین خطر را به صورت عددی وارد کنید.")
+                msb.showwarning("هشدار", "لطفا حد پایین خطر را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_lower_bound.focus_set()
                 return
         if alarm_upper_bound == "":
@@ -334,28 +309,43 @@ class RegistrationForm():
             try:
                 alarm_upper_bound = float(alarm_upper_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد بالای خطر را به صورت عددی وارد کنید.")
+                msb.showwarning("هشدار", "لطفا حد بالای خطر را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
-        if formula == "" and type_ in [COUNTER_TYPES[0], COUNTER_TYPES[2]]:
-            msb.showwarning("هشدار", "برای کنتورهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد.")
+        if formula == "" and type in [COUNTER_TYPES[0], COUNTER_TYPES[2]]:
+            msb.showwarning("هشدار", "برای کنتورهای محاسباتی و معمولی، فرمول نمیتواند خالی باشد")
             self.entry_counter_formula.focus_set()
             return
-
-        result_message, _ = self.connection.create_counter(name, type_, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
+        problem = what_is_formula_problem(formula, formula_parameters, counters_variable_names, self.connection)
+        if problem:
+            msb.showwarning("هشدار", problem)
+            self.entry_counter_formula.focus_set()
+            return
+        result_message, _ = self.connection.create_counter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
         if result_message=='ok':
-            msb.showinfo("پیام موفقیت", f"کنتور {name} با موفقیت ساخته شد.")
+            msb.showinfo("پیام موفقیت", f"کنتور {name} با موفقیت در مکان {place} از بخش {part} ساخته شد")
         else:
             msb.showerror("خطا", result_message)
             print(_)
 
     def check_counter_type(self, event=None):
         counter_type = self.entry_counter_type.get()
-        if counter_type==COUNTER_TYPES[1]:
+        self.entry_counter_default_value.config(state='normal')
+        self.entry_counter_default_value.delete(0, END)
+        if counter_type in COUNTER_TYPES[0:2]: # یعنی یا کنتور معمولی باشه یا ثابت
+            self.entry_counter_default_value.insert(0, DEFAULT_VALUES[0])
+            self.entry_counter_default_value.config(values=DEFAULT_VALUES)
+        elif counter_type==COUNTER_TYPES[2]: # یعنی از نوع محاسباتی باشه
+            self.entry_counter_default_value.config(values=[])
+        self.entry_counter_default_value.config(state='readonly')
+        if counter_type==COUNTER_TYPES[1]: # fixed:
             self.entry_counter_formula.delete(0, END)
             self.entry_counter_formula.config(state='readonly')
+            self.entry_counter_formula_parameters.delete(0, END)
+            self.entry_counter_formula_parameters.config(state='readonly')
         else:
             self.entry_counter_formula.config(state='normal')
+            self.entry_counter_formula_parameters.config(state='normal')
 
     # part functions
     def create_part(self):
@@ -374,7 +364,7 @@ class RegistrationForm():
     def refresh_parts_values_in_comboboxes(self, event=None):
         parts = self.connection.get_all_parts()
         values = []
-        for part_id, part_name in parts:
+        for part_id, part_name, part_order in parts:
             values.append(part_name)
         self.entry_place_part_name.config(state='normal', values=values)
         self.entry_place_part_name.config(state='readonly')

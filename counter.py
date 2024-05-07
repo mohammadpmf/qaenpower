@@ -1,13 +1,16 @@
 from tkinter import *
+from tkinter import messagebox as msb
 from PIL import Image, ImageTk
-from entry_with_placeholder import EntryWithPlaceholder as Entry
-
+from authentication import COUNTER_TYPES, DEFAULT_VALUES
+from models import Counter
+from functions import round3
+from connection import Connection
 
 BG  = 'light green'
 BG2 = 'darkcyan'
 BG3 = 'green'
 FONT = ('B Nazanin', 12)
-NORMAL_FG = "black"
+NORMAL_FG = "orange"
 DISABLED_FG = "#aaaaaa"
 DISABLED_BG = '#cccccc'
 WARNING_COLOR = 'yellow'
@@ -44,127 +47,152 @@ CNF_GRID={
     'pady': 2,
     'sticky': 'e',
 }
-# class Counter(Button):
-#     def __init__(self, *args, root=Tk, **kwargs):
-#         Button.__init__(self, *args, **kwargs)
-#         self.root = root
-#         self.frame = Frame(self.root)
-#         self.label = Label(self.frame)
-#         self.entry_input = Entry(self.frame)
-#         self.entry_output = Entry(self.frame)
-#         self.btn_copy = Button(self.frame)
-#         self.frame_result = Frame(self.frame)
-#         self.state = Label(self.frame_result)
-#         self.smiley = Label(self.frame_result)
-#         self.label.grid(row=1, column=1)
-#         self.entry_input.grid(row=1, column=1)
-#         self.entry_output.grid(row=1, column=1)
-#         self.btn_copy.grid(row=1, column=1)
-#         self.frame_result.grid(row=1, column=1)
-#         self.state.grid(row=1, column=1)
-#         self.smiley.grid(row=1, column=1)
-#         self.frame.grid(row=1, column=1)
 
-class Counter__():
-    def __init__(self, root=Tk, counter_number=1, *args, **kwargs):
+
+class CounterWidget(Counter):
+    def __init__(self, connection: Connection, root, part, place, name, variable_name, previous_value=0, current_value=0, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, *args, **kwargs):
+        super().__init__(part, place, name, variable_name, previous_value, current_value, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title)
+        self.connection = connection
         self.root = root
-        self.counter_number = counter_number
-        self.frame = Frame(self.root, bg=BG)
-        self.label = Label(self.frame, text=f"کنتور {self.counter_number}", bg=BG, *args, **kwargs)
-        self.entry_input = Entry(self.frame, bg=BG, *args, **kwargs)
-        self.entry_output = Entry(self.frame, bg=BG, *args, **kwargs)
-        self.btn_copy = Button(self.frame, text='copy', bg=BG2, *args, **kwargs)
-        self.frame_result = Frame(self.frame, bg='white', padx=16, pady=8)
-        self.state = Label(self.frame_result, text='سالم', *args, **kwargs)
-        self.smiley = Label(self.frame_result, text='☺', bg=BG3, *args, **kwargs)
-        self.label.grid(row=1, column=3)
-        self.entry_input.grid(row=1, column=2)
-        self.entry_output.grid(row=1, column=1)
-        self.btn_copy.grid(row=2, column=2)
-        self.frame_result.grid(row=2, column=1)
-        self.state.grid(row=1, column=1)
-        self.smiley.grid(row=1, column=2)
-
-    def grid(self, *args, **kwargs):
-        self.frame.grid(*args, **kwargs)
-
-class Counter():
-    def __init__(self, root=Tk, name='', type_='counter', unit='', default='', variable_name='',
-                 warning_lower_bound='', warning_upper_bound='', alarm_lower_bound='', alarm_upper_bound='',
-                 formula='', *args, **kwargs):
-        self.img = Image.open('copy-icon.png')
-        self.img = self.img.resize((20, 20))
-        self.img = ImageTk.PhotoImage(self.img)
-        self.root = root
-        self.name = name
-        self.type_ = type_          # counter                   -   fixed                -  calculating
-        self.unit = unit
-        self.default = default      # previous day number       -   fixed (like 0)       -  None
-        self.variable_name = variable_name
-        self.warning_lower_bound = warning_lower_bound      # if not in range => bg yellow
-        self.warning_upper_bound = warning_upper_bound      # if not in range => bg yellow
-        self.alarm_lower_bound = alarm_lower_bound          # if not in range => bg red
-        self.alarm_upper_bound = alarm_upper_bound          # if not in range => bg red
-        self.formula = formula
         self.frame = LabelFrame(self.root, text=f"کنتور {self.name}", cnf=CNF_LBL_FRM, padx=16, pady=8, labelanchor='n', bg=BG, *args, **kwargs)
-        if self.type_=='fixed':
-            pass
-        elif self.type_=='calculating':
-            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
-            pass
-        elif self.type_=='counter':
+        if self.type==COUNTER_TYPES[0]:
+            self.img = Image.open('copy-icon.png')
+            self.img = self.img.resize((20, 20))
+            self.img = ImageTk.PhotoImage(self.img)
             self.btn_copy = Button(self.frame, image=self.img, cnf=CNF_BTN, command=self.copy_down, *args, **kwargs)
-            self.entry_current_counter = Entry(self.frame, placeholder='شماره کنتور فعلی', cnf=CNF_ENTRY, *args, **kwargs)
-            # self.entry_previous_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
-            self.entry_previous_counter = Label(self.frame, cnf=CNF_LBL, text='کارکرد روز قبل', *args, **kwargs)
-            self.entry_workout = Entry(self.frame, placeholder='کارکرد کنتور', cnf=CNF_ENTRY, *args, **kwargs) # وقتی همینجا استیت رو میذاشتم پلیس هولدر رو نمینوشت. به خاطر همین تو خط بعد گذاشتمش.
+            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
+            if self.default_value==DEFAULT_VALUES[0]:
+                self.entry_current_counter.insert(0, round3(self.previous_value))
+            elif self.default_value==DEFAULT_VALUES[1]:
+                self.entry_current_counter.insert(0, DEFAULT_VALUES[1])
+            elif self.default_value==DEFAULT_VALUES[2]:
+                self.entry_current_counter.delete(0, END)
+            self.entry_previous_counter = Label(self.frame, cnf=CNF_LBL, text=round3(self.previous_value), *args, **kwargs)
+            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
+            self.entry_workout.insert(0, 'کارکرد')
             self.entry_workout.config(state='readonly')
             self.boolean_var_bad = BooleanVar(self.frame)
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB, variable=self.boolean_var_bad, text='خرابی کنتور', command=self.check, *args, **kwargs)
-            self.entries = [self.entry_previous_counter, self.entry_current_counter, self.entry_workout]
+            self.entry_workout.bind('<Return>', self.confirm)
+            self.entry_workout.bind('<KeyRelease>', self.check_color)
+            self.entries = [self.entry_previous_counter, self.entry_current_counter, self.entry_workout] # میخواستم برای دیسبل کردن و اینیبل کردن یه حلقه بزنم. همه شون رو ریختم تو یه لیست داخل آبجکت که تو تابع چک کارم راحت تر بشه.
 
             self.btn_copy.grid(row=1, column=3, cnf=CNF_GRID)
             self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID)
             self.entry_current_counter.grid(row=2, column=2, columnspan=2, cnf=CNF_GRID)
             self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID)
             self.entry_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID, sticky='ew')
-    
+
+        elif self.type==COUNTER_TYPES[1]:
+            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
+            if self.default_value==DEFAULT_VALUES[0]:
+                self.entry_current_counter.insert(0, round3(self.previous_value))
+            elif self.default_value==DEFAULT_VALUES[1]:
+                self.entry_current_counter.insert(0, DEFAULT_VALUES[1])
+            elif self.default_value==DEFAULT_VALUES[2]:
+                self.entry_current_counter.delete(0, END)
+            self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID)
+        elif self.type==COUNTER_TYPES[2]:
+            self.entry_current_counter = Label(self.frame, text='در حال محاسبه', cnf=CNF_LBL, *args, **kwargs)
+            self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID)
+        self.entry_current_counter.bind('<Return>', self.confirm)
+        self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
+   
+    def confirm(self, event=None):
+        value = self.entry_current_counter.get()
+        try:
+            value = float(value)
+        except:
+            msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
+            return
+        result_message, ـ = self.connection.create_counter_log(value, self.id)
+        result_message, ـ = self.connection.update_counter_usage(value, self.id)
+        if result_message == "ok":
+            msb.showinfo("پیام موفقیت", f"مقدار {value} با موفقیت برای کنتور {self.name} از مکان {self.place_title} ثبت شد.")
+        else:
+            msb.showerror("ارور", result_message)
+
+    def update_workout(self, event=None):
+        if self.type==COUNTER_TYPES[0] and (event.keysym in '0123456789' or event.keysym=='period'):
+            try:
+                workout = float(self.entry_current_counter.get()) - float(self.entry_previous_counter['text']) # میشه از دیتابیس گرفت که دقیق تر باشه. اما من نگرفتم و از رو همون ۳ رقم اعشار خووندم.
+                workout = round3(workout)
+                self.entry_workout.config(state='normal')
+                self.entry_workout.delete(0, END)
+                self.entry_workout.insert(0, workout)
+                self.entry_workout.config(state='readonly')
+                self.check_color()
+            except:
+                return
+
     def copy_down(self):
         self.boolean_var_bad.set(False)
         self.check()
         self.entry_current_counter.delete(0, END)
-        # self.entry_current_counter.insert(0, self.entry_previous_counter.get())
         self.entry_current_counter.insert(0, self.entry_previous_counter['text'])
+        self.entry_workout.config(state='normal')
+        self.entry_workout.delete(0, END)
+        self.entry_workout.insert(0, 0)
+        self.entry_workout.config(state='readonly')
+        self.check_color()
     
     def check(self):
         if self.boolean_var_bad.get():
-            self.entry_workout.config(state='normal')
             self.entry_current_counter.config(state='readonly')
-            # self.entry_previous_counter.config(state='readonly')
             self.entry_previous_counter.config(state='disabled', bg=DISABLED_BG)
+            self.entry_workout.config(state='normal')
+            if self.entry_workout.get()=='کارکرد':
+                self.entry_workout.delete(0, END)
+            self.entry_workout.focus_set()
         else:
             self.entry_workout.config(state='readonly')
             self.entry_current_counter.config(state='normal')
             self.entry_previous_counter.config(state='normal', bg=BG)
+            self.entry_current_counter.focus_set()
         for entry in self.entries:
             if entry['state']=='normal':
                 entry.config(fg=NORMAL_FG)
             else:
                 entry.config(fg=DISABLED_FG)
+        self.check_color()
 
+    def check_color(self, event=None):
+        w_l = self.warning_lower_bound
+        w_u = self.warning_upper_bound
+        a_l = self.alarm_lower_bound
+        a_u = self.alarm_upper_bound
+        try:
+            workout = float(self.entry_workout.get())
+            if workout<=a_l:
+                bg = ALARM_COLOR
+            elif workout<=w_l:
+                bg = WARNING_COLOR
+            elif workout>=a_u:
+                bg = ALARM_COLOR
+            elif workout>=w_u:
+                bg = WARNING_COLOR
+            else:
+                bg=BG
+            self.frame.config(bg=bg)
+        except:
+            pass
 
     def grid(self, *args, **kwargs):
         self.frame.grid(*args, **kwargs)
+
+    def pack(self, *args, **kwargs):
+        self.frame.pack(*args, **kwargs)
+
+    def place(self, *args, **kwargs):
+        self.frame.place(*args, **kwargs)
 
 
 if __name__ == "__main__":
     root = Tk()
     root.geometry('1000x800')
     root.title('ثبت کنتور')
-    c1 = Counter(root=root)
-    c1.grid()
-    c1 = Counter(root=root, name=2).grid(row=2, column=1)
-    c2 = Counter(root=root, name=3).grid(row=3, column=1)
-    c3 = Counter(root=root, name=4).grid(row=4, column=1)
-    c4 = Counter(root=root, name=50).grid(row=4, column=2)
+    c1 = CounterWidget('', root, 1, 1, name=2, variable_name=1).grid(row=2, column=1)
+    c2 = CounterWidget('', root, 1, 1, name=3, variable_name=1).grid(row=3, column=1)
+    c3 = CounterWidget('', root, 1, 1, type='محاسباتی', name=4, variable_name=1).grid(row=4, column=1)
+    c4 = CounterWidget('', root, 1, 1, type='ثابت', name=50, variable_name=1).grid(row=4, column=2)
     root.mainloop()

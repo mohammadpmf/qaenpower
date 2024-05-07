@@ -1,5 +1,7 @@
 import hashlib
-
+from Equation import Expression
+import re
+# from connection import Connection
 
 def hash_password(password: str, salt="mohammad pourmohammadi fallah"):
     # salt = "mohammad pourmohammadi fallah"
@@ -38,8 +40,59 @@ def round3(number:float) -> float|int:
     return number
     
 
+def what_is_variable_name_problem(name: str, counters_variable_names: tuple):
+    if name == "":
+        return "نام متغیر را تعیین کنید"
+    elif name in ['a', 'b']:
+        return "برای نام متغیر نمی توانید از a و b استفاده کنید."
+    elif not name.isidentifier():
+        return "نام متغیر مناسب نیست"
+    elif name in counters_variable_names:
+        return "نام متغیر تکراری است و برای یکی از کنتورهای قبلی تعریف شده است."
+    return None
+
+
+def what_is_formula_problem(formula: str, formula_parameters:str, counters_variable_names: tuple, connection):
+    parameters = formula_parameters.split()
+    bad_params = [] # پارامترهایی که قبلا در دیتابیس ثبت نشده اند. اما کاربر به اشتباه به ما داده است.
+    for p in parameters:
+        if p not in counters_variable_names:
+            bad_params.append(p)
+    if bad_params:
+        return f"پارامترهای زیر به عنوان متغیر هیچ کنتوری ثبت نشده اند\n{bad_params}"
+    # اگه تا اینجا مشکلی نبود، همه متغیرها درستند. فقط ممکنه نحوه نوشتن اشتباه باشه. بهش میگم که 
+    # به جای همه متغیر ها ۱ بذاره که ببینم میشه مقدار فرمول رو حساب کرد یا نه. ممکنه توش ۲۰ تا 
+    # + گذاشته بشه که خب مشکل داره. یا مثلا ۲ تا اسلش هم مشکل داره.
+    for p in parameters:
+        # temp = connection.get_current_value_of_counter_by_variable_name(p)
+        # formula = formula.replace(p, str(float(temp)))
+        formula = formula.replace(p, '1')
+    formula = formula.replace('a', '1')
+    formula = formula.replace('b', '1')
+    formula = formula.replace('//', '///') # ایول به ۲ تا اسلش گیر نمیده. ولی اکسپرشن بهش گیر میداد. به خاطر همین من گفتم اگه ۲ تا اسلش بود ۳ تاش بکنه که ایول هم بهش گیر بده
+    try:
+        eval(formula)
+        return None
+    except SyntaxError:
+        return "در نحوه نوشتار فرمول اشتباهی رخ داده است"
+    except NameError:
+        return "متغیرهای فرمولبه درستی در قسمت مربوطه ذکر نشده اند"
+    # if re.search(r'\ba\b', formula):
+    #     temp = connection.get_current_value_of_counter_by_variable_name(p)
+    #     print(i)
+    # for i in formula:
+    #     "rrr+2*a-3*(term5+b)"
+    #     t2 + a222 +(b-a)
+    #     if re.search(r'\ba\b', formula):
+    #     print(i)
+    # fn = Expression("3*t+4*(t2-6)+8",("t", "t2"))
+    # print(fn(3,4))
+# connection = Connection()
+# print(what_is_formula_problem("a23+a23+a23+a27+abc+b/a", 'a23 a27 abc', ('a23', 'a27', 'abc', 'adfasf', 'at56', 'class', 'def', 'garm', 'gas', 'r56', 'r567', 'rr_ewr', 'rr_ewr4', 'rrr', 's_4345', 't2', 'term', 'tr9', 'yyt'), connection))
+
+
 if __name__=='__main__':
-    print(hash_password('a', '1'))
+    print(hash_password('admin', '1'))
     word='salam'
     print(len(hash_password(word)), hash_password(word))
     p = input("Enter password: ")
