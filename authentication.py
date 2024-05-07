@@ -145,16 +145,16 @@ class RegistrationForm():
         self.entry_part_name.grid(row=1, column=5, cnf=CNF_GRID)
         self.btn_part_register.grid(row=17, column=7, cnf=CNF_GRID)
         self.btn_part_back.grid(row=17, column=5, cnf=CNF_GRID)
-        self.treev = ttk.Treeview(self.frame_part, height=6, selectmode ='browse', show='headings')
-        self.treev.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
-        self.verscrlbar = ttk.Scrollbar(self.frame_part, orient ="vertical", command = self.treev.yview)
-        self.verscrlbar.grid(row=19, rowspan=3, column=11, sticky='ns')
-        self.treev.configure(yscrollcommand = self.verscrlbar.set)
-        self.treev["columns"] = ("1", "2")
-        self.treev.column("1", width = 200, anchor ='c')
-        self.treev.column("2", width = 50, anchor ='c')
-        self.treev.heading("1", text ="نام بخش", anchor='c')
-        self.treev.heading("2", text ="ردیف", anchor='c')
+        self.treev_part = ttk.Treeview(self.frame_part, height=6, selectmode ='browse', show='headings')
+        self.treev_part.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
+        self.verscrlbar_part = ttk.Scrollbar(self.frame_part, orient ="vertical", command = self.treev_part.yview)
+        self.verscrlbar_part.grid(row=19, rowspan=3, column=11, sticky='ns')
+        self.treev_part.configure(yscrollcommand = self.verscrlbar_part.set)
+        self.treev_part["columns"] = ("1", "2")
+        self.treev_part.column("1", width = 200, anchor ='c')
+        self.treev_part.column("2", width = 50, anchor ='c')
+        self.treev_part.heading("1", text ="نام بخش", anchor='c')
+        self.treev_part.heading("2", text ="ردیف", anchor='c')
         self.refresh_parts_tree_view()
         self.btn_up_tree_part = Button(self.frame_part, text='↑', cnf=CNF_BTN, font=FONT2, width=4, height=1, command=self.up_tree_part)
         self.btn_confirm_tree_part = Button(self.frame_part, text='تایید', cnf=CNF_BTN, font=FONT2, width=4, height=1, command=self.confirm_tree_part)
@@ -165,7 +165,7 @@ class RegistrationForm():
 
         # frame_place
         self.frame_place = Frame(self.frame_add_place, bg=BG)
-        self.frame_place.place(relx=0.4, rely=0.04, relwidth=1, relheight=1)
+        self.frame_place.place(relx=0.15, rely=0.04, relwidth=1, relheight=1)
         self.label_place_part_name = Label(self.frame_place, text="نام بخش", cnf=CNF_LABEL)
         self.entry_place_part_name = ttk.Combobox(self.frame_place, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
         self.entry_place_part_name.bind("<<ComboboxSelected>>", self.refresh_places_frame_after_selecting_part)
@@ -173,66 +173,136 @@ class RegistrationForm():
         self.entry_place_name = Entry(self.frame_place, cnf=CNF_ENTRY_COUNTER, justify='right', state='readonly')
         self.btn_place_register = Button(self.frame_place, text='ایجاد مکان جدید', cnf=CNF_BTN, command=self.create_place)
         self.btn_place_back = Button(self.frame_place, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
-
         self.label_place_part_name.grid(row=1, column=7, cnf=CNF_GRID)
         self.entry_place_part_name.grid(row=1, column=5, cnf=CNF_GRID)
         self.label_place_name.grid(row=3, column=7, cnf=CNF_GRID)
         self.entry_place_name.grid(row=3, column=5, cnf=CNF_GRID)
         self.btn_place_register.grid(row=17, column=7, cnf=CNF_GRID)
         self.btn_place_back.grid(row=17, column=5, cnf=CNF_GRID)
-
-
-
-
+        self.treev_place = ttk.Treeview(self.frame_place, height=6, selectmode ='browse', show='headings')
+        self.treev_place.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
+        self.verscrlbar_place = ttk.Scrollbar(self.frame_place, orient ="vertical", command = self.treev_place.yview)
+        self.verscrlbar_place.grid(row=19, rowspan=3, column=11, sticky='ns')
+        self.treev_place.configure(yscrollcommand = self.verscrlbar_place.set)
+        self.treev_place["columns"] = ("1", "2")
+        self.treev_place.column("1", width = 200, anchor ='c')
+        self.treev_place.column("2", width = 50, anchor ='c')
+        self.treev_place.heading("1", text ="نام مکان", anchor='c')
+        self.treev_place.heading("2", text ="ردیف", anchor='c')
+        self.btn_up_tree_place = Button(self.frame_place, text='↑', cnf=CNF_BTN, font=FONT2, width=4, height=1, command=self.up_tree_place)
+        self.btn_confirm_tree_place = Button(self.frame_place, text='تایید', cnf=CNF_BTN, font=FONT2, width=4, height=1, command=self.confirm_tree_place)
+        self.btn_down_tree_place = Button(self.frame_place, text='↓', cnf=CNF_BTN, font=FONT2, width=4, height=1, command=self.down_tree_place)
+        self.btn_up_tree_place.grid(row=19, column=0, cnf=CNF_GRID, sticky='s')
+        self.btn_confirm_tree_place.grid(row=20, column=0, cnf=CNF_GRID)
+        self.btn_down_tree_place.grid(row=21, column=0, cnf=CNF_GRID, sticky='n')
 
         self.refresh_parts_values_in_comboboxes()
 
     def refresh_parts_tree_view(self):
-        self.treev.delete(*self.treev.get_children())
+        self.treev_part.delete(*self.treev_part.get_children())
         parts = self.connection.get_all_parts()
         for i, part in enumerate(parts):
-            self.treev.insert("", i, text=part[0], values=(part[1], i+1))
-        
-    def up_tree_part(self):
-        cur_item = self.treev.focus()
+            self.treev_part.insert("", i, text=part[0], values=(part[1], i+1))
+    
+    def refresh_places_tree_view(self, part_id):
+        self.treev_place.delete(*self.treev_place.get_children())
+        places = self.connection.get_all_places_by_part_id(part_id)
+        for i, place in enumerate(places):
+            self.treev_place.insert("", i, text=place[0], values=(place[1], i+1))
+               
+    def up_tree_place(self):
+        cur_item = self.treev_place.focus()
         try:
-            prev_item = self.treev.prev(cur_item)
-            temp_text222 = self.treev.item(prev_item)['text']
-            position222 = self.treev.item(prev_item)['values'][1]+1
-            temp_values222 = self.treev.item(prev_item)['values'][0], position222 
+            prev_item = self.treev_place.prev(cur_item)
+            temp_text222 = self.treev_place.item(prev_item)['text']
+            position222 = self.treev_place.item(prev_item)['values'][1]+1
+            temp_values222 = self.treev_place.item(prev_item)['values'][0], position222 
         except:
             return
-        temp_text = self.treev.item(cur_item)["text"]
-        temp_values = self.treev.item(cur_item)["values"]
+        temp_text = self.treev_place.item(cur_item)["text"]
+        temp_values = self.treev_place.item(cur_item)["values"]
         position = temp_values[-1]-2
-        new_child=self.treev.insert("", position, text=temp_text, values=(temp_values[0], position+1))
-        self.treev.delete(cur_item)
-        self.treev.insert("", position222, text=temp_text222, values=temp_values222)
-        self.treev.delete(prev_item)
-        self.treev.focus(new_child)
-        self.treev.selection_set(new_child)
+        new_child=self.treev_place.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev_place.delete(cur_item)
+        self.treev_place.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev_place.delete(prev_item)
+        self.treev_place.focus(new_child)
+        self.treev_place.selection_set(new_child)
+
+    def down_tree_place(self):
+        cur_item = self.treev_place.focus()
+        try:
+            next_item = self.treev_place.next(cur_item)
+            temp_text222 = self.treev_place.item(next_item)['text']
+            position222 = self.treev_place.item(next_item)['values'][1]-2
+            temp_values222 = self.treev_place.item(next_item)['values'][0], position222+1
+        except:
+            return
+        temp_text = self.treev_place.item(cur_item)["text"]
+        temp_values = self.treev_place.item(cur_item)["values"]
+        position = temp_values[-1]
+        self.treev_place.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev_place.delete(next_item)
+        new_child=self.treev_place.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev_place.delete(cur_item)
+        self.treev_place.focus(new_child)
+        self.treev_place.selection_set(new_child)
+
+    def confirm_tree_place(self):
+        for item in self.treev_place.get_children():
+            item = self.treev_place.item(item)
+            print(item)
+            id=int(item['text'])
+            order=int(item['values'][-1])
+            print(id, order)
+            result_message, _ = self.connection.change_places_order(id, order)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"ترتیب مکان ها با موفقیت تغییر یافت")
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
+
+    def up_tree_part(self):
+        cur_item = self.treev_part.focus()
+        try:
+            prev_item = self.treev_part.prev(cur_item)
+            temp_text222 = self.treev_part.item(prev_item)['text']
+            position222 = self.treev_part.item(prev_item)['values'][1]+1
+            temp_values222 = self.treev_part.item(prev_item)['values'][0], position222 
+        except:
+            return
+        temp_text = self.treev_part.item(cur_item)["text"]
+        temp_values = self.treev_part.item(cur_item)["values"]
+        position = temp_values[-1]-2
+        new_child=self.treev_part.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev_part.delete(cur_item)
+        self.treev_part.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev_part.delete(prev_item)
+        self.treev_part.focus(new_child)
+        self.treev_part.selection_set(new_child)
         
     def down_tree_part(self):
-        cur_item = self.treev.focus()
+        cur_item = self.treev_part.focus()
         try:
-            next_item = self.treev.next(cur_item)
-            temp_text222 = self.treev.item(next_item)['text']
-            position222 = self.treev.item(next_item)['values'][1]-2
-            temp_values222 = self.treev.item(next_item)['values'][0], position222+1
+            next_item = self.treev_part.next(cur_item)
+            temp_text222 = self.treev_part.item(next_item)['text']
+            position222 = self.treev_part.item(next_item)['values'][1]-2
+            temp_values222 = self.treev_part.item(next_item)['values'][0], position222+1
         except:
             return
-        temp_text = self.treev.item(cur_item)["text"]
-        temp_values = self.treev.item(cur_item)["values"]
+        temp_text = self.treev_part.item(cur_item)["text"]
+        temp_values = self.treev_part.item(cur_item)["values"]
         position = temp_values[-1]
-        self.treev.insert("", position222, text=temp_text222, values=temp_values222)
-        self.treev.delete(next_item)
-        new_child=self.treev.insert("", position, text=temp_text, values=(temp_values[0], position+1))
-        self.treev.delete(cur_item)
-        self.treev.focus(new_child)
-        self.treev.selection_set(new_child)
+        self.treev_part.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev_part.delete(next_item)
+        new_child=self.treev_part.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev_part.delete(cur_item)
+        self.treev_part.focus(new_child)
+        self.treev_part.selection_set(new_child)
+    
     def confirm_tree_part(self):
-        for item in self.treev.get_children():
-            item = self.treev.item(item)
+        for item in self.treev_part.get_children():
+            item = self.treev_part.item(item)
             id=int(item['text'])
             order=int(item['values'][-1])
             result_message, _ = self.connection.change_parts_order(id, order)
@@ -450,9 +520,10 @@ class RegistrationForm():
             self.entry_place_name.config(state='normal')
             self.entry_place_name.delete(0, END)
             self.entry_place_name.config(state='readonly')
-        else:
-            self.entry_place_name.config(state='normal')
-
+            return
+        self.entry_place_name.config(state='normal')
+        part_id, part_title, part_sort = self.connection.get_part_by_title(part)
+        self.refresh_places_tree_view(part_id)
 
     def create_place(self):
         title = self.entry_place_name.get().strip()
@@ -460,10 +531,11 @@ class RegistrationForm():
         if title=="" or part=="":
             msb.showwarning("هشدار", "نام مکان یا بخش نمیتواند خالی باشد.")
             return
-        part_id, _ = self.connection.get_part_by_title(part)
+        part_id, part_title, part_sort = self.connection.get_part_by_title(part)
         result_message, _ = self.connection.create_place(title, part_id)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"مکان {title} در بخش {part} با موفقیت ساخته شد.")
+            self.refresh_places_tree_view(part_id)
         else:
             msb.showerror("خطا", result_message)
             print(_)

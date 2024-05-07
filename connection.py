@@ -18,7 +18,7 @@ class Connection():
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`parts` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`));"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `part` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE, INDEX `part_idx` (`part` ASC) VISIBLE, UNIQUE INDEX `place_part` (`title` ASC, `part` ASC) INVISIBLE, CONSTRAINT `part` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `part` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), INDEX `part_idx` (`part` ASC) VISIBLE, UNIQUE INDEX `place_part` (`title` ASC, `part` ASC) INVISIBLE, CONSTRAINT `part` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `previous_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, `current_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `counter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
@@ -94,7 +94,6 @@ class Connection():
             self.cursor.execute(query, values)
             self.connection.commit()
             query = "SELECT * FROM `qaenpower`.`parts` where title=%s;"
-            values = (title, )
             self.cursor.execute(query, values)
             result = self.cursor.fetchone()
             if result in [None, '', ()]:
@@ -112,15 +111,28 @@ class Connection():
         return ("ok", 0)
 
     def create_place(self, title, part_id):
-        query = "INSERT INTO `qaenpower`.`places` (`title`, `part`) VALUES (%s, %s);"
+        query = "INSERT INTO `qaenpower`.`places` (`title`, `part`, `order`) VALUES (%s, %s, 0);"
         values = title, part_id
         try:
             self.cursor.execute(query, values)
             self.connection.commit()
-            return ("ok", 0)
+            query = "SELECT * FROM `qaenpower`.`places` where title=%s AND part=%s;"
+            self.cursor.execute(query, values)
+            result = self.cursor.fetchone()
+            if result in [None, '', ()]:
+                return ("مکان یافت نشد", -1)
+            id=result[0]
+            return self.update_place_sort(id, id)
         except pymysql.err.IntegrityError as error:
-            part_id, part_name = self.get_part_by_id(part_id)
+            part_id, part_name, part_sort = self.get_part_by_id(part_id)
             return (f"مکان {title} برای بخش {part_name} قبلا ثبت شده است", error)
+    
+    def update_place_sort(self, id, order):
+        query = "UPDATE `qaenpower`.`places` SET `order` = %s WHERE (`id` = %s);"
+        values = (order, id)
+        self.cursor.execute(query, values)
+        self.connection.commit()
+        return ("ok", 0)
 
     def get_part_by_id(self, id):
         query = "SELECT * FROM `qaenpower`.`parts` WHERE id=%s;"
@@ -156,12 +168,12 @@ class Connection():
         return self.cursor.fetchone()
 
     def get_all_parts(self):
-        query = "SELECT * FROM `qaenpower`.`parts` order by `order`;"
+        query = "SELECT * FROM `qaenpower`.`parts` ORDER BY `order`;"
         self.cursor.execute(query)
         return self.cursor.fetchall()
     
     def get_all_places_by_part_id(self, part_id):
-        query = "SELECT * FROM `qaenpower`.`places` WHERE `part`=%s;"
+        query = "SELECT * FROM `qaenpower`.`places` WHERE `part`=%s ORDER BY `order`;"
         self.cursor.execute(query, part_id)
         return self.cursor.fetchall()
     
@@ -215,6 +227,13 @@ class Connection():
 
     def change_parts_order(self, id, order):
         query = "UPDATE `qaenpower`.`parts` SET `order` = %s WHERE (`id` = %s);"
+        values=(order, id)
+        self.cursor.execute(query, values)
+        self.connection.commit()
+        return ("ok", 0)
+
+    def change_places_order(self, id, order):
+        query = "UPDATE `qaenpower`.`places` SET `order` = %s WHERE (`id` = %s);"
         values=(order, id)
         self.cursor.execute(query, values)
         self.connection.commit()
