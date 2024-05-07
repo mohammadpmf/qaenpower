@@ -43,6 +43,7 @@ staff_window.protocol("WM_DELETE_WINDOW", root.destroy)
 tab_bar_staff_window = ttk.Notebook(staff_window)
 tab_bar_staff_window.place(x=200, y=40, width=1000, height=800)
 tab_bar_staff_window.pack(expand=True, fill='both')
+staff_window.focus_force()
 tabs_list = []
 parts_tab = []
 places_with_counters = []
@@ -63,24 +64,7 @@ for i, part in enumerate(parts):
     parts_tab[i].pack()
     # parts[i].place(width=1024, height=400)
 tab_bar_staff_window.pack(expand = 1, fill ="both")
-treev = ttk.Treeview(root, selectmode ='browse')
-treev.grid(row=1, rowspan=10, column=1, columnspan=10, sticky='news')
-verscrlbar = ttk.Scrollbar(root, orient ="vertical", command = treev.yview)
-verscrlbar.grid(row=1, rowspan=10, column=11, columnspan=10, sticky='news')
-treev.configure(yscrollcommand = verscrlbar.set)
-treev["columns"] = ("1")
-treev['show'] = 'headings'
-treev.column("1", width = 90, anchor ='c')
-treev.heading("1", text ="نام بخش")
-treev.insert("", 'end', text ="L1", values =("Nidhi"))
-treev.insert("", 'end', text ="L2",values =("Nisha"))
-treev.insert("", 'end', text ="L3",values =("Preeti"))
-treev.insert("", 'end', text ="L4",values =("Rahul"))
-treev.insert("", 'end', text ="L5", values =("Sonu"))
-treev.insert("", 'end', text ="L6",values =("Rohit"))
-treev.insert("", 'end', text ="L7", values =("Geeta"))
-treev.insert("", 'end', text ="L8", values =("Ankit"))
-treev.insert("", 'end', text ="L10", values =("Mukul"))
+
 rf = RegistrationForm(connection, root, admin_window, staff_window)
 rf.grid()
 login_form = LoginForm(connection, root, admin_window, staff_window)

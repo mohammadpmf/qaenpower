@@ -136,16 +136,32 @@ class RegistrationForm():
 
         # frame_part
         self.frame_part = Frame(self.frame_add_part, bg=BG)
-        self.frame_part.place(relx=0.4, rely=0.04, relwidth=1, relheight=1)
+        self.frame_part.place(relx=0.2, rely=0.04, relwidth=1, relheight=1)
         self.label_part_name = Label(self.frame_part, text="نام بخش", cnf=CNF_LABEL)
         self.entry_part_name = Entry(self.frame_part, cnf=CNF_ENTRY_COUNTER, justify='right')
         self.btn_part_register = Button(self.frame_part, text='ایجاد بخش', cnf=CNF_BTN, command=self.create_part)
         self.btn_part_back = Button(self.frame_part, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
-
         self.label_part_name.grid(row=1, column=7, cnf=CNF_GRID)
         self.entry_part_name.grid(row=1, column=5, cnf=CNF_GRID)
         self.btn_part_register.grid(row=17, column=7, cnf=CNF_GRID)
         self.btn_part_back.grid(row=17, column=5, cnf=CNF_GRID)
+        self.treev = ttk.Treeview(self.frame_part, height=6, selectmode ='browse', show='headings')
+        self.treev.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
+        self.verscrlbar = ttk.Scrollbar(self.frame_part, orient ="vertical", command = self.treev.yview)
+        self.verscrlbar.grid(row=19, rowspan=3, column=11, sticky='ns')
+        self.treev.configure(yscrollcommand = self.verscrlbar.set)
+        self.treev["columns"] = ("1", "2")
+        self.treev.column("1", width = 200, anchor ='c')
+        self.treev.column("2", width = 50, anchor ='c')
+        self.treev.heading("1", text ="نام بخش", anchor='c')
+        self.treev.heading("2", text ="ردیف", anchor='c')
+        self.refresh_parts_tree_view()
+        self.btn_up_tree_part = Button(self.frame_part, text='↑', cnf=CNF_BTN, font=FONT2, width=4, height=1, command=self.up_tree_part)
+        self.btn_confirm_tree_part = Button(self.frame_part, text='تایید', cnf=CNF_BTN, font=FONT2, width=4, height=1, command=self.confirm_tree_part)
+        self.btn_down_tree_part = Button(self.frame_part, text='↓', cnf=CNF_BTN, font=FONT2, width=4, height=1, command=self.down_tree_part)
+        self.btn_up_tree_part.grid(row=19, column=0, cnf=CNF_GRID, sticky='s')
+        self.btn_confirm_tree_part.grid(row=20, column=0, cnf=CNF_GRID)
+        self.btn_down_tree_part.grid(row=21, column=0, cnf=CNF_GRID, sticky='n')
 
         # frame_place
         self.frame_place = Frame(self.frame_add_place, bg=BG)
@@ -170,6 +186,61 @@ class RegistrationForm():
 
 
         self.refresh_parts_values_in_comboboxes()
+
+    def refresh_parts_tree_view(self):
+        self.treev.delete(*self.treev.get_children())
+        parts = self.connection.get_all_parts()
+        for i, part in enumerate(parts):
+            self.treev.insert("", i, text=part[0], values=(part[1], i+1))
+        
+    def up_tree_part(self):
+        cur_item = self.treev.focus()
+        try:
+            prev_item = self.treev.prev(cur_item)
+            temp_text222 = self.treev.item(prev_item)['text']
+            position222 = self.treev.item(prev_item)['values'][1]+1
+            temp_values222 = self.treev.item(prev_item)['values'][0], position222 
+        except:
+            return
+        temp_text = self.treev.item(cur_item)["text"]
+        temp_values = self.treev.item(cur_item)["values"]
+        position = temp_values[-1]-2
+        new_child=self.treev.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev.delete(cur_item)
+        self.treev.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev.delete(prev_item)
+        self.treev.focus(new_child)
+        self.treev.selection_set(new_child)
+        
+    def down_tree_part(self):
+        cur_item = self.treev.focus()
+        try:
+            next_item = self.treev.next(cur_item)
+            temp_text222 = self.treev.item(next_item)['text']
+            position222 = self.treev.item(next_item)['values'][1]-2
+            temp_values222 = self.treev.item(next_item)['values'][0], position222+1
+        except:
+            return
+        temp_text = self.treev.item(cur_item)["text"]
+        temp_values = self.treev.item(cur_item)["values"]
+        position = temp_values[-1]
+        self.treev.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev.delete(next_item)
+        new_child=self.treev.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev.delete(cur_item)
+        self.treev.focus(new_child)
+        self.treev.selection_set(new_child)
+    def confirm_tree_part(self):
+        for item in self.treev.get_children():
+            item = self.treev.item(item)
+            id=int(item['text'])
+            order=int(item['values'][-1])
+            result_message, _ = self.connection.change_parts_order(id, order)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"ترتیب بخش ها با موفقیت تغییر یافت")
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
 
 
     def show_places_of_this_part(self, event=None):
@@ -357,6 +428,7 @@ class RegistrationForm():
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"بخش {title} با موفقیت ساخته شد.")
             self.refresh_parts_values_in_comboboxes()
+            self.refresh_parts_tree_view()
         else:
             msb.showerror("خطا", result_message)
             print(_)

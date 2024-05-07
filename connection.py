@@ -16,7 +16,7 @@ class Connection():
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`users` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `surname` VARCHAR(64) NOT NULL, `username` VARCHAR(64) NOT NULL, `password` VARCHAR(128) NOT NULL, `access_level` TINYINT(1) NOT NULL DEFAULT 2, `wrong_times` TINYINT(2) NOT NULL DEFAULT 0, PRIMARY KEY (`id`),UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE,UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`parts` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `order_UNIQUE` (`order` ASC) VISIBLE);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`parts` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`));"
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `part` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE, INDEX `part_idx` (`part` ASC) VISIBLE, UNIQUE INDEX `place_part` (`title` ASC, `part` ASC) INVISIBLE, CONSTRAINT `part` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
@@ -156,7 +156,7 @@ class Connection():
         return self.cursor.fetchone()
 
     def get_all_parts(self):
-        query = "SELECT * FROM `qaenpower`.`parts`;"
+        query = "SELECT * FROM `qaenpower`.`parts` order by `order`;"
         self.cursor.execute(query)
         return self.cursor.fetchall()
     
@@ -212,6 +212,13 @@ class Connection():
         values = (variable_name, )
         self.cursor.execute(query, values)
         return self.cursor.fetchone()[0]
+
+    def change_parts_order(self, id, order):
+        query = "UPDATE `qaenpower`.`parts` SET `order` = %s WHERE (`id` = %s);"
+        values=(order, id)
+        self.cursor.execute(query, values)
+        self.connection.commit()
+        return ("ok", 0)
 
 if __name__ == "__main__":
     c = Connection()

@@ -8,6 +8,8 @@ FG='orange'
 FG2='green'
 DISABLED_BG="#777777"
 FONT = ('B Nazanin', 24)
+FONT2 = ('B Nazanin', 18)
+FONT3 = ('B Nazanin', 12)
 PADX = 10
 PADY = 5
 WORDS_WIDTH=15
@@ -79,7 +81,7 @@ def create_my_theme():
     style.map('TCombobox', fieldbackground=[('readonly', BG)])
     style.map('TCombobox', selectbackground=[('readonly', BG)])
     style.map('TCombobox', selectforeground=[('readonly',  FG)])
-    style.configure("Treeview",background=BG,foreground=FG2,rowheight=32,fieldbackground=BG, font=FONT)
+    style.configure("Treeview",background=BG,foreground=FG2,rowheight=48,fieldbackground=BG, font=FONT)
     style.configure("Treeview.Heading", background="#222222", foreground="cyan", font=FONT)
     style.map("Treeview",background=[('selected', FG)])
     style.map("Treeview",foreground=[('selected', BG)])
