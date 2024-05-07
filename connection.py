@@ -6,11 +6,12 @@ from my_datetime import get_jnow
 WRONG_LIMIT=10
 
 class Connection():
-    def __init__(self, host='127.0.0.1', user='root', password='root'):
+    def __init__(self, host='127.0.0.1', username='root', password='root'):
+        self.user = "Ananymous"
         self.host = host
-        self.user = user
+        self.username = username
         self.password = password
-        self.connection = pymysql.connect(host=self.host, user=self.user, passwd=self.password, charset='utf8')
+        self.connection = pymysql.connect(host=self.host, user=self.username, passwd=self.password, charset='utf8')
         self.cursor = self.connection.cursor()
         query = "CREATE SCHEMA IF NOT EXISTS `qaenpower`;"
         self.cursor.execute(query)
@@ -67,19 +68,19 @@ class Connection():
         result = self.cursor.fetchone()
         if result in [None, '', ()]:
             return ("نام کاربری یافت نشد", -1)
-        p = Staff(*result)
-        if p.wrong_times>=10:
+        self.user = Staff(*result)
+        if self.user.wrong_times>=10:
             return ("نام کاربری شما مسدود شده است. به مدیر دیتابیس مراجعه نمایید", -3)
-        salt = str(p.id)
+        salt = str(self.user.id)
         password = hash_password(password, salt)
-        if p.password==password:
-            p.wrong_times=0
-            self.update_wrong_times(p.id, 0)
-            return ('ok', p)
+        if self.user.password==password:
+            self.user.wrong_times=0
+            self.update_wrong_times(self.user.id, 0)
+            return ('ok', self.user)
         else:
-            p.wrong_times+=1
-            self.update_wrong_times(p.id, p.wrong_times)
-            return (f"رمز عبور اشتباه است. دقت کنید که نمیتوانید بیش از {WRONG_LIMIT} بار پشت سر هم رمز عبور خود را اشتباه وارد کنید. تعداد فرصت های باقیمانده: {WRONG_LIMIT-p.wrong_times}", -2)
+            self.user.wrong_times+=1
+            self.update_wrong_times(self.user.id, self.user.wrong_times)
+            return (f"رمز عبور اشتباه است. دقت کنید که نمیتوانید بیش از {WRONG_LIMIT} بار پشت سر هم رمز عبور خود را اشتباه وارد کنید. تعداد فرصت های باقیمانده: {WRONG_LIMIT-self.user.wrong_times}", -2)
         
     def update_wrong_times(self, id, wrong_times):
         query = "UPDATE `qaenpower`.`users` SET `wrong_times` = %s WHERE (`id` = %s);"

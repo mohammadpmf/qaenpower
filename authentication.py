@@ -10,21 +10,21 @@ class RegistrationForm():
         self.admin_window = admin_window
         self.staff_window = staff_window
         self.tab_ontrol = ttk.Notebook(self.admin_window) 
-        self.frame_add_part = Frame(self.tab_ontrol, bg=BG) 
-        self.frame_add_place = Frame(self.tab_ontrol, bg=BG) 
-        self.frame_add_counter = Frame(self.tab_ontrol, bg=BG) 
-        self.frame_add_user = Frame(self.tab_ontrol, bg=BG) 
-        # self.tab_ontrol.add(ttk.Frame(self.tab_ontrol), text =' '*200) 
-        self.tab_ontrol.add(self.frame_add_part, text ='افزودن بخش جدید') 
-        self.tab_ontrol.add(self.frame_add_place, text ='افزودن مکان جدید') 
-        self.tab_ontrol.add(self.frame_add_counter, text ='افزودن کنتور جدید') 
-        self.tab_ontrol.add(self.frame_add_user, text ='افزودن کاربر جدید') 
-
-
+        self.frame_add_part_tab = Frame(self.tab_ontrol, bg=BG) 
+        self.frame_add_place_tab = Frame(self.tab_ontrol, bg=BG) 
+        self.frame_add_counter_tab = Frame(self.tab_ontrol, bg=BG) 
+        self.frame_add_user_tab = Frame(self.tab_ontrol, bg=BG) 
+        self.frame_change_password_tab = Frame(self.tab_ontrol, bg=BG) 
+        self.tab_ontrol.add(self.frame_change_password_tab, text ='تغییر رمز عبور') 
+        self.tab_ontrol.add(self.frame_add_user_tab, text ='افزودن کاربر جدید') 
+        self.tab_ontrol.add(self.frame_add_counter_tab, text ='افزودن کنتور جدید') 
+        self.tab_ontrol.add(self.frame_add_place_tab, text ='افزودن مکان جدید') 
+        self.tab_ontrol.add(self.frame_add_part_tab, text ='افزودن بخش جدید') 
+        self.tab_ontrol.select(self.frame_change_password_tab)
 
         # frame_user
-        self.frame_user = Frame(self.frame_add_user, bg=BG)
-        self.frame_user.grid()
+        self.frame_user = Frame(self.frame_add_user_tab, bg=BG)
+        self.frame_user.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
         self.label_name = Label(self.frame_user, text="نام", cnf=CNF_LABEL)
         self.entry_name = Entry(self.frame_user, cnf=CNF_ENTRY_USER, justify='right')
         self.label_surname = Label(self.frame_user, text="نام خانوادگی", cnf=CNF_LABEL)
@@ -58,9 +58,43 @@ class RegistrationForm():
         self.entry_password1.bind('<Return>', lambda e: self.entry_password2.focus_set())
 
 
+        # frame_change_users_password
+        self.frame_change_users_password = Frame(self.frame_change_password_tab, bg=BG)
+        self.frame_change_users_password.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
+        self.label_username_change_username = Label(self.frame_change_users_password, text="نام کاربری", cnf=CNF_LABEL)
+        self.entry_username_change_username = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER)
+        self.entry_username_change_username.delete(0, END)
+        self.entry_username_change_username.insert(0, self.connection.user)
+        self.entry_username_change_username.config(state='readonly')
+        self.label_password1 = Label(self.frame_change_users_password, text="رمز عبور", cnf=CNF_LABEL)
+        self.entry_password1 = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER, show='*')
+        self.label_password2 = Label(self.frame_change_users_password, text="تکرار رمز عبور", cnf=CNF_LABEL)
+        self.entry_password2 = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER, show='*')
+        self.bv_show_password = BooleanVar(self.frame_change_users_password)
+        self.checkbox_show_password = Checkbutton(self.frame_change_users_password, text='نمایش رمز عبور', variable=self.bv_show_password, cnf=CNF_CHB, command=self.show_password)
+        self.btn_register = Button(self.frame_change_users_password, text='ایجاد حساب کاربری', cnf=CNF_BTN, command=self.create_account)
+        self.btn_back = Button(self.frame_change_users_password, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
+        self.label_name.grid(row=1, column=3, cnf=CNF_GRID)
+        self.entry_name.grid(row=1, column=1, cnf=CNF_GRID)
+        self.label_surname.grid(row=3, column=3, cnf=CNF_GRID)
+        self.entry_surname.grid(row=3, column=1, cnf=CNF_GRID)
+        self.label_username_change_username.grid(row=5, column=3, cnf=CNF_GRID)
+        self.entry_username_change_username.grid(row=5, column=1, cnf=CNF_GRID)
+        self.label_password1.grid(row=7, column=3, cnf=CNF_GRID)
+        self.entry_password1.grid(row=7, column=1, cnf=CNF_GRID)
+        self.label_password2.grid(row=9, column=3, cnf=CNF_GRID)
+        self.entry_password2.grid(row=9, column=1, cnf=CNF_GRID)
+        self.checkbox_show_password.grid(row=11, column=3, cnf=CNF_GRID)
+        self.btn_register.grid(row=13, column=3, cnf=CNF_GRID)
+        self.btn_back.grid(row=13, column=1, cnf=CNF_GRID)
+        self.entry_name.bind('<Return>', lambda e: self.entry_surname.focus_set())
+        self.entry_surname.bind('<Return>', lambda e: self.entry_username_change_username.focus_set())
+        self.entry_username_change_username.bind('<Return>', lambda e: self.entry_password1.focus_set())
+        self.entry_password1.bind('<Return>', lambda e: self.entry_password2.focus_set())
+
         # frame_counter
-        self.frame_counter = Frame(self.frame_add_counter, bg=BG)
-        self.frame_counter.grid()
+        self.frame_counter = Frame(self.frame_add_counter_tab, bg=BG)
+        self.frame_counter.pack()
         self.label_counter_part = Label(self.frame_counter, text="بخش کنتور", cnf=CNF_LABEL)
         self.entry_counter_part = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
         self.entry_counter_part.bind("<<ComboboxSelected>>", self.show_places_of_this_part)
@@ -135,8 +169,8 @@ class RegistrationForm():
         self.entry_counter_alarm_upper_bound.bind('<Return>', lambda e: exit())
 
         # frame_part
-        self.frame_part = Frame(self.frame_add_part, bg=BG)
-        self.frame_part.place(relx=0.2, rely=0.04, relwidth=1, relheight=1)
+        self.frame_part = Frame(self.frame_add_part_tab, bg=BG)
+        self.frame_part.place(relx=0.22, rely=0.08, relwidth=1, relheight=1)
         self.label_part_name = Label(self.frame_part, text="نام بخش", cnf=CNF_LABEL)
         self.entry_part_name = Entry(self.frame_part, cnf=CNF_ENTRY_COUNTER, justify='right')
         self.btn_part_register = Button(self.frame_part, text='ایجاد بخش', cnf=CNF_BTN, command=self.create_part)
@@ -164,8 +198,8 @@ class RegistrationForm():
         self.btn_down_tree_part.grid(row=21, column=0, cnf=CNF_GRID, sticky='n')
 
         # frame_place
-        self.frame_place = Frame(self.frame_add_place, bg=BG)
-        self.frame_place.place(relx=0.15, rely=0.04, relwidth=1, relheight=1)
+        self.frame_place = Frame(self.frame_add_place_tab, bg=BG)
+        self.frame_place.place(relx=0.2, rely=0.02, relwidth=1, relheight=1)
         self.label_place_part_name = Label(self.frame_place, text="نام بخش", cnf=CNF_LABEL)
         self.entry_place_part_name = ttk.Combobox(self.frame_place, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
         self.entry_place_part_name.bind("<<ComboboxSelected>>", self.refresh_places_frame_after_selecting_part)
@@ -549,7 +583,13 @@ class RegistrationForm():
         self.admin_window.withdraw()
 
     def grid(self, *args, **kwargs):
-        self.tab_ontrol.grid(sticky='e')
+        self.tab_ontrol.grid(*args, **kwargs)
+
+    def pack(self, *args, **kwargs):
+        self.tab_ontrol.pack(*args, **kwargs)
+
+    def place(self, *args, **kwargs):
+        self.tab_ontrol.place(*args, **kwargs)
 
 class LoginForm():
     def __init__(self, connection: Connection, root:Tk, admin_window:Toplevel, staff_window:Tk):
@@ -593,17 +633,17 @@ class LoginForm():
             msb.showerror("ارور رمز عبور", "رمز عبور نمی تواند خالی باشد")
             self.entry_password.focus_set()
             return
-        result_message, person = self.connection.login(username, password)
+        result_message, user = self.connection.login(username, password)
         if result_message == "ok":
             self.root.withdraw()
             self.entry_password.delete(0, END)
-            if person.access_level==1:
+            if user.access_level==1:
                 self.admin_window.deiconify()
-            elif person.access_level==2:
+            elif user.access_level==2:
                 self.staff_window.deiconify()
             else:
                 self.root.deiconify()
-            msb.showinfo("پیام موفقیت", f"خوش آمدی {person.name} {person.surname}")
+            msb.showinfo("پیام موفقیت", f"خوش آمدی {user}")
         else:
             msb.showerror("ارور", result_message)
 

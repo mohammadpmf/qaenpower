@@ -4,6 +4,7 @@ from tkinter import messagebox as msb
 
 
 BG='#333333'
+BG_LIGHTER='#555555'
 FG='orange'
 FG2='green'
 DISABLED_BG="#777777"
@@ -64,19 +65,21 @@ def create_my_theme():
                                 'foreground': FG,
                                 }
                             },
-                            'TNotebook': {
-                                'configure': {
-                                    'tabmargins': [2, 5, 2, 0],
-                                }
-                            },
-                            'TNotebook.Tab': {
-                                'configure': {
-                                    'padding': [5, 1],
-                                    'background': BG,
-                                    'foreground': FG,
-                                    }
+                        'TNotebook': {
+                            'configure': {
+                                'tabmargins': [2, 5, 2, 0], # LTBR
+                                'tabposition': 'ne',
+                                'background': BG_LIGHTER,
                             }
-                        })
+                        },
+                        'TNotebook.Tab': {
+                            'configure': {
+                                'padding': [5, 1],
+                                'background': BG,
+                                'foreground': FG,
+                                }
+                        }
+                    })
     style.theme_use(f'my_style')
     style.map('TCombobox', fieldbackground=[('readonly', BG)])
     style.map('TCombobox', selectbackground=[('readonly', BG)])
