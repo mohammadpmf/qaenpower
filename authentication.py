@@ -15,11 +15,13 @@ class RegistrationForm():
         self.frame_add_counter_tab = Frame(self.tab_ontrol, bg=BG) 
         self.frame_add_user_tab = Frame(self.tab_ontrol, bg=BG) 
         self.frame_change_password_tab = Frame(self.tab_ontrol, bg=BG) 
-        self.tab_ontrol.add(self.frame_change_password_tab, text ='تغییر رمز عبور') 
-        self.tab_ontrol.add(self.frame_add_user_tab, text ='افزودن کاربر جدید') 
-        self.tab_ontrol.add(self.frame_add_counter_tab, text ='افزودن کنتور جدید') 
-        self.tab_ontrol.add(self.frame_add_place_tab, text ='افزودن مکان جدید') 
-        self.tab_ontrol.add(self.frame_add_part_tab, text ='افزودن بخش جدید') 
+        self.frame_add_statistics_tab = Frame(self.tab_ontrol, bg=BG) 
+        self.tab_ontrol.add(self.frame_change_password_tab, text ='تغییر رمز عبور')
+        self.tab_ontrol.add(self.frame_add_user_tab, text ='افزودن کاربر جدید')
+        self.tab_ontrol.add(self.frame_add_counter_tab, text ='افزودن کنتور جدید')
+        self.tab_ontrol.add(self.frame_add_place_tab, text ='افزودن مکان جدید')
+        self.tab_ontrol.add(self.frame_add_part_tab, text ='افزودن بخش جدید')
+        self.tab_ontrol.add(self.frame_add_statistics_tab, text ='ثبت آمار')
         self.tab_ontrol.select(self.frame_change_password_tab)
 
         # frame_user
@@ -61,36 +63,32 @@ class RegistrationForm():
         # frame_change_users_password
         self.frame_change_users_password = Frame(self.frame_change_password_tab, bg=BG)
         self.frame_change_users_password.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
-        self.label_username_change_username = Label(self.frame_change_users_password, text="نام کاربری", cnf=CNF_LABEL)
-        self.entry_username_change_username = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER)
-        self.entry_username_change_username.delete(0, END)
-        self.entry_username_change_username.insert(0, self.connection.user)
-        self.entry_username_change_username.config(state='readonly')
-        self.label_password1 = Label(self.frame_change_users_password, text="رمز عبور", cnf=CNF_LABEL)
-        self.entry_password1 = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER, show='*')
-        self.label_password2 = Label(self.frame_change_users_password, text="تکرار رمز عبور", cnf=CNF_LABEL)
-        self.entry_password2 = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER, show='*')
-        self.bv_show_password = BooleanVar(self.frame_change_users_password)
-        self.checkbox_show_password = Checkbutton(self.frame_change_users_password, text='نمایش رمز عبور', variable=self.bv_show_password, cnf=CNF_CHB, command=self.show_password)
-        self.btn_register = Button(self.frame_change_users_password, text='ایجاد حساب کاربری', cnf=CNF_BTN, command=self.create_account)
-        self.btn_back = Button(self.frame_change_users_password, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
-        self.label_name.grid(row=1, column=3, cnf=CNF_GRID)
-        self.entry_name.grid(row=1, column=1, cnf=CNF_GRID)
-        self.label_surname.grid(row=3, column=3, cnf=CNF_GRID)
-        self.entry_surname.grid(row=3, column=1, cnf=CNF_GRID)
-        self.label_username_change_username.grid(row=5, column=3, cnf=CNF_GRID)
-        self.entry_username_change_username.grid(row=5, column=1, cnf=CNF_GRID)
-        self.label_password1.grid(row=7, column=3, cnf=CNF_GRID)
-        self.entry_password1.grid(row=7, column=1, cnf=CNF_GRID)
-        self.label_password2.grid(row=9, column=3, cnf=CNF_GRID)
-        self.entry_password2.grid(row=9, column=1, cnf=CNF_GRID)
-        self.checkbox_show_password.grid(row=11, column=3, cnf=CNF_GRID)
-        self.btn_register.grid(row=13, column=3, cnf=CNF_GRID)
-        self.btn_back.grid(row=13, column=1, cnf=CNF_GRID)
-        self.entry_name.bind('<Return>', lambda e: self.entry_surname.focus_set())
-        self.entry_surname.bind('<Return>', lambda e: self.entry_username_change_username.focus_set())
-        self.entry_username_change_username.bind('<Return>', lambda e: self.entry_password1.focus_set())
-        self.entry_password1.bind('<Return>', lambda e: self.entry_password2.focus_set())
+        self.label_username_change_users_password = Label(self.frame_change_users_password, text="نام کاربری", cnf=CNF_LABEL)
+        self.entry_username_change_users_password = Entry(self.frame_change_users_password, state='readonly', cnf=CNF_ENTRY_USER)
+        self.refresh_users_entry()
+        self.label_old_password_change_users_password = Label(self.frame_change_users_password, text="رمز عبور قبلی", cnf=CNF_LABEL)
+        self.entry_old_password_change_users_password = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER, show='*')
+        self.label_password1_change_users_password = Label(self.frame_change_users_password, text="رمز عبور جدید", cnf=CNF_LABEL)
+        self.entry_password1_change_users_password = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER, show='*')
+        self.label_password2_change_users_password = Label(self.frame_change_users_password, text="تکرار رمز عبور جدید", cnf=CNF_LABEL)
+        self.entry_password2_change_users_password = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER, show='*')
+        self.bv_show_password_change_users_password = BooleanVar(self.frame_change_users_password)
+        self.checkbox_show_password_change_users_password = Checkbutton(self.frame_change_users_password, text='نمایش رمز عبور', variable=self.bv_show_password_change_users_password, cnf=CNF_CHB, command=self.show_password_change_users_password)
+        self.btn_change_users_password = Button(self.frame_change_users_password, text='تغییر رمز عبور', cnf=CNF_BTN, command=self.change_users_password)
+        self.btn_back_change_users_password = Button(self.frame_change_users_password, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
+        self.label_username_change_users_password.grid(row=5, column=3, cnf=CNF_GRID)
+        self.entry_username_change_users_password.grid(row=5, column=1, cnf=CNF_GRID)
+        self.label_old_password_change_users_password.grid(row=6, column=3, cnf=CNF_GRID)
+        self.entry_old_password_change_users_password.grid(row=6, column=1, cnf=CNF_GRID)
+        self.label_password1_change_users_password.grid(row=7, column=3, cnf=CNF_GRID)
+        self.entry_password1_change_users_password.grid(row=7, column=1, cnf=CNF_GRID)
+        self.label_password2_change_users_password.grid(row=9, column=3, cnf=CNF_GRID)
+        self.entry_password2_change_users_password.grid(row=9, column=1, cnf=CNF_GRID)
+        self.checkbox_show_password_change_users_password.grid(row=11, column=3, cnf=CNF_GRID)
+        self.btn_change_users_password.grid(row=13, column=3, cnf=CNF_GRID)
+        self.btn_back_change_users_password.grid(row=13, column=1, cnf=CNF_GRID)
+        self.entry_old_password_change_users_password.bind('<Return>', lambda e: self.entry_password1_change_users_password.focus_set())
+        self.entry_password1_change_users_password.bind('<Return>', lambda e: self.entry_password2_change_users_password.focus_set())
 
         # frame_counter
         self.frame_counter = Frame(self.frame_add_counter_tab, bg=BG)
@@ -285,10 +283,8 @@ class RegistrationForm():
     def confirm_tree_place(self):
         for item in self.treev_place.get_children():
             item = self.treev_place.item(item)
-            print(item)
             id=int(item['text'])
             order=int(item['values'][-1])
-            print(id, order)
             result_message, _ = self.connection.change_places_order(id, order)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"ترتیب مکان ها با موفقیت تغییر یافت")
@@ -370,6 +366,20 @@ class RegistrationForm():
             self.label_password2.grid(row=9, column=3, cnf=CNF_GRID)
             self.entry_password2.grid(row=9, column=1, cnf=CNF_GRID)
             self.entry_password2.focus_set()
+    
+    def show_password_change_users_password(self):
+        if self.bv_show_password_change_users_password.get():
+            self.entry_old_password_change_users_password.config(show='')
+            self.entry_password1_change_users_password.config(show='')
+            self.label_password2_change_users_password.grid_forget()
+            self.entry_password2_change_users_password.grid_forget()
+            self.entry_password1_change_users_password.focus_set()
+        else:
+            self.entry_old_password_change_users_password.config(show='*')
+            self.entry_password1_change_users_password.config(show='*')
+            self.label_password2_change_users_password.grid(row=9, column=3, cnf=CNF_GRID)
+            self.entry_password2_change_users_password.grid(row=9, column=1, cnf=CNF_GRID)
+            self.entry_password2_change_users_password.focus_set()
 
     def create_account(self):
         name = self.entry_name.get()
@@ -403,6 +413,30 @@ class RegistrationForm():
             msb.showinfo("پیام موفقیت", f"نام کاربری {username} با موفقیت ساخته شد")
         else:
             msb.showerror("ارور", result_message)
+
+    def change_users_password(self):
+        username = self.entry_username_change_users_password.get().strip()
+        old_password = self.entry_old_password_change_users_password.get()
+        password1 = self.entry_password1_change_users_password.get()
+        password2 = self.entry_password2_change_users_password.get()
+        if old_password=="":
+            msb.showerror("ارور رمز عبور", "رمز عبور قبلی نمی تواند خالی باشد")
+            self.entry_old_password_change_users_password.focus_set()
+            return
+        if password1=="":
+            msb.showerror("ارور رمز عبور", "رمز عبور جدید نمی تواند خالی باشد")
+            self.entry_password1_change_users_password.focus_set()
+            return
+        if self.bv_show_password_change_users_password.get()==False and password1!=password2:
+            msb.showerror("ارور رمز عبور", "رمز عبور های جدید با یکدیگر مطابقت ندارند")
+            self.entry_password2_change_users_password.focus_set()
+            return
+        result_message, result = self.connection.change_users_password(username, old_password, password1)
+        if result_message == "ok":
+            msb.showinfo("پیام موفقیت", f"رمز عبور نام کاربری {username} با موفقیت تغییر کرد")
+        else:
+            msb.showerror("ارور", result_message)
+
 
     def reset(self):
         self.bv_show_password.set(False)
@@ -590,6 +624,13 @@ class RegistrationForm():
 
     def place(self, *args, **kwargs):
         self.tab_ontrol.place(*args, **kwargs)
+
+    def refresh_users_entry(self):
+        self.entry_username_change_users_password.config(state='normal')
+        self.entry_username_change_users_password.delete(0, END)
+        self.entry_username_change_users_password.insert(0, self.connection.user)
+        self.entry_username_change_users_password.config(state='readonly')
+
 
 class LoginForm():
     def __init__(self, connection: Connection, root:Tk, admin_window:Toplevel, staff_window:Tk):

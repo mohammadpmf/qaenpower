@@ -7,7 +7,7 @@ WRONG_LIMIT=10
 
 class Connection():
     def __init__(self, host='127.0.0.1', username='root', password='root'):
-        self.user = "Ananymous"
+        self.user = Staff("admin", "", "", "", 3, 0)
         self.host = host
         self.username = username
         self.password = password
@@ -32,14 +32,14 @@ class Connection():
         try:
             self.cursor.execute(query, values)
             self.connection.commit()
-            query = "SELECT * FROM `qaenpower`.`users` where username=%s;"
+            query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `id` FROM `qaenpower`.`users` where username=%s;"
             values = (username, )
             self.cursor.execute(query, values)
             result = self.cursor.fetchone()
             if result in [None, '', ()]:
                 return ("نام کاربری یافت نشد", -1)
-            id=result[0]
-            return self.update_users_password(id, password)
+            self.user = Staff(*result)
+            return self.update_users_password(password)
         except pymysql.err.IntegrityError as error:
             return (f"نام کاربری {username} قبلا ثبت شده است", error)
         except pymysql.err.DataError as error:
@@ -52,11 +52,11 @@ class Connection():
                 temp='نام'
             return (f"طول فیلد {temp} بیش از اندازه تعیین شده است", error)
     
-    def update_users_password(self, id, password):
-        salt = str(id)
+    def update_users_password(self, password):
+        salt = str(self.user.id)
         password = hash_password(password, salt)
         query = "UPDATE `qaenpower`.`users` SET `password` = %s WHERE (`id` = %s);"
-        values = (password, id)
+        values = (password, self.user.id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
@@ -69,24 +69,14 @@ class Connection():
         if result in [None, '', ()]:
             return ("نام کاربری یافت نشد", -1)
         self.user = Staff(*result)
-        if self.user.wrong_times>=10:
-            return ("نام کاربری شما مسدود شده است. به مدیر دیتابیس مراجعه نمایید", -3)
-        salt = str(self.user.id)
-        password = hash_password(password, salt)
-        if self.user.password==password:
-            self.user.wrong_times=0
-            self.update_wrong_times(self.user.id, 0)
-            return ('ok', self.user)
-        else:
-            self.user.wrong_times+=1
-            self.update_wrong_times(self.user.id, self.user.wrong_times)
-            return (f"رمز عبور اشتباه است. دقت کنید که نمیتوانید بیش از {WRONG_LIMIT} بار پشت سر هم رمز عبور خود را اشتباه وارد کنید. تعداد فرصت های باقیمانده: {WRONG_LIMIT-self.user.wrong_times}", -2)
+        return self.check_is_password_right(password)
         
-    def update_wrong_times(self, id, wrong_times):
+    def update_wrong_times(self):
         query = "UPDATE `qaenpower`.`users` SET `wrong_times` = %s WHERE (`id` = %s);"
-        values = wrong_times, id
+        values = (self.user.wrong_times, self.user.id)
         self.cursor.execute(query, values)
         self.connection.commit()
+        return ("ok", 0)
 
     def create_part(self, title):
         query = "INSERT INTO `qaenpower`.`parts` (`title`, `order`) VALUES (%s, 0);"
@@ -239,6 +229,33 @@ class Connection():
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
+
+    def check_is_password_right(self, password):
+        if self.user.wrong_times>=10:
+            return ("نام کاربری شما مسدود شده است. به مدیر دیتابیس مراجعه نمایید", -3)
+        salt = str(self.user.id)
+        password = hash_password(password, salt)
+        if self.user.password==password:
+            self.user.wrong_times=0
+            self.update_wrong_times()
+            return ('ok', self.user)
+        else:
+            self.user.wrong_times+=1
+            self.update_wrong_times()
+            return (f"رمز عبور اشتباه است. دقت کنید که نمیتوانید بیش از {WRONG_LIMIT} بار پشت سر هم رمز عبور خود را اشتباه وارد کنید. تعداد فرصت های باقیمانده: {WRONG_LIMIT-self.user.wrong_times}", -2)
+
+    def change_users_password(self, username, old_password, new_password):
+        query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `id` FROM `qaenpower`.`users` where username=%s;"
+        values = (username, )
+        self.cursor.execute(query, values)
+        result = self.cursor.fetchone()
+        if result in [None, '', ()]:
+            return ("نام کاربری یافت نشد", -1)
+        self.user = Staff(*result)
+        result_message, _ = self.check_is_password_right(old_password)
+        if result_message == "ok":
+            return self.update_users_password(new_password)
+        return (result_message, _)
 
 if __name__ == "__main__":
     c = Connection()
