@@ -3,6 +3,8 @@ from tkinter import ttk
 from tkinter import messagebox as msb
 
 
+S_WIDTH = 1280
+S_HEIGHT = 720
 BG='#333333'
 BG_LIGHTER='#555555'
 FG='orange'

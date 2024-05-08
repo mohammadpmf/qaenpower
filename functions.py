@@ -40,6 +40,7 @@ def round3(number:float) -> float|int:
     return number
     
 
+# تابعی جهت بررسی این که نام یک متغیر مناسب است یا نه
 def what_is_variable_name_problem(name: str, counters_variable_names: tuple):
     if name == "":
         return "نام متغیر را تعیین کنید"
@@ -52,6 +53,7 @@ def what_is_variable_name_problem(name: str, counters_variable_names: tuple):
     return None
 
 
+# تابعی جهت بررسی این که فرمول نوشته شده درست است یا نه. البته باز هم باگ داره. به ذهنم نرسید و گفتم اگه فرمول با دقت و درست نوشته بشه بهتره. اگه وقت شد این رو هم بهتر کنم
 def what_is_formula_problem(formula: str, formula_parameters:str, counters_variable_names: tuple, connection):
     parameters = formula_parameters.split()
     bad_params = [] # پارامترهایی که قبلا در دیتابیس ثبت نشده اند. اما کاربر به اشتباه به ما داده است.
@@ -76,7 +78,7 @@ def what_is_formula_problem(formula: str, formula_parameters:str, counters_varia
     except SyntaxError:
         return "در نحوه نوشتار فرمول اشتباهی رخ داده است"
     except NameError:
-        return "متغیرهای فرمولبه درستی در قسمت مربوطه ذکر نشده اند"
+        return "متغیرهای فرمول به درستی در قسمت مربوطه ذکر نشده اند"
     # if re.search(r'\ba\b', formula):
     #     temp = connection.get_current_value_of_counter_by_variable_name(p)
     #     print(i)
