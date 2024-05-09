@@ -529,13 +529,14 @@ class StaffWindow(MyWindows):
                 msb.showwarning("هشدار", "لطفا حد بالای خطر را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
+        if formula != "":
+            problem = what_is_formula_problem(formula, formula_parameters, counters_variable_names, self.connection)
+            if problem:
+                msb.showwarning("هشدار", problem)
+                self.entry_counter_formula.focus_set()
+                return
         if formula == "" and type in [COUNTER_TYPES[0], COUNTER_TYPES[2]]:
             msb.showwarning("هشدار", "برای کنتورهای محاسباتی و معمولی، فرمول نمیتواند خالی باشد")
-            self.entry_counter_formula.focus_set()
-            return
-        problem = what_is_formula_problem(formula, formula_parameters, counters_variable_names, self.connection)
-        if problem:
-            msb.showwarning("هشدار", problem)
             self.entry_counter_formula.focus_set()
             return
         result_message, _ = self.connection.create_counter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
@@ -733,6 +734,7 @@ class StaffWindow(MyWindows):
         parts_tab = []
         places_with_counters = []
         parts=self.connection.get_all_parts()
+        print(parts)
         for i, part in enumerate(parts):
             places_with_counters.clear()
             tabs_list.append(ttk.Frame(self.tab_control_frame))
@@ -773,7 +775,7 @@ class DatePicker(MyWindows):
         self.combo_year.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_month.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_day.bind("<<ComboboxSelected>>", self.check_date)
-        self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL)
+        self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL, width=22)
         self.btn_confirm = Button(self.frame, text="تایید تاریخ", cnf=CNF_BTN, command=self.confirm)
         self.combo_day.pack(cnf=CNF_PACK2)
         self.combo_month.pack(cnf=CNF_PACK2)

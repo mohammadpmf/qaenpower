@@ -69,6 +69,10 @@ def what_is_variable_name_problem(name: str, counters_variable_names: tuple):
 def what_is_formula_problem(formula: str, formula_parameters:str, counters_variable_names: tuple, connection):
     parameters = formula_parameters.split()
     bad_params = [] # پارامترهایی که قبلا در دیتابیس ثبت نشده اند. اما کاربر به اشتباه به ما داده است.
+    if 'a' in parameters:
+        parameters.remove('a')
+    if 'b' in parameters:
+        parameters.remove('b')
     for p in parameters:
         if p not in counters_variable_names:
             bad_params.append(p)

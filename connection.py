@@ -132,8 +132,8 @@ class Connection():
   
     def create_counter(self, name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place):
         query = "INSERT INTO `qaenpower`.`counters` (`name`, `type`, `unit`, `default_value`, `variable_name`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `formula`, `part`, `place`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
-        part_id, part_name = self.get_part_by_title(part)
-        place_id, place_name, place_part_id = self.get_place_by_title_and_part_id(place, part_id)
+        part_id, part_title, part_sort = self.get_part_by_title(part)
+        place_id, place_title, place_part_id, place_sort = self.get_place_by_title_and_part_id(place, part_id)
         values = name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part_id, place_id
         try:
             self.cursor.execute(query, values)
