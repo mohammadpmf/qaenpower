@@ -1,186 +1,9 @@
 from ui_settings import *
 from connection import Connection
-from functions import what_is_variable_name_problem, what_is_formula_problem
-from ui_settings import Tk
+from functions import what_is_variable_name_problem, what_is_formula_problem, get_jnow, jdatetime
 from models import Staff
-
-
-class RegistrationForm():
-    def refresh_parts_tree_view(self):
-        self.treev_part.delete(*self.treev_part.get_children())
-        parts = self.connection.get_all_parts()
-        for i, part in enumerate(parts):
-            self.treev_part.insert("", i, text=part[0], values=(part[1], i+1))
-    
-    def refresh_places_tree_view(self, part_id):
-        self.treev_place.delete(*self.treev_place.get_children())
-        places = self.connection.get_all_places_by_part_id(part_id)
-        for i, place in enumerate(places):
-            self.treev_place.insert("", i, text=place[0], values=(place[1], i+1))
-               
-    def up_tree_place(self):
-        cur_item = self.treev_place.focus()
-        try:
-            prev_item = self.treev_place.prev(cur_item)
-            temp_text222 = self.treev_place.item(prev_item)['text']
-            position222 = self.treev_place.item(prev_item)['values'][1]+1
-            temp_values222 = self.treev_place.item(prev_item)['values'][0], position222 
-        except:
-            return
-        temp_text = self.treev_place.item(cur_item)["text"]
-        temp_values = self.treev_place.item(cur_item)["values"]
-        position = temp_values[-1]-2
-        new_child=self.treev_place.insert("", position, text=temp_text, values=(temp_values[0], position+1))
-        self.treev_place.delete(cur_item)
-        self.treev_place.insert("", position222, text=temp_text222, values=temp_values222)
-        self.treev_place.delete(prev_item)
-        self.treev_place.focus(new_child)
-        self.treev_place.selection_set(new_child)
-
-    def down_tree_place(self):
-        cur_item = self.treev_place.focus()
-        try:
-            next_item = self.treev_place.next(cur_item)
-            temp_text222 = self.treev_place.item(next_item)['text']
-            position222 = self.treev_place.item(next_item)['values'][1]-2
-            temp_values222 = self.treev_place.item(next_item)['values'][0], position222+1
-        except:
-            return
-        temp_text = self.treev_place.item(cur_item)["text"]
-        temp_values = self.treev_place.item(cur_item)["values"]
-        position = temp_values[-1]
-        self.treev_place.insert("", position222, text=temp_text222, values=temp_values222)
-        self.treev_place.delete(next_item)
-        new_child=self.treev_place.insert("", position, text=temp_text, values=(temp_values[0], position+1))
-        self.treev_place.delete(cur_item)
-        self.treev_place.focus(new_child)
-        self.treev_place.selection_set(new_child)
-
-    def confirm_tree_place(self):
-        for item in self.treev_place.get_children():
-            item = self.treev_place.item(item)
-            id=int(item['text'])
-            order=int(item['values'][-1])
-            result_message, _ = self.connection.change_places_order(id, order)
-        if result_message=='ok':
-            msb.showinfo("پیام موفقیت", f"ترتیب مکان ها با موفقیت تغییر یافت")
-        else:
-            msb.showerror("خطا", result_message)
-            print(_)
-
-    def up_tree_part(self):
-        cur_item = self.treev_part.focus()
-        try:
-            prev_item = self.treev_part.prev(cur_item)
-            temp_text222 = self.treev_part.item(prev_item)['text']
-            position222 = self.treev_part.item(prev_item)['values'][1]+1
-            temp_values222 = self.treev_part.item(prev_item)['values'][0], position222 
-        except:
-            return
-        temp_text = self.treev_part.item(cur_item)["text"]
-        temp_values = self.treev_part.item(cur_item)["values"]
-        position = temp_values[-1]-2
-        new_child=self.treev_part.insert("", position, text=temp_text, values=(temp_values[0], position+1))
-        self.treev_part.delete(cur_item)
-        self.treev_part.insert("", position222, text=temp_text222, values=temp_values222)
-        self.treev_part.delete(prev_item)
-        self.treev_part.focus(new_child)
-        self.treev_part.selection_set(new_child)
-        
-    def down_tree_part(self):
-        cur_item = self.treev_part.focus()
-        try:
-            next_item = self.treev_part.next(cur_item)
-            temp_text222 = self.treev_part.item(next_item)['text']
-            position222 = self.treev_part.item(next_item)['values'][1]-2
-            temp_values222 = self.treev_part.item(next_item)['values'][0], position222+1
-        except:
-            return
-        temp_text = self.treev_part.item(cur_item)["text"]
-        temp_values = self.treev_part.item(cur_item)["values"]
-        position = temp_values[-1]
-        self.treev_part.insert("", position222, text=temp_text222, values=temp_values222)
-        self.treev_part.delete(next_item)
-        new_child=self.treev_part.insert("", position, text=temp_text, values=(temp_values[0], position+1))
-        self.treev_part.delete(cur_item)
-        self.treev_part.focus(new_child)
-        self.treev_part.selection_set(new_child)
-    
-    def confirm_tree_part(self):
-        for item in self.treev_part.get_children():
-            item = self.treev_part.item(item)
-            id=int(item['text'])
-            order=int(item['values'][-1])
-            result_message, _ = self.connection.change_parts_order(id, order)
-        if result_message=='ok':
-            msb.showinfo("پیام موفقیت", f"ترتیب بخش ها با موفقیت تغییر یافت")
-        else:
-            msb.showerror("خطا", result_message)
-            print(_)
- 
-
-    def reset(self):
-        self.bv_show_password.set(False)
-        self.show_password()
-        self.entry_name.delete(0, END)
-        self.entry_surname.delete(0, END)
-        self.entry_username.delete(0, END)
-        self.entry_password1.delete(0, END)
-        self.entry_password2.delete(0, END)
-        self.entry_name.focus_set()
-
-    # part functions
-    def create_part(self):
-        title = self.entry_part_name.get().strip()
-        if title=="":
-            msb.showwarning("هشدار", "نام بخش نمیتواند خالی باشد.")
-            return
-        result_message, _ = self.connection.create_part(title)
-        if result_message=='ok':
-            msb.showinfo("پیام موفقیت", f"بخش {title} با موفقیت ساخته شد.")
-            self.refresh_parts_values_in_comboboxes()
-            self.refresh_parts_tree_view()
-        else:
-            msb.showerror("خطا", result_message)
-            print(_)
-
-    def refresh_parts_values_in_comboboxes(self, event=None):
-        parts = self.connection.get_all_parts()
-        values = []
-        for part_id, part_name, part_order in parts:
-            values.append(part_name)
-        self.entry_place_part_name.config(state='normal', values=values)
-        self.entry_place_part_name.config(state='readonly')
-        self.entry_counter_part.config(state='normal', values=values)
-        self.entry_counter_part.config(state='readonly')
-
-    # place functions
-    def refresh_places_frame_after_selecting_part(self, event=None):
-        part = self.entry_place_part_name.get()
-        if part=="":
-            self.entry_place_name.config(state='normal')
-            self.entry_place_name.delete(0, END)
-            self.entry_place_name.config(state='readonly')
-            return
-        self.entry_place_name.config(state='normal')
-        part_id, part_title, part_sort = self.connection.get_part_by_title(part)
-        self.refresh_places_tree_view(part_id)
-
-    def create_place(self):
-        title = self.entry_place_name.get().strip()
-        part = self.entry_place_part_name.get()
-        if title=="" or part=="":
-            msb.showwarning("هشدار", "نام مکان یا بخش نمیتواند خالی باشد.")
-            return
-        part_id, part_title, part_sort = self.connection.get_part_by_title(part)
-        result_message, _ = self.connection.create_place(title, part_id)
-        if result_message=='ok':
-            msb.showinfo("پیام موفقیت", f"مکان {title} در بخش {part} با موفقیت ساخته شد.")
-            self.refresh_places_tree_view(part_id)
-        else:
-            msb.showerror("خطا", result_message)
-            print(_)
-
+from test_scroll import PartWidget
+from ui_settings import Tk
 
 class MyWindows():
     def __init__(self, connection: Connection, root: Tk):
@@ -266,9 +89,12 @@ class StaffWindow(MyWindows):
         self.main_window.geometry(f"+{S_WIDTH//4}+0")
         self.main_window.protocol("WM_DELETE_WINDOW", self.root.destroy)
         self.tab_control = ttk.Notebook(self.main_window) 
-        self.tab_control.pack(anchor='ne')
+        self.tab_control.pack(anchor='n')
         self.frame_change_password_tab = Frame(self.tab_control, bg=BG)
         self.frame_add_statistics_tab = Frame(self.tab_control, bg=BG)
+        self.frame_return_to_login_page = Frame(self.tab_control, bg=BG)
+        self.tab_control.add(self.frame_return_to_login_page, text ='بازگشت به صفحه ورود')
+        self.frame_return_to_login_page.bind("<Return>", self.back)
         self.tab_control.add(self.frame_change_password_tab, text ='تغییر رمز عبور')
         self.tab_control.add(self.frame_add_statistics_tab, text ='ثبت آمار')
         if self.user.access_level==1:
@@ -280,7 +106,18 @@ class StaffWindow(MyWindows):
             self.tab_control.add(self.frame_add_counter_tab, text ='افزودن کنتور جدید')
             self.tab_control.add(self.frame_add_place_tab, text ='افزودن مکان جدید')
             self.tab_control.add(self.frame_add_part_tab, text ='افزودن بخش جدید')
-        self.tab_control.select(self.frame_change_password_tab)
+        self.tab_control.select(self.frame_add_statistics_tab)
+
+        ###################################### frame_add_statistics ######################################
+        self.frame_add_statistics = Frame(self.frame_add_statistics_tab, bg=BG)
+        self.frame_add_statistics.pack(side=RIGHT)
+        self.date_picker_frame = Frame(self.frame_add_statistics)
+        self.date_picker_frame.pack(side=TOP, expand=True, fill='x')
+        self.tab_control_frame = ttk.Notebook(self.frame_add_statistics)
+        self.tab_control_frame.pack(side=RIGHT, expand=True, fill='both')
+        self.date_picker = DatePicker(self.root, self.date_picker_frame)
+        self.date_picker.pack(side=RIGHT, expand=True, fill='both')
+        self.seed_tabs_of_parts()
 
         ###################################### frame_change_users_password ######################################
         self.frame_change_users_password = Frame(self.frame_change_password_tab, bg=BG)
@@ -431,10 +268,10 @@ class StaffWindow(MyWindows):
         self.entry_counter_formula.bind('<Return>', lambda e: self.entry_counter_formula_parameters.focus_set())
         self.entry_counter_formula_parameters.bind('<Return>', self.create_counter)
 
-        # inja
         ############################################# frame_part #############################################
         self.frame_part = Frame(self.frame_add_part_tab, bg=BG)
-        self.frame_part.place(relx=0.22, rely=0.08, relwidth=1, relheight=1)
+        self.frame_part.pack(side=RIGHT)
+        # self.frame_part.place(relx=0.22, rely=0.08, relwidth=1, relheight=1)
         self.label_part_name = Label(self.frame_part, text="نام بخش", cnf=CNF_LABEL)
         self.entry_part_name = Entry(self.frame_part, cnf=CNF_ENTRY_COUNTER, justify='right')
         self.btn_part_register = Button(self.frame_part, text='ایجاد بخش', cnf=CNF_BTN, command=self.create_part)
@@ -461,9 +298,10 @@ class StaffWindow(MyWindows):
         self.btn_confirm_tree_part.grid(row=20, column=0, cnf=CNF_GRID)
         self.btn_down_tree_part.grid(row=21, column=0, cnf=CNF_GRID, sticky='n')
 
-        # frame_place
+        ############################################# frame_place #############################################
         self.frame_place = Frame(self.frame_add_place_tab, bg=BG)
-        self.frame_place.place(relx=0.2, rely=0.02, relwidth=1, relheight=1)
+        self.frame_place.pack(side=RIGHT)
+        # self.frame_place.place(relx=0.2, rely=0.02, relwidth=1, relheight=1)
         self.label_place_part_name = Label(self.frame_place, text="نام بخش", cnf=CNF_LABEL)
         self.entry_place_part_name = ttk.Combobox(self.frame_place, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
         self.entry_place_part_name.bind("<<ComboboxSelected>>", self.refresh_places_frame_after_selecting_part)
@@ -493,9 +331,9 @@ class StaffWindow(MyWindows):
         self.btn_up_tree_place.grid(row=19, column=0, cnf=CNF_GRID, sticky='s')
         self.btn_confirm_tree_place.grid(row=20, column=0, cnf=CNF_GRID)
         self.btn_down_tree_place.grid(row=21, column=0, cnf=CNF_GRID, sticky='n')
-
         self.refresh_parts_values_in_comboboxes()
 
+    ######################################### change password functions #########################################
     # تابعی جهت بررسی این که پسووردها در بخش تغییر پسوورد نمایش داده شوند یا خیر
     def show_password_change_users_password(self):
         if self.bv_show_password_change_users_password.get():
@@ -537,11 +375,7 @@ class StaffWindow(MyWindows):
         else:
             msb.showerror("ارور", result_message)
 
-    # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
-    def back(self):
-        self.main_window.destroy()
-        self.root.deiconify()
-
+    ######################################### create account functions ##########################################
     # تابعی جهت نمایش پسووردها در قسمت ساخت اکانت
     def show_password(self):
         if self.bv_show_password.get():
@@ -590,6 +424,7 @@ class StaffWindow(MyWindows):
         else:
             msb.showerror("ارور", result_message)
 
+    ######################################### create counter functions ##########################################
     # تابعی برای این که با انتخاب یک بخش، مکان های آن در کمبوباکس دوم نمایش داده شوند.
     def show_places_of_this_part(self, event=None):
         part_name = self.entry_counter_part.get()
@@ -710,39 +545,276 @@ class StaffWindow(MyWindows):
             msb.showerror("خطا", result_message)
             print(_)
 
+    ########################################## create part functions ###########################################
+    # تابعی جهت ساخت بخش
+    def create_part(self):
+        title = self.entry_part_name.get().strip()
+        if title=="":
+            msb.showwarning("هشدار", "نام بخش نمیتواند خالی باشد.")
+            return
+        result_message, _ = self.connection.create_part(title)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"بخش {title} با موفقیت ساخته شد.")
+            self.refresh_parts_values_in_comboboxes()
+            self.refresh_parts_tree_view()
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
 
-# staff_window = Toplevel(root)
-# staff_window.title('صفحه کارمندان')
-# staff_window.config(bg=BG)
-# # staff_window.resizable(False, False)
-# # staff_window.geometry()
-# # staff_window.geometry(f"{WIDTH}x{HEIGHT}")
-# staff_window.protocol("WM_DELETE_WINDOW", root.destroy)
-# # staff_window.withdraw()
-# tab_bar_staff_window = ttk.Notebook(staff_window)
-# tab_bar_staff_window.place(x=200, y=40, width=1000, height=800)
-# tab_bar_staff_window.pack(expand=True, fill='both')
-# staff_window.focus_force()
-# tabs_list = []
-# parts_tab = []
-# places_with_counters = []
-# parts=connection.get_all_parts()
-# for i, part in enumerate(parts):
-#     places_with_counters.clear()
-#     tabs_list.append(ttk.Frame(tab_bar_staff_window))
-#     # date_picker = DatePicker(tab_bar_staff_window)
-#     # date_picker.pack()
-#     tabs_list[i].pack()
-#     tab_bar_staff_window.add(tabs_list[i], text =f'بخش {part[1]}')
-#     temp_places=connection.get_all_places_by_part_id(part[0])
-#     for place in temp_places:
-#         counters = connection.get_all_counters_of_this_part_and_place(part_id=place[2], place_id=place[0])
-#         places_with_counters.append(counters)
-#     parts_tab.append(Part(connection, tabs_list[i], places_with_counters))
-#     # parts[i].grid(row=1, column=1)
-#     parts_tab[i].pack()
-#     # parts[i].place(width=1024, height=400)
-# tab_bar_staff_window.pack(expand = 1, fill ="both")
+    # تابعی برای این که بعد از ساخت یک بخش، در ظاهر برنامه و
+    # در کمبوباکس ها بخش های جدید ساخته شده هم نمایش داده شوند.
+    def refresh_parts_values_in_comboboxes(self, event=None):
+        parts = self.connection.get_all_parts()
+        values = []
+        for part_id, part_name, part_order in parts:
+            values.append(part_name)
+        self.entry_place_part_name.config(state='normal', values=values)
+        self.entry_place_part_name.config(state='readonly')
+        self.entry_counter_part.config(state='normal', values=values)
+        self.entry_counter_part.config(state='readonly')
+    
+    # تابعی برای این که بعد از ساخت یک بخش، در ظاهر برنامه و
+    # در تری ویوی مربوطه، بخش های جدید نمایش داده شوند.
+    def refresh_parts_tree_view(self):
+        self.treev_part.delete(*self.treev_part.get_children())
+        parts = self.connection.get_all_parts()
+        for i, part in enumerate(parts):
+            self.treev_part.insert("", i, text=part[0], values=(part[1], i+1))
+    
+    # تابعی برای این که بشه اولویت نمایش یک بخش رو بالا برد
+    def up_tree_part(self):
+        cur_item = self.treev_part.focus()
+        try:
+            prev_item = self.treev_part.prev(cur_item)
+            temp_text222 = self.treev_part.item(prev_item)['text']
+            position222 = self.treev_part.item(prev_item)['values'][1]+1
+            temp_values222 = self.treev_part.item(prev_item)['values'][0], position222 
+        except:
+            return
+        temp_text = self.treev_part.item(cur_item)["text"]
+        temp_values = self.treev_part.item(cur_item)["values"]
+        position = temp_values[-1]-2
+        new_child=self.treev_part.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev_part.delete(cur_item)
+        self.treev_part.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev_part.delete(prev_item)
+        self.treev_part.focus(new_child)
+        self.treev_part.selection_set(new_child)
+        
+    # تابعی برای این که بشه اولویت نمایش یک بخش رو پایین آورد
+    def down_tree_part(self):
+        cur_item = self.treev_part.focus()
+        try:
+            next_item = self.treev_part.next(cur_item)
+            temp_text222 = self.treev_part.item(next_item)['text']
+            position222 = self.treev_part.item(next_item)['values'][1]-2
+            temp_values222 = self.treev_part.item(next_item)['values'][0], position222+1
+        except:
+            return
+        temp_text = self.treev_part.item(cur_item)["text"]
+        temp_values = self.treev_part.item(cur_item)["values"]
+        position = temp_values[-1]
+        self.treev_part.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev_part.delete(next_item)
+        new_child=self.treev_part.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev_part.delete(cur_item)
+        self.treev_part.focus(new_child)
+        self.treev_part.selection_set(new_child)
+    
+    # تابعی برای این که اولویت بخش ها رو به صورتی که تعیین کردیم در دیتابیس ذخیره کنه
+    def confirm_tree_part(self, event=None):
+        for item in self.treev_part.get_children():
+            item = self.treev_part.item(item)
+            id=int(item['text'])
+            order=int(item['values'][-1])
+            result_message, _ = self.connection.change_parts_order(id, order)
+        if result_message=='ok':
+            self.refresh_parts_values_in_comboboxes()
+            msb.showinfo("پیام موفقیت", f"ترتیب بخش ها با موفقیت تغییر یافت")
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
 
-# rf = RegistrationForm(connection, root, admin_window, staff_window)
-# rf.grid()
+    ########################################## create place functions ##########################################
+    # تابعی برای این که بعد از انتخاب کمبو باکس بخش، مقادیر کمبوباکس مکان هاش آپدیت بشن و نمایش داده بشن.
+    def refresh_places_frame_after_selecting_part(self, event=None):
+        part = self.entry_place_part_name.get()
+        if part=="":
+            self.entry_place_name.config(state='normal')
+            self.entry_place_name.delete(0, END)
+            self.entry_place_name.config(state='readonly')
+            return
+        self.entry_place_name.config(state='normal')
+        part_id, part_title, part_sort = self.connection.get_part_by_title(part)
+        self.refresh_places_tree_view(part_id)
+
+    # تابعی برای ثبت یک مکان جدید
+    def create_place(self):
+        title = self.entry_place_name.get().strip()
+        part = self.entry_place_part_name.get()
+        if title=="" or part=="":
+            msb.showwarning("هشدار", "نام مکان یا بخش نمیتواند خالی باشد.")
+            return
+        part_id, part_title, part_sort = self.connection.get_part_by_title(part)
+        result_message, _ = self.connection.create_place(title, part_id)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"مکان {title} در بخش {part} با موفقیت ساخته شد.")
+            self.refresh_places_tree_view(part_id)
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
+
+    # تابعی برای این که بعد از ساخت یک مکان در ظاهر برنامه و
+    # در تری ویوی مربوطه، مکان های جدید نمایش داده شوند.
+    def refresh_places_tree_view(self, part_id):
+        self.treev_place.delete(*self.treev_place.get_children())
+        places = self.connection.get_all_places_by_part_id(part_id)
+        for i, place in enumerate(places):
+            self.treev_place.insert("", i, text=place[0], values=(place[1], i+1))
+               
+    # تابعی برای این که بشه اولویت نمایش یک مکان رو بالا برد
+    def up_tree_place(self):
+        cur_item = self.treev_place.focus()
+        try:
+            prev_item = self.treev_place.prev(cur_item)
+            temp_text222 = self.treev_place.item(prev_item)['text']
+            position222 = self.treev_place.item(prev_item)['values'][1]+1
+            temp_values222 = self.treev_place.item(prev_item)['values'][0], position222 
+        except:
+            return
+        temp_text = self.treev_place.item(cur_item)["text"]
+        temp_values = self.treev_place.item(cur_item)["values"]
+        position = temp_values[-1]-2
+        new_child=self.treev_place.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev_place.delete(cur_item)
+        self.treev_place.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev_place.delete(prev_item)
+        self.treev_place.focus(new_child)
+        self.treev_place.selection_set(new_child)
+
+    # تابعی برای این که بشه اولویت نمایش یک مکان رو پایین آورد
+    def down_tree_place(self):
+        cur_item = self.treev_place.focus()
+        try:
+            next_item = self.treev_place.next(cur_item)
+            temp_text222 = self.treev_place.item(next_item)['text']
+            position222 = self.treev_place.item(next_item)['values'][1]-2
+            temp_values222 = self.treev_place.item(next_item)['values'][0], position222+1
+        except:
+            return
+        temp_text = self.treev_place.item(cur_item)["text"]
+        temp_values = self.treev_place.item(cur_item)["values"]
+        position = temp_values[-1]
+        self.treev_place.insert("", position222, text=temp_text222, values=temp_values222)
+        self.treev_place.delete(next_item)
+        new_child=self.treev_place.insert("", position, text=temp_text, values=(temp_values[0], position+1))
+        self.treev_place.delete(cur_item)
+        self.treev_place.focus(new_child)
+        self.treev_place.selection_set(new_child)
+
+    # تابعی برای این که اولویت مکان ها رو به صورتی که تعیین کردیم در دیتابیس ذخیره کنه
+    def confirm_tree_place(self, event=None):
+        for item in self.treev_place.get_children():
+            item = self.treev_place.item(item)
+            id=int(item['text'])
+            order=int(item['values'][-1])
+            result_message, _ = self.connection.change_places_order(id, order)
+        if result_message=='ok':
+            # self.show_places_of_this_part() برای این گذاشته بودم که اگه ترتیب مکان ها رو برای یک بخش عوض کردیم، خود به خود تو بخش اضافه کردن کنتور هم عوضش کنه. ولی در عمل به نظرم جالب نبود. خلاصه گذاشتم اینجا که اگه لازم شد کامنت رو فقط بردارم. چون بعدا یادم نمیاد چه تابعی رو باید صدا کنم و کلی وقت میگیرفت. گذاشتم اینجا باشه ولی کامنتش کردم.
+            msb.showinfo("پیام موفقیت", f"ترتیب مکان ها با موفقیت تغییر یافت")
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
+
+    ######################################### add statistics functions ######################################
+    # تابعی برای این که تب های درون قسمت آمار کنتور ها رو مقداردهی کنه
+    def seed_tabs_of_parts(self):
+        tabs_list = []
+        parts_tab = []
+        places_with_counters = []
+        parts=self.connection.get_all_parts()
+        for i, part in enumerate(parts):
+            places_with_counters.clear()
+            tabs_list.append(ttk.Frame(self.tab_control_frame))
+            tabs_list[i].pack()
+            self.tab_control_frame.add(tabs_list[i], text =f'بخش {part[1]}')
+            temp_places=self.connection.get_all_places_by_part_id(part[0])
+            for place in temp_places:
+                counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place[2], place_id=place[0])
+                places_with_counters.append(counters)
+            parts_tab.append(PartWidget(self.connection, tabs_list[i], places_with_counters))
+            # parts[i].grid(row=1, column=1)
+            parts_tab[i].pack()
+            # parts[i].place(width=1024, height=400)
+        self.tab_control_frame.pack(expand = 1, fill ="both")
+
+    ########################################### generic functions ###########################################
+    # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
+    def back(self, event=None):
+        self.main_window.destroy()
+        self.root.deiconify()
+
+
+class DatePicker(MyWindows):
+    days_list = [i for i in range(1, 32)]
+    months_list = [i for i in range(1, 13)]
+    years_list = [i for i in range(1400, 1410)]
+    def __init__(self, connection: Connection, root: Tk):
+        super().__init__(connection, root)
+        self.year = StringVar(self.frame)
+        self.month = StringVar(self.frame)
+        self.day = StringVar(self.frame)
+        self.year.set('سال')
+        self.month.set('ماه')
+        self.day.set('روز')
+        self.combo_year = ttk.Combobox(self.frame, values=self.years_list, textvariable=self.year, width=7, state='readonly', font=FONT, justify='center')
+        self.combo_month = ttk.Combobox(self.frame, values=self.months_list, textvariable=self.month, width=5, state='readonly', font=FONT, justify='center')
+        self.combo_day = ttk.Combobox(self.frame, values=self.days_list, textvariable=self.day, width=5, state='readonly', font=FONT, justify='center')
+        self.combo_year.bind("<<ComboboxSelected>>", self.check_date)
+        self.combo_month.bind("<<ComboboxSelected>>", self.check_date)
+        self.combo_day.bind("<<ComboboxSelected>>", self.check_date)
+        self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL)
+        self.btn_confirm = Button(self.frame, text="تایید تاریخ", cnf=CNF_BTN, command=self.confirm)
+        self.combo_day.pack(cnf=CNF_PACK2)
+        self.combo_month.pack(cnf=CNF_PACK2)
+        self.combo_year.pack(cnf=CNF_PACK2)
+        self.label_date.pack(cnf=CNF_PACK2)
+        self.refresh_date()
+    
+    def refresh_date(self, date=None):
+        if date==None:
+            date=get_jnow()
+        self.combo_year.config(state='normal')
+        self.combo_month.config(state='normal')
+        self.combo_day.config(state='normal')
+        self.combo_year.delete(0, END)
+        self.combo_month.delete(0, END)
+        self.combo_day.delete(0, END)
+        self.combo_year.insert(0, date.year)
+        self.combo_month.insert(0, date.month)
+        self.combo_day.insert(0, date.day)
+        self.combo_year.config(state='readonly')
+        self.combo_month.config(state='readonly')
+        self.combo_day.config(state='readonly')
+        self.check_date()
+
+    def check_date(self, event=None):
+        y = self.year.get()
+        m = self.month.get()
+        d = self.day.get()
+        try:
+            if y=='سال' or m=='ماه' or d=='روز':
+                return
+            else:
+                date = jdatetime.date(int(y), int(m), int(d))
+                temp = f"{'تاریخ':10} {WEEKDAYS.get(date.weekday())} {d} {MONTH_NAMES.get(int(m))} {y}"
+                self.label_date.config(text=temp)
+                self.btn_confirm.pack(cnf=CNF_PACK2)
+        except ValueError:
+            temp = "!!! تاریخ نامعتبر !!!"
+            self.label_date.config(text=temp)
+            self.btn_confirm.pack_forget()
+
+    def confirm(self):
+        date = self.label_date['text'] 
+        print(date)

@@ -1,7 +1,6 @@
 import pymysql
 from models import Staff, Counter
-from functions import hash_password
-from my_datetime import get_jnow
+from functions import hash_password, get_jnow
 
 WRONG_LIMIT=10
 

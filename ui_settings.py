@@ -3,21 +3,25 @@ from tkinter import ttk
 from tkinter import messagebox as msb
 
 
-S_WIDTH = 1280
-S_HEIGHT = 720
 BG='#333333'
 BG_LIGHTER='#555555'
 FG='orange'
 FG2='green'
 DISABLED_BG="#777777"
-FONT = ('B Nazanin', 24)
-FONT2 = ('B Nazanin', 18)
-FONT3 = ('B Nazanin', 12)
+S_WIDTH = 1280
+S_HEIGHT = 720
 PADX = 10
 PADY = 5
 WORDS_WIDTH=15
+FONT = ('B Nazanin', 24)
+FONT2 = ('B Nazanin', 18)
+FONT3 = ('B Nazanin', 12)
 COUNTER_TYPES = ['کنتور', 'ثابت', 'محاسباتی']
 DEFAULT_VALUES = ['مقدار کنتور روز قبل', '0', 'خالی']
+
+CNF_FRM = {
+    'bg': BG,
+}
 CNF_BTN = {
     'bg': BG,
     'fg': FG,
@@ -45,12 +49,39 @@ CNF_GRID = {
     'padx': PADX,
     'pady': PADY+5,
 }
-
 CNF_PACK = {
     'side': RIGHT,
     'expand': True,
     'padx': PADX+10,
     'pady': PADY+10,
+}
+CNF_PACK2 = {
+    'side': RIGHT,
+    'padx': PADX,
+    'pady': PADY,
+}
+MONTH_NAMES = {
+    1: 'فروردین',
+    2: 'اردیبهشت',
+    3: 'خرداد',
+    4: 'تیر',
+    5: 'مرداد',
+    6: 'شهریور',
+    7: 'مهر',
+    8: 'آبان',
+    9: 'آذر',
+    10: 'دی',
+    11: 'بهمن',
+    12: 'اسفند',
+}
+WEEKDAYS = {
+    0: 'شنبه',
+    1: 'یکشنبه',
+    2: 'دوشنبه',
+    3: 'سه شنبه',
+    4: 'چهارشنبه',
+    5: 'پنجشنبه',
+    6: 'جمعه',
 }
 
 
@@ -69,9 +100,9 @@ def create_my_theme():
                             },
                         'TNotebook': {
                             'configure': {
-                                'tabmargins': [2, 5, 2, 0], # LTBR
+                                'tabmargins': [2, 0, 2, 0], # LTBR
                                 'tabposition': 'ne',
-                                'background': BG_LIGHTER,
+                                'background': BG,
                             }
                         },
                         'TNotebook.Tab': {

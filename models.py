@@ -1,4 +1,4 @@
-from my_datetime import get_jnow
+from functions import get_jnow
 
 
 class Staff():

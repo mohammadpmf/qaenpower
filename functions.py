@@ -1,7 +1,9 @@
 import hashlib
+from datetime import datetime
+import jdatetime
 from Equation import Expression
 import re
-# from connection import Connection
+
 
 def hash_password(password: str, salt="mohammad pourmohammadi fallah"):
     # salt = "mohammad pourmohammadi fallah"
@@ -30,6 +32,16 @@ def hash_password(password: str, salt="mohammad pourmohammadi fallah"):
     # hashed_password = hashlib.shake_256(new_password)         # vaghti in ro estefade mikonim dakhele tabe e hexdigest ye voroodi behesh midim masalan 50 ba'd ta 100 ragham minevesht. neveshtam 2500 va ta 5000 ragham nevesht. ama bayad voroodi ro behesh bedim.
     hashed_password = hashed_password.hexdigest()
     return hashed_password
+
+
+def get_jnow():
+    '''
+    get date_time of now in jalali format
+    '''
+    gnow = datetime.now()
+    jnow = jdatetime.GregorianToJalali(gnow.year, gnow.month, gnow.day)
+    jnow = jdatetime.datetime(jnow.jyear, jnow.jmonth, jnow.jday, gnow.hour, gnow.minute, gnow.second)
+    return jnow
 
 
 def round3(number:float) -> float|int:

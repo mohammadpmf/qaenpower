@@ -6,7 +6,7 @@ from counter import CounterWidget
 WIDTH = 1280
 HEIGHT = 720
 
-class Part:
+class PartWidget:
     def __init__(self, connection, root, places_with_counters):
         self.connection=connection
         self.root=root
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         tabs_list.append(ttk.Frame(tab_bar_staff_window))
         tabs_list[i].pack()
         tab_bar_staff_window.add(tabs_list[i], text =f'بخش {i+1}', padding=[0,0,0,40])
-        parts.append(Part('C', tabs_list[i], [(1,2,3,4),(1,2), (1,2,3), (1,), (1,2,3,4,5,6)]))
+        parts.append(PartWidget('C', tabs_list[i], [(1,2,3,4),(1,2), (1,2,3), (1,), (1,2,3,4,5,6)]))
         # parts[i].grid(row=1, column=1)
         parts[i].pack()
         # parts[i].place(width=1024, height=400)
