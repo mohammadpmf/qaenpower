@@ -7,7 +7,10 @@ BG='#333333'
 BG_LIGHTER='#555555'
 FG='orange'
 FG2='green'
-DISABLED_BG="#777777"
+DISABLED_FG = "#aaaaaa"
+DISABLED_BG = '#cccccc'
+WARNING_COLOR = 'yellow'
+ALARM_COLOR = 'red'
 S_WIDTH = 1280
 S_HEIGHT = 720
 PADX = 10
@@ -19,6 +22,10 @@ FONT3 = ('B Nazanin', 12)
 COUNTER_TYPES = ['کنتور', 'ثابت', 'محاسباتی']
 DEFAULT_VALUES = ['مقدار کنتور روز قبل', '0', 'خالی']
 
+CNF_LBL_FRM = {
+    'bg': BG,
+    'font': FONT3,
+}
 CNF_FRM = {
     'bg': BG,
 }
@@ -29,8 +36,21 @@ CNF_BTN = {
     'padx': PADX,
     'pady': PADY,
 }
+CNF_BTN2 = CNF_BTN.copy()
+CNF_BTN2.update({
+    'bg': BG_LIGHTER,
+    'font': FONT3,
+})
 CNF_LABEL=CNF_BTN.copy()
+CNF_LBL2=CNF_LABEL.copy()
+CNF_LBL2.update({
+    'font': FONT3,
+    'disabledforeground': DISABLED_FG,
+    'justify': 'c',
+})
 CNF_CHB=CNF_BTN.copy()
+CNF_CHB2=CNF_BTN.copy()
+CNF_CHB2['font']=FONT3
 CNF_ENTRY = {
     'bg': BG,
     'fg': FG,
@@ -41,6 +61,12 @@ CNF_ENTRY = {
     'readonlybackground': DISABLED_BG,
     'disabledbackground': DISABLED_BG,
 }
+CNF_ENTRY2 = CNF_ENTRY.copy()
+CNF_ENTRY2.update({
+    'font': FONT3,
+    'justify': 'c',
+    'width': 12,
+})
 CNF_ENTRY_USER = CNF_ENTRY.copy()
 CNF_ENTRY_COUNTER = CNF_ENTRY_USER.copy()
 CNF_ENTRY_COUNTER['width']=WORDS_WIDTH
@@ -48,6 +74,11 @@ CNF_ENTRY_COUNTER['width']=WORDS_WIDTH
 CNF_GRID = {
     'padx': PADX,
     'pady': PADY+5,
+}
+CNF_GRID2={
+    'padx': 4,
+    'pady': 2,
+    'sticky': 'e',
 }
 CNF_PACK = {
     'side': RIGHT,

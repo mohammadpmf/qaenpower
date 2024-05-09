@@ -1,56 +1,13 @@
-from tkinter import *
-from tkinter import messagebox as msb
+from ui_settings import *
 from PIL import Image, ImageTk
 from authentication import COUNTER_TYPES, DEFAULT_VALUES
 from models import Counter
 from functions import round3
 from connection import Connection
 
-BG  = 'light green'
-BG2 = 'darkcyan'
-BG3 = 'green'
-FONT = ('B Nazanin', 12)
-NORMAL_FG = "orange"
-DISABLED_FG = "#aaaaaa"
-DISABLED_BG = '#cccccc'
-WARNING_COLOR = 'yellow'
-ALARM_COLOR = 'red'
-
-CNF_ENTRY = {
-    'bg': BG,
-    'readonlybackground': DISABLED_BG,
-    'disabledbackground': DISABLED_BG,
-    'font': FONT,
-    'justify': 'c',
-    'width': 12,
-}
-CNF_CHB = {
-    'bg': BG,
-    'font': FONT,
-}
-CNF_BTN = {
-    'bg': BG2,
-    'font': FONT,
-}
-CNF_LBL = {
-    'bg': BG,
-    'font': FONT,
-    'disabledforeground': DISABLED_FG,
-    'justify': 'c',
-}
-CNF_LBL_FRM = {
-    'bg': BG,
-    'font': FONT,
-}
-CNF_GRID={
-    'padx': 4,
-    'pady': 2,
-    'sticky': 'e',
-}
-
 
 class CounterWidget(Counter):
-    def __init__(self, connection: Connection, root, part, place, name, variable_name, previous_value=0, current_value=0, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, *args, **kwargs):
+    def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, previous_value=0, current_value=0, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, *args, **kwargs):
         super().__init__(part, place, name, variable_name, previous_value, current_value, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title)
         self.connection = connection
         self.root = root
@@ -59,42 +16,42 @@ class CounterWidget(Counter):
             self.img = Image.open('copy-icon.png')
             self.img = self.img.resize((20, 20))
             self.img = ImageTk.PhotoImage(self.img)
-            self.btn_copy = Button(self.frame, image=self.img, cnf=CNF_BTN, command=self.copy_down, *args, **kwargs)
-            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
+            self.btn_copy = Button(self.frame, image=self.img, cnf=CNF_BTN2, command=self.copy_down, *args, **kwargs)
+            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, *args, **kwargs)
             if self.default_value==DEFAULT_VALUES[0]:
                 self.entry_current_counter.insert(0, round3(self.previous_value))
             elif self.default_value==DEFAULT_VALUES[1]:
                 self.entry_current_counter.insert(0, DEFAULT_VALUES[1])
             elif self.default_value==DEFAULT_VALUES[2]:
                 self.entry_current_counter.delete(0, END)
-            self.entry_previous_counter = Label(self.frame, cnf=CNF_LBL, text=round3(self.previous_value), *args, **kwargs)
-            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
+            self.entry_previous_counter = Label(self.frame, cnf=CNF_LBL2, text=round3(self.previous_value), *args, **kwargs)
+            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, *args, **kwargs)
             self.entry_workout.insert(0, 'کارکرد')
             self.entry_workout.config(state='readonly')
             self.boolean_var_bad = BooleanVar(self.frame)
-            self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB, variable=self.boolean_var_bad, text='خرابی کنتور', command=self.check, *args, **kwargs)
+            self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی کنتور', command=self.check, *args, **kwargs)
             self.entry_workout.bind('<Return>', self.confirm)
             self.entry_workout.bind('<KeyRelease>', self.check_color)
             self.entries = [self.entry_previous_counter, self.entry_current_counter, self.entry_workout] # میخواستم برای دیسبل کردن و اینیبل کردن یه حلقه بزنم. همه شون رو ریختم تو یه لیست داخل آبجکت که تو تابع چک کارم راحت تر بشه.
 
-            self.btn_copy.grid(row=1, column=3, cnf=CNF_GRID)
-            self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID)
-            self.entry_current_counter.grid(row=2, column=2, columnspan=2, cnf=CNF_GRID)
-            self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID)
-            self.entry_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID, sticky='ew')
+            self.btn_copy.grid(row=1, column=3, cnf=CNF_GRID2)
+            self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID2)
+            self.entry_current_counter.grid(row=2, column=2, columnspan=2, cnf=CNF_GRID2)
+            self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID2)
+            self.entry_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID2, sticky='ew')
 
         elif self.type==COUNTER_TYPES[1]:
-            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY, *args, **kwargs)
+            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, *args, **kwargs)
             if self.default_value==DEFAULT_VALUES[0]:
                 self.entry_current_counter.insert(0, round3(self.previous_value))
             elif self.default_value==DEFAULT_VALUES[1]:
                 self.entry_current_counter.insert(0, DEFAULT_VALUES[1])
             elif self.default_value==DEFAULT_VALUES[2]:
                 self.entry_current_counter.delete(0, END)
-            self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID)
+            self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID2)
         elif self.type==COUNTER_TYPES[2]:
-            self.entry_current_counter = Label(self.frame, text='در حال محاسبه', cnf=CNF_LBL, *args, **kwargs)
-            self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID)
+            self.entry_current_counter = Label(self.frame, text='در حال محاسبه', cnf=CNF_LBL2, *args, **kwargs)
+            self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID2)
         self.entry_current_counter.bind('<Return>', self.confirm)
         self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
    
@@ -151,7 +108,7 @@ class CounterWidget(Counter):
             self.entry_current_counter.focus_set()
         for entry in self.entries:
             if entry['state']=='normal':
-                entry.config(fg=NORMAL_FG)
+                entry.config(fg=FG)
             else:
                 entry.config(fg=DISABLED_FG)
         self.check_color()

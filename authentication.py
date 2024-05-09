@@ -2,7 +2,7 @@ from ui_settings import *
 from connection import Connection
 from functions import what_is_variable_name_problem, what_is_formula_problem, get_jnow, jdatetime
 from models import Staff
-from test_scroll import PartWidget
+from counter import CounterWidget
 from ui_settings import Tk
 
 class MyWindows():
@@ -734,7 +734,6 @@ class StaffWindow(MyWindows):
         parts_tab = []
         places_with_counters = []
         parts=self.connection.get_all_parts()
-        print(parts)
         for i, part in enumerate(parts):
             places_with_counters.clear()
             tabs_list.append(ttk.Frame(self.tab_control_frame))
@@ -820,3 +819,55 @@ class DatePicker(MyWindows):
     def confirm(self):
         date = self.label_date['text'] 
         print(date)
+
+
+
+class PartWidget(MyWindows):
+    def __init__(self, connection: Connection, root: Tk, places_with_counters):
+        super().__init__(connection, root)
+        self.places_with_counters=places_with_counters # یک لیستی از مکان ها با کنتورهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه کنتور هست.
+        self.frame_ver_scrollbar = Frame(self.frame, bg=BG)
+        self.frame_places_and_hor_scrollbar = Frame(self.frame, bg=BG)
+        self.frame_ver_scrollbar.pack(side=RIGHT, fill=Y, expand=1)
+        self.frame_places_and_hor_scrollbar.pack(side=RIGHT, fill=BOTH, expand=1)
+        self.ver_scrollbar = Scrollbar(self.frame_ver_scrollbar, orient=VERTICAL)
+        self.ver_scrollbar.pack(side=RIGHT, fill=Y, expand=1)
+        self.my_canvas = Canvas(self.frame_places_and_hor_scrollbar, width=S_WIDTH*.96, height=S_HEIGHT*0.9, bg=BG)
+        self.my_canvas.pack(side=TOP, fill=BOTH, expand=1)
+        self.ver_scrollbar.config(command=self.my_canvas.yview)
+        self.hor_scrollbar = Scrollbar(self.frame_places_and_hor_scrollbar, orient=HORIZONTAL, command=self.my_canvas.xview)
+        self.hor_scrollbar.pack(side=BOTTOM, fill=X)
+        self.my_canvas.configure(yscrollcommand=self.ver_scrollbar.set, xscrollcommand=self.hor_scrollbar.set)
+        self.my_canvas.bind('<Configure>', lambda e: self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all")))
+        self.places_window = Frame(self.my_canvas)
+        self.my_canvas.create_window((0, 0), window=self.places_window, anchor="ne")
+        for i, counters in enumerate(self.places_with_counters):
+            if counters: # یعنی اگر یک مکان کنتور هایی داشت این کارها رو انجام بده
+                self.row_frame = Frame(self.places_window)
+                self.row_frame.pack(side=TOP)
+                place_name=f'مکان: {counters[0].place_title}'
+                # Label(self.places_window, text=place_name, font=FONT2).grid(row=i, column=1001)
+                Label(self.row_frame, text=place_name, font=FONT2, anchor=E, bg='red', width=22).pack(side=RIGHT)
+                for j, counter in enumerate(counters):
+                    c = CounterWidget(
+                        self.connection,
+                        self.row_frame,
+                        part=counter.part,
+                        place=counter.place,
+                        name=counter.name,
+                        variable_name=counter.variable_name,
+                        previous_value=counter.previous_value,
+                        current_value=counter.current_value,
+                        formula=counter.formula,
+                        type=counter.type,
+                        default_value=counter.default_value,
+                        unit=counter.unit,
+                        warning_lower_bound=counter.warning_lower_bound,
+                        warning_upper_bound=counter.warning_upper_bound,
+                        alarm_lower_bound=counter.alarm_lower_bound,
+                        alarm_upper_bound=counter.alarm_upper_bound,
+                        id=counter.id,
+                        place_title=counter.place_title,
+                        font=FONT2)
+                    c.pack(side=RIGHT, expand=1, fill=BOTH)
+                    # c.grid(row=i, column=1000-j)
