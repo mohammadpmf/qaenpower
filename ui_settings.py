@@ -13,9 +13,12 @@ WARNING_COLOR = 'yellow'
 ALARM_COLOR = 'red'
 S_WIDTH = 1280
 S_HEIGHT = 720
+COPY_ICON_SIZE = 25
 PADX = 10
 PADY = 5
 WORDS_WIDTH=15
+WORDS_WIDTH2=12
+WORDS_WIDTH3=8
 FONT = ('B Nazanin', 24)
 FONT2 = ('B Nazanin', 18)
 FONT3 = ('B Nazanin', 12)
@@ -65,7 +68,7 @@ CNF_ENTRY2 = CNF_ENTRY.copy()
 CNF_ENTRY2.update({
     'font': FONT3,
     'justify': 'c',
-    'width': 12,
+    'width': WORDS_WIDTH2,
 })
 CNF_ENTRY_USER = CNF_ENTRY.copy()
 CNF_ENTRY_COUNTER = CNF_ENTRY_USER.copy()
