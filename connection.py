@@ -144,7 +144,7 @@ class Connection():
             if 'counters.variable_name_UNIQUE' in temp:
                 return ("نام متغیر تکراری است", 2)
             elif 'counters.counter_place_part' in temp:
-                return ("در این بخش و مکان، کنتوری با این نام قبلا ثبت شده است", 2)
+                return ("در این بخش و مکان، پارامتری با این نام قبلا ثبت شده است", 2)
    
     def get_part_by_title(self, title):
         query = "SELECT * FROM `qaenpower`.`parts` WHERE title=%s;"

@@ -103,7 +103,7 @@ class StaffWindow(MyWindows):
             self.frame_add_counter_tab = Frame(self.tab_control, bg=BG)
             self.frame_add_user_tab = Frame(self.tab_control, bg=BG)
             self.tab_control.add(self.frame_add_user_tab, text ='افزودن کاربر جدید')
-            self.tab_control.add(self.frame_add_counter_tab, text ='افزودن کنتور جدید')
+            self.tab_control.add(self.frame_add_counter_tab, text ='افزودن پارامتر جدید')
             self.tab_control.add(self.frame_add_place_tab, text ='افزودن مکان جدید')
             self.tab_control.add(self.frame_add_part_tab, text ='افزودن بخش جدید')
         self.tab_control.select(self.frame_add_statistics_tab)
@@ -192,14 +192,14 @@ class StaffWindow(MyWindows):
         ############################################# frame_counter #############################################
         self.frame_counter = Frame(self.frame_add_counter_tab, bg=BG)
         self.frame_counter.pack(side=RIGHT)
-        self.label_counter_part = Label(self.frame_counter, text="بخش کنتور", cnf=CNF_LABEL)
+        self.label_counter_part = Label(self.frame_counter, text="بخش پارامتر", cnf=CNF_LABEL)
         self.entry_counter_part = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
         self.entry_counter_part.bind("<<ComboboxSelected>>", self.show_places_of_this_part)
-        self.label_counter_place = Label(self.frame_counter, text="مکان کنتور", cnf=CNF_LABEL)
+        self.label_counter_place = Label(self.frame_counter, text="مکان پارامتر", cnf=CNF_LABEL)
         self.entry_counter_place = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
-        self.label_counter_name = Label(self.frame_counter, text="نام کنتور", cnf=CNF_LABEL)
+        self.label_counter_name = Label(self.frame_counter, text="نام پارامتر", cnf=CNF_LABEL)
         self.entry_counter_name = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER, justify='right')
-        self.label_counter_type = Label(self.frame_counter, text="نوع کنتور", cnf=CNF_LABEL)
+        self.label_counter_type = Label(self.frame_counter, text="نوع پارامتر", cnf=CNF_LABEL)
         self.entry_counter_type = ttk.Combobox(self.frame_counter, values=COUNTER_TYPES, font=FONT, width=WORDS_WIDTH, justify='center')
         self.entry_counter_type.insert(0, COUNTER_TYPES[0])
         self.entry_counter_type.config(state='readonly')
@@ -224,7 +224,7 @@ class StaffWindow(MyWindows):
         self.entry_counter_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
         self.label_counter_formula_parameters = Label(self.frame_counter, text="متغیرهای فرمول", cnf=CNF_LABEL)
         self.entry_counter_formula_parameters = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-        self.btn_counter_register = Button(self.frame_counter, text='ایجاد کنتور', cnf=CNF_BTN, command=self.create_counter)
+        self.btn_counter_register = Button(self.frame_counter, text='ایجاد پارامتر', cnf=CNF_BTN, command=self.create_counter)
         self.btn_counter_back = Button(self.frame_counter, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
         self.label_counter_part.grid(row=1, column=7, cnf=CNF_GRID)
         self.entry_counter_part.grid(row=1, column=5, cnf=CNF_GRID)
@@ -437,7 +437,7 @@ class StaffWindow(MyWindows):
         self.entry_counter_place.delete(0, END)
         self.entry_counter_place.config(state='readonly')
 
-    # تابعی برای این که وقتی نوع کنتور انتخاب شد، کمبو باکس نوع مقدار پیش فرض تغییر کنه
+    # تابعی برای این که وقتی نوع پارامتر انتخاب شد، کمبو باکس نوع مقدار پیش فرض تغییر کنه
     # و همچنین بعضی از باکس ها فعال یا غیر فعال بشن
     def check_counter_type(self, event=None):
         counter_type = self.entry_counter_type.get()
@@ -458,7 +458,7 @@ class StaffWindow(MyWindows):
             self.entry_counter_formula.config(state='normal')
             self.entry_counter_formula_parameters.config(state='normal')
 
-    # تابعی جهت ایجاد کنتور
+    # تابعی جهت ایجاد پارامتر
     def create_counter(self, event=None):
         part = self.entry_counter_part.get()
         place = self.entry_counter_place.get()
@@ -474,15 +474,15 @@ class StaffWindow(MyWindows):
         formula = self.entry_counter_formula.get().strip()
         formula_parameters = self.entry_counter_formula_parameters.get().strip()
         if part == "":
-            msb.showwarning("هشدار", "کنتور مربوط به کدام بخش است؟")
+            msb.showwarning("هشدار", "پارامتر مربوط به کدام بخش است؟")
             self.entry_counter_part.focus_set()
             return
         if place == "":
-            msb.showwarning("هشدار", "کنتور مربوط به کدام مکان است؟")
+            msb.showwarning("هشدار", "پارامتر مربوط به کدام مکان است؟")
             self.entry_counter_place.focus_set()
             return
         if name == "":
-            msb.showwarning("هشدار", "نام کنتور را وارد کنید")
+            msb.showwarning("هشدار", "نام پارامتر را وارد کنید")
             self.entry_counter_name.focus_set()
             return
         if unit == "":
@@ -530,18 +530,18 @@ class StaffWindow(MyWindows):
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
         if formula != "":
-            problem = what_is_formula_problem(formula, formula_parameters, counters_variable_names, self.connection)
+            problem = what_is_formula_problem(formula, formula_parameters, counters_variable_names)
             if problem:
                 msb.showwarning("هشدار", problem)
                 self.entry_counter_formula.focus_set()
                 return
         if formula == "" and type in [COUNTER_TYPES[0], COUNTER_TYPES[2]]:
-            msb.showwarning("هشدار", "برای کنتورهای محاسباتی و معمولی، فرمول نمیتواند خالی باشد")
+            msb.showwarning("هشدار", "برای پارامترهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد")
             self.entry_counter_formula.focus_set()
             return
         result_message, _ = self.connection.create_counter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
         if result_message=='ok':
-            msb.showinfo("پیام موفقیت", f"کنتور {name} با موفقیت در مکان {place} از بخش {part} ساخته شد")
+            msb.showinfo("پیام موفقیت", f"پارامتر {name} با موفقیت در مکان {place} از بخش {part} ساخته شد")
         else:
             msb.showerror("خطا", result_message)
             print(_)
@@ -721,14 +721,14 @@ class StaffWindow(MyWindows):
             order=int(item['values'][-1])
             result_message, _ = self.connection.change_places_order(id, order)
         if result_message=='ok':
-            # self.show_places_of_this_part() برای این گذاشته بودم که اگه ترتیب مکان ها رو برای یک بخش عوض کردیم، خود به خود تو بخش اضافه کردن کنتور هم عوضش کنه. ولی در عمل به نظرم جالب نبود. خلاصه گذاشتم اینجا که اگه لازم شد کامنت رو فقط بردارم. چون بعدا یادم نمیاد چه تابعی رو باید صدا کنم و کلی وقت میگیرفت. گذاشتم اینجا باشه ولی کامنتش کردم.
+            # self.show_places_of_this_part() برای این گذاشته بودم که اگه ترتیب مکان ها رو برای یک بخش عوض کردیم، خود به خود تو بخش اضافه کردن پارامتر هم عوضش کنه. ولی در عمل به نظرم جالب نبود. خلاصه گذاشتم اینجا که اگه لازم شد کامنت رو فقط بردارم. چون بعدا یادم نمیاد چه تابعی رو باید صدا کنم و کلی وقت میگیرفت. گذاشتم اینجا باشه ولی کامنتش کردم.
             msb.showinfo("پیام موفقیت", f"ترتیب مکان ها با موفقیت تغییر یافت")
         else:
             msb.showerror("خطا", result_message)
             print(_)
 
     ######################################### add statistics functions ######################################
-    # تابعی برای این که تب های درون قسمت آمار کنتور ها رو مقداردهی کنه
+    # تابعی برای این که تب های درون قسمت آمار پارامتر ها رو مقداردهی کنه
     def seed_tabs_of_parts(self):
         tabs_list = []
         parts_tab = []
@@ -824,7 +824,7 @@ class DatePicker(MyWindows):
 class PartWidget(MyWindows):
     def __init__(self, connection: Connection, root: Tk, places_with_counters):
         super().__init__(connection, root)
-        self.places_with_counters=places_with_counters # یک لیستی از مکان ها با کنتورهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه کنتور هست.
+        self.places_with_counters=places_with_counters # یک لیستی از مکان ها با پارامترهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه پارامتر هست.
         self.frame_ver_scrollbar = Frame(self.frame, bg=BG)
         self.frame_places_and_hor_scrollbar = Frame(self.frame, bg=BG)
         self.frame_ver_scrollbar.pack(side=RIGHT, fill=Y, expand=1)
@@ -846,7 +846,7 @@ class PartWidget(MyWindows):
         Label(self.places_window, text='', bg='green').grid(row=1, column=1, sticky='news')
         
         for i, counters in enumerate(self.places_with_counters):
-            if counters: # یعنی اگر یک مکان کنتور هایی داشت این کارها رو انجام بده اگه نداشت الکی ردیف براش درست نکنه
+            if counters: # یعنی اگر یک مکان پارامتر هایی داشت این کارها رو انجام بده اگه نداشت الکی ردیف براش درست نکنه
                 self.frame_row = Frame(self.places_window, bg='blue')
                 self.frame_row.grid(row=i, column=2, sticky='e')
                 # self.frame_row.columnconfigure(index=1, weight=10, minsize=200)
@@ -886,7 +886,7 @@ class CounterWidget(Counter, MyWindows):
     def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, previous_value=0, current_value=0, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, *args, **kwargs):
         super().__init__(part, place, name, variable_name, previous_value, current_value, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title)
         MyWindows.__init__(self, connection, root)
-        self.frame = LabelFrame(self.root, text=f"کنتور {self.name}", cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
+        self.frame = LabelFrame(self.root, text=f"پارامتر {self.name}", cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
         if self.type==COUNTER_TYPES[0]:
             self.img = Image.open('copy-icon.png')
             self.img = self.img.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
@@ -943,7 +943,7 @@ class CounterWidget(Counter, MyWindows):
         result_message, ـ = self.connection.create_counter_log(value, self.id)
         result_message, ـ = self.connection.update_counter_usage(value, self.id)
         if result_message == "ok":
-            msb.showinfo("پیام موفقیت", f"مقدار {value} با موفقیت برای کنتور {self.name} از مکان {self.place_title} ثبت شد.")
+            msb.showinfo("پیام موفقیت", f"مقدار {value} با موفقیت برای پارامتر {self.name} از مکان {self.place_title} ثبت شد.")
         else:
             msb.showerror("ارور", result_message)
 
