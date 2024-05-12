@@ -19,6 +19,8 @@ PADY = 5
 WORDS_WIDTH=15
 WORDS_WIDTH2=12
 WORDS_WIDTH3=8
+BNT_COPY_WIDTH=1
+PARAMETER_WIDGET_WIDTH = WORDS_WIDTH2*2
 FONT = ('B Nazanin', 24)
 FONT2 = ('B Nazanin', 18)
 FONT3 = ('B Nazanin', 12)
@@ -68,7 +70,7 @@ CNF_ENTRY2 = CNF_ENTRY.copy()
 CNF_ENTRY2.update({
     'font': FONT3,
     'justify': 'c',
-    'width': WORDS_WIDTH2,
+    'width': WORDS_WIDTH2+WORDS_WIDTH3,
 })
 CNF_ENTRY_USER = CNF_ENTRY.copy()
 CNF_ENTRY_COUNTER = CNF_ENTRY_USER.copy()
@@ -81,7 +83,7 @@ CNF_GRID = {
 CNF_GRID2={
     'padx': 4,
     'pady': 2,
-    'sticky': 'e',
+    'sticky': 'news',
 }
 CNF_PACK = {
     'side': RIGHT,

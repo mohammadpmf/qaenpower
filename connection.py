@@ -20,7 +20,7 @@ class Connection():
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `part` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), INDEX `part_idx` (`part` ASC) VISIBLE, UNIQUE INDEX `place_part` (`title` ASC, `part` ASC) INVISIBLE, CONSTRAINT `part` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `previous_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, `current_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `counter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `previous_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, `current_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `counter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) UNSIGNED NOT NULL, `date_time` DATETIME NOT NULL, `counter` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `counter` FOREIGN KEY (`counter`) REFERENCES `qaenpower`.`counters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
         self.cursor.execute(query)
@@ -131,7 +131,7 @@ class Connection():
         return self.cursor.fetchone()
   
     def create_counter(self, name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place):
-        query = "INSERT INTO `qaenpower`.`counters` (`name`, `type`, `unit`, `default_value`, `variable_name`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `formula`, `part`, `place`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+        query = "INSERT INTO `qaenpower`.`counters` (`name`, `type`, `unit`, `default_value`, `variable_name`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `formula`, `part`, `place`, `order`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0);"
         part_id, part_title, part_sort = self.get_part_by_title(part)
         place_id, place_title, place_part_id, place_sort = self.get_place_by_title_and_part_id(place, part_id)
         values = name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part_id, place_id
@@ -145,7 +145,17 @@ class Connection():
                 return ("نام متغیر تکراری است", 2)
             elif 'counters.counter_place_part' in temp:
                 return ("در این بخش و مکان، پارامتری با این نام قبلا ثبت شده است", 2)
-   
+
+    def update_counter(self, name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place, previous_value, current_value):
+        query = "UPDATE `qaenpower`.`counters` SET `name` = %s, `type` = %s, `unit` = %s, `default_value` = %s, `variable_name` = %s, `warning_lower_bound` = %s, `warning_upper_bound` = %s, `alarm_lower_bound` = %s, `alarm_upper_bound` = %s, `formula` = %s, `part` = %s, `place` = %s, `previous_value` = %s, `current_value` = %s WHERE (`variable_name` = %s);"
+        part_id, part_title, part_sort = self.get_part_by_title(part)
+        place_id, place_title, place_part_id, place_sort = self.get_place_by_title_and_part_id(place, part_id)
+        values = name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part_id, place_id, previous_value, current_value, variable_name
+        self.cursor.execute(query, values)
+        self.connection.commit()
+        return ("ok", 0)
+
+
     def get_part_by_title(self, title):
         query = "SELECT * FROM `qaenpower`.`parts` WHERE title=%s;"
         self.cursor.execute(query, title)
@@ -202,12 +212,30 @@ class Connection():
         return ("ok", 0)
 
     def get_all_counters_variable_names(self):
-        query = "SELECT variable_name FROM `qaenpower`.`counters`;"
+        query = "SELECT `variable_name` FROM `qaenpower`.`counters`;"
         self.cursor.execute(query)
         names = []
         for item in self.cursor.fetchall():
             names.append(item[0])
         return tuple(names)
+    
+    def get_counter_by_variable_name(self, variable_name): 
+        query = "SELECT `part`, `place`, `name`, `variable_name`, `previous_value`, `current_value`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `qaenpower`.`counters` WHERE `variable_name`=%s;"
+        values = (variable_name, )
+        self.cursor.execute(query, values)
+        temp = self.cursor.fetchone()
+        if temp == None:
+            return temp
+        return Counter(*temp)
+    
+    def get_counter_by_id(self, id):
+        query = "SELECT `part`, `place`, `name`, `variable_name`, `previous_value`, `current_value`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `qaenpower`.`counters` WHERE `id`=%s;"
+        values = (id, )
+        self.cursor.execute(query, values)
+        temp = self.cursor.fetchone()
+        if temp == None:
+            return temp
+        return Counter(*temp)
 
     def get_current_value_of_counter_by_variable_name(self, variable_name):
         query = "SELECT current_value FROM `qaenpower`.`counters` WHERE variable_name=%s;"
@@ -224,6 +252,13 @@ class Connection():
 
     def change_places_order(self, id, order):
         query = "UPDATE `qaenpower`.`places` SET `order` = %s WHERE (`id` = %s);"
+        values=(order, id)
+        self.cursor.execute(query, values)
+        self.connection.commit()
+        return ("ok", 0)
+
+    def change_counters_order(self, id, order):
+        query = "UPDATE `qaenpower`.`counters` SET `order` = %s WHERE (`id` = %s);"
         values=(order, id)
         self.cursor.execute(query, values)
         self.connection.commit()
@@ -255,6 +290,12 @@ class Connection():
         if result_message == "ok":
             return self.update_users_password(new_password)
         return (result_message, _)
+    
+    def get_all_counters_short_info(self):
+        # query = "SELECT * FROM `qaenpower`.`counters` join `qaenpower`.`parts` join `qaenpower`.`places` WHERE `qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id` AND `qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`;"
+        query = "SELECT `qaenpower`.`counters`.`id`, `qaenpower`.`counters`.`name`, `qaenpower`.`places`.`title`, `qaenpower`.`parts`.`title` FROM `qaenpower`.`counters` join `qaenpower`.`parts` join `qaenpower`.`places` WHERE `qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id` AND `qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id` order by `qaenpower`.`counters`.`order`;"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
 
 if __name__ == "__main__":
     c = Connection()
