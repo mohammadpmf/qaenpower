@@ -111,6 +111,11 @@ def what_is_formula_problem(formula: str, formula_parameters:str, variable_name:
         return 'در نوشتن فرمول دقت کنید'
     except SyntaxError:
         return 'در نوشتن فرمول دقت کنید'
+    except NameError:
+        return 'در نوشتن فرمول دقت کنید'
+    except:
+        return 'باز هم در نوشتن فرمول دقت کنید'
+
 
 # print(what_is_formula_problem('(a+b)*t+36*t+3+rrrt*a4+krt/krt2+ab', '', ('t', 'r', 'r2', 'a23', 'a', 'b', 'k')))
 

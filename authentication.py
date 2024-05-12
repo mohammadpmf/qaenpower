@@ -277,6 +277,7 @@ class StaffWindow(MyWindows):
         # self.frame_part.place(relx=0.22, rely=0.08, relwidth=1, relheight=1)
         self.label_part_name = Label(self.frame_part, text="نام بخش", cnf=CNF_LABEL)
         self.entry_part_name = Entry(self.frame_part, cnf=CNF_ENTRY_COUNTER, justify='right')
+        self.entry_part_name.bind("<Return>", self.create_part)
         self.btn_part_register = Button(self.frame_part, text='ایجاد بخش', cnf=CNF_BTN, command=self.create_part)
         self.btn_part_back = Button(self.frame_part, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
         self.label_part_name.grid(row=1, column=7, cnf=CNF_GRID)
@@ -310,6 +311,7 @@ class StaffWindow(MyWindows):
         self.entry_place_part_name.bind("<<ComboboxSelected>>", self.refresh_places_frame_after_selecting_part)
         self.label_place_name = Label(self.frame_place, text="نام مکان", cnf=CNF_LABEL)
         self.entry_place_name = Entry(self.frame_place, cnf=CNF_ENTRY_COUNTER, justify='right', state='readonly')
+        self.entry_place_name.bind("<Return>", self.create_place)
         self.btn_place_register = Button(self.frame_place, text='ایجاد مکان جدید', cnf=CNF_BTN, command=self.create_place)
         self.btn_place_back = Button(self.frame_place, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
         self.label_place_part_name.grid(row=1, column=7, cnf=CNF_GRID)
@@ -492,6 +494,7 @@ class StaffWindow(MyWindows):
 
     # تابعی جهت ایجاد پارامتر
     def create_counter(self, event=None):
+        is_everything_ok = True # برای ایجاد پارامتر اول فرض میکنیم همه چی اوکی هست. اگه مشکلی پیش اومد فالسش میکنیم.
         part = self.entry_counter_part.get()
         place = self.entry_counter_place.get()
         name = self.entry_counter_name.get().strip()
@@ -562,16 +565,33 @@ class StaffWindow(MyWindows):
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
         if formula != "":
-            problem = what_is_formula_problem(formula, formula_parameters, variable_name, counters_variable_names)
-            if problem:
-                msb.showwarning("هشدار", problem)
+            result = what_is_formula_problem(formula, formula_parameters, variable_name, counters_variable_names)
+            if isinstance(result, str): # یعنی اگه یه استرینگ داده بود، مشکلی هست. پس ارور رو نشون بده.
+                msb.showwarning("هشدار", result)
                 self.entry_counter_formula.focus_set()
                 return
+            elif isinstance(result, list):
+                message = "پارامترهای تشخیص داده شده به ترتیب به صورت زیر است\n"
+                for i in result:
+                    message += f"{i}\n"
+                message+= "در صورتی که صحیح است، تایید کنید و در غیر این صورت، فرمول را اصلاح کنید"
+                self.root.bell()
+                is_everything_ok = msb.askyesno("تایید", message)
+                if is_everything_ok:
+                    result = what_is_formula_problem(formula, ' '.join(result), variable_name, counters_variable_names)
+                    if isinstance(result, list):
+                        is_everything_ok=True
+                    else:
+                        is_everything_ok=False
+                        msb.showwarning('هشدار', result)
         if formula == "" and type in [COUNTER_TYPES[0], COUNTER_TYPES[2]]:
             msb.showwarning("هشدار", "برای پارامترهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد")
             self.entry_counter_formula.focus_set()
             return
-        result_message, _ = self.connection.create_counter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
+        if is_everything_ok:
+            result_message, _ = self.connection.create_counter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
+        else:
+            return
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"پارامتر {name} با موفقیت در مکان {place} از بخش {part} ساخته شد")
             self.refresh_all_counters_treeview()
@@ -581,6 +601,7 @@ class StaffWindow(MyWindows):
 
     # تابعی جهت ویرایش پارامتر
     def update_counter(self):
+        is_everything_ok = True # برای تغییر پارامتر اول فرض میکنیم همه چی اوکی هست. اگه مشکلی پیش اومد فالسش میکنیم.
         part = self.entry_counter_part.get()
         place = self.entry_counter_place.get()
         name = self.entry_counter_name.get().strip()
@@ -662,19 +683,19 @@ class StaffWindow(MyWindows):
                     message += f"{i}\n"
                 message+= "در صورتی که صحیح است، تایید کنید و در غیر این صورت، فرمول را اصلاح کنید"
                 self.root.bell()
-                do_the_thing = msb.askyesno("تایید", message)
-                if do_the_thing:
+                is_everything_ok = msb.askyesno("تایید", message)
+                if is_everything_ok:
                     result = what_is_formula_problem(formula, ' '.join(result), variable_name, counters_variable_names)
                     if isinstance(result, list):
-                        do_the_thing=True
+                        is_everything_ok=True
                     else:
-                        do_the_thing=False
+                        is_everything_ok=False
                         msb.showwarning('هشدار', result)
         if formula == "" and type in [COUNTER_TYPES[0], COUNTER_TYPES[2]]:
             msb.showwarning("هشدار", "برای پارامترهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد")
             self.entry_counter_formula.focus_set()
             return
-        if do_the_thing:
+        if is_everything_ok:
             result_message, _ = self.connection.update_counter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place, this_counter.previous_value, this_counter.current_value)
         else:
             return
@@ -700,6 +721,8 @@ class StaffWindow(MyWindows):
         self.entry_counter_place.config(state='normal')
         self.entry_counter_type.config(state='normal')
         self.entry_counter_default_value.config(state='normal')
+        self.entry_counter_formula.config(state='normal')
+        self.entry_counter_formula_parameters.config(state='normal')
         self.entry_counter_part.delete(0, END)
         self.entry_counter_place.delete(0, END)
         self.entry_counter_name.delete(0, END)
@@ -734,10 +757,11 @@ class StaffWindow(MyWindows):
         self.entry_counter_place.config(state='readonly')
         self.entry_counter_type.config(state='readonly')
         self.entry_counter_default_value.config(state='readonly')
+        self.check_counter_type()
 
     ########################################## create part functions ###########################################
     # تابعی جهت ساخت بخش
-    def create_part(self):
+    def create_part(self, event=None):
         title = self.entry_part_name.get().strip()
         if title=="":
             msb.showwarning("هشدار", "نام بخش نمیتواند خالی باشد.")
@@ -747,9 +771,11 @@ class StaffWindow(MyWindows):
             msb.showinfo("پیام موفقیت", f"بخش {title} با موفقیت ساخته شد.")
             self.refresh_parts_values_in_comboboxes()
             self.refresh_parts_tree_view()
+            self.entry_part_name.delete(0, END)
         else:
             msb.showerror("خطا", result_message)
             print(_)
+        self.entry_part_name.focus_set()
 
     # تابعی برای این که بعد از ساخت یک بخش، در ظاهر برنامه و
     # در کمبوباکس ها بخش های جدید ساخته شده هم نمایش داده شوند.
@@ -839,7 +865,7 @@ class StaffWindow(MyWindows):
         self.refresh_places_tree_view(part_id)
 
     # تابعی برای ثبت یک مکان جدید
-    def create_place(self):
+    def create_place(self, event=None):
         title = self.entry_place_name.get().strip()
         part = self.entry_place_part_name.get()
         if title=="" or part=="":
@@ -850,9 +876,11 @@ class StaffWindow(MyWindows):
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"مکان {title} در بخش {part} با موفقیت ساخته شد.")
             self.refresh_places_tree_view(part_id)
+            # self.entry_place_name.delete(0, END) # گفتم شاید بخواد تو بخش های مختلف مکان همنام درست کنه کامنت کردم. ولی اگه بخوایم ریست کنیم گفتم سریع بشه آنکامنتش کرد.
         else:
             msb.showerror("خطا", result_message)
             print(_)
+        self.entry_place_name.focus_set()
 
     # تابعی برای این که بعد از ساخت یک مکان در ظاهر برنامه و
     # در تری ویوی مربوطه، مکان های جدید نمایش داده شوند.
@@ -1037,10 +1065,14 @@ class DatePicker(MyWindows):
         self.refresh_date()
 
     def time_delta(self, days):
-        jdate = jdatetime.date(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()))
-        d = jdatetime.timedelta(days=days)
-        new_date = jdate + d
-        self.refresh_date(new_date)
+        try:
+            jdate = jdatetime.date(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()))
+            d = jdatetime.timedelta(days=days)
+            new_date = jdate + d
+            self.refresh_date(new_date)
+        except ValueError:
+            msb.showerror('', "تاریخ به درستی انتخاب نشده است")
+            pass
 
     def refresh_date(self, date=None):
         if date==None:
