@@ -1138,11 +1138,17 @@ class PartWidget(MyWindows):
     def __init__(self, connection: Connection, root: Tk, places_with_counters):
         super().__init__(connection, root)
         self.places_with_counters=places_with_counters # یک لیستی از مکان ها با پارامترهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه پارامتر هست.
-        self.my_canvas = Canvas(self.frame, width=S_WIDTH*1, height=S_HEIGHT*1, bg='white')
+        self.my_canvas = Canvas(self.frame, width=S_WIDTH*1, height=S_HEIGHT*1, bg=BG)
         self.ver_scrollbar = Scrollbar(self.frame, orient=VERTICAL, command=self.my_canvas.yview)
         self.hor_scrollbar = Scrollbar(self.frame, orient=HORIZONTAL, command=self.my_canvas.xview)
         self.my_canvas.configure(yscrollcommand=self.ver_scrollbar.set, xscrollcommand=self.hor_scrollbar.set)
         self.my_canvas.grid(row=1, column=1, sticky='news')
+        # self.bg_pic = Image.open('bg_pic.png')
+        # self.bg_pic.putalpha(127)
+        # self.bg_pic = self.bg_pic.resize((S_WIDTH, S_HEIGHT))
+        # self.bg_pic = ImageTk.PhotoImage(self.bg_pic)
+        # self.label_background = Label(self.my_canvas, image=self.bg_pic)
+        # self.label_background.place(x=0, y=0, width=S_WIDTH, height=S_HEIGHT)
         self.ver_scrollbar.grid(row=1, column=3, sticky='ns')
         self.hor_scrollbar.grid(row=2, column=1, columnspan=3, sticky='ew')
         self.my_canvas.bind('<Configure>', lambda e: self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all")))
