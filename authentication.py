@@ -1018,12 +1018,8 @@ class StaffWindow(MyWindows):
     ######################################### add statistics functions ######################################
     # تابعی برای این که تب های درون قسمت آمار پارامتر ها رو مقداردهی کنه
     def seed_tabs_of_parts(self):
-        global rrr
-        if rrr==0:
-            rrr+=1
-        else:
-            for item in self.tab_control_frame.winfo_children():
-                item.destroy()
+        for item in self.tab_control_frame.winfo_children():
+            item.destroy()
         tabs_list = []
         parts_tab = []
         places_with_counters = []
@@ -1323,4 +1319,3 @@ class CounterWidget(Counter, MyWindows):
             self.entry_workout.config(state='normal', bg=bg)
         except:
             pass
-rrr = 0
