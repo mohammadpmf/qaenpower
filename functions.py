@@ -115,6 +115,17 @@ def what_is_formula_problem(formula: str, formula_parameters:str, variable_name:
     except:
         return 'باز هم در نوشتن فرمول دقت کنید'
 
+# تابعی که پارامتر ها رو از تو فرمول در بیاره که مقادیرشون رو از تو دیتابیس بخوونیم.
+def get_formula_parameters(formula: str) -> list:
+    parameters = []
+    Expression(formula, parameters)
+    return parameters
+
+# تابعی که در برنامه مقدار پارامتر مورد نظر را حساب کند و نمایش دهد.
+def calculate_fn(formula: str, parameters: list, values: list):
+    fn = Expression(formula, parameters)
+    answer = round3(fn(*values))
+    return answer
 
 if __name__=='__main__':
     print(hash_password('admin', '1'))

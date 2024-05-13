@@ -1,7 +1,7 @@
 from ui_settings import *
 from PIL import Image, ImageTk
 from connection import Connection
-from functions import what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime
+from functions import calculate_fn, get_formula_parameters, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime
 from models import Staff, Counter
 from ui_settings import Tk
 
@@ -107,7 +107,7 @@ class StaffWindow(MyWindows):
             self.tab_control.add(self.frame_all_counters_tab, text ='پارامترهای موجود')
             self.tab_control.add(self.frame_add_place_tab, text ='افزودن مکان جدید')
             self.tab_control.add(self.frame_add_part_tab, text ='افزودن بخش جدید')
-        self.tab_control.select(self.frame_all_counters_tab)
+        self.tab_control.select(self.frame_add_statistics_tab)
 
         ###################################### frame_add_statistics ######################################
         self.frame_add_statistics = Frame(self.frame_add_statistics_tab, bg=BG)
@@ -1138,42 +1138,31 @@ class PartWidget(MyWindows):
     def __init__(self, connection: Connection, root: Tk, places_with_counters):
         super().__init__(connection, root)
         self.places_with_counters=places_with_counters # یک لیستی از مکان ها با پارامترهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه پارامتر هست.
-        self.frame_ver_scrollbar = Frame(self.frame, bg=BG)
-        self.frame_places_and_hor_scrollbar = Frame(self.frame, bg=BG)
-        self.frame_ver_scrollbar.pack(side=RIGHT, fill=Y, expand=1)
-        self.frame_places_and_hor_scrollbar.pack(side=RIGHT, fill=BOTH, expand=1)
-        self.ver_scrollbar = Scrollbar(self.frame_ver_scrollbar, orient=VERTICAL)
-        self.ver_scrollbar.pack(side=RIGHT, fill=Y, expand=1)
-        self.my_canvas = Canvas(self.frame_places_and_hor_scrollbar, width=S_WIDTH*0.85, height=S_HEIGHT*0.9, bg=BG)
-        self.my_canvas.pack(side=TOP, fill=BOTH, expand=1, anchor='e')
-        self.ver_scrollbar.config(command=self.my_canvas.yview)
-        self.hor_scrollbar = Scrollbar(self.frame_places_and_hor_scrollbar, orient=HORIZONTAL, command=self.my_canvas.xview)
-        self.hor_scrollbar.pack(side=BOTTOM, fill=X)
+        self.my_canvas = Canvas(self.frame, width=S_WIDTH*1, height=S_HEIGHT*1, bg='white')
+        self.ver_scrollbar = Scrollbar(self.frame, orient=VERTICAL, command=self.my_canvas.yview)
+        self.hor_scrollbar = Scrollbar(self.frame, orient=HORIZONTAL, command=self.my_canvas.xview)
         self.my_canvas.configure(yscrollcommand=self.ver_scrollbar.set, xscrollcommand=self.hor_scrollbar.set)
+        self.my_canvas.grid(row=1, column=1, sticky='news')
+        self.ver_scrollbar.grid(row=1, column=3, sticky='ns')
+        self.hor_scrollbar.grid(row=2, column=1, columnspan=3, sticky='ew')
         self.my_canvas.bind('<Configure>', lambda e: self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all")))
         self.places_window = Frame(self.my_canvas)
         self.my_canvas.create_window((0, 0), window=self.places_window, anchor="ne")
-        # self.places_window.columnconfigure(index=1, weight=1, minsize=400)
-        # self.places_window.rowconfigure(index=1, weight=1, minsize=400)
-        
-        Label(self.places_window, text='', bg='green').grid(row=1, column=1, sticky='news')
-        
+        # all_counters = [] # برای بایند کردن تعریف کرده بودم که فعلا کاری نکردم.
+        # print(all_counters)
         for i, counters in enumerate(self.places_with_counters):
             if counters: # یعنی اگر یک مکان پارامتر هایی داشت این کارها رو انجام بده اگه نداشت الکی ردیف براش درست نکنه
-                self.frame_row = Frame(self.places_window, bg='blue')
-                self.frame_row.grid(row=i, column=2, sticky='e')
-                # self.frame_row.columnconfigure(index=1, weight=10, minsize=200)
-                # self.frame_row.columnconfigure(index=2, weight=1, minsize=200)
-                self.frame_right = Frame(self.frame_row, bg='blue')
-                self.frame_right.grid(row=i, column=3, sticky='nsew')
-                self.frame_left = Frame(self.frame_row, bg=BG)
-                self.frame_left.grid(row=i, column=1, sticky='nsew')
+                self.frame_row = Frame(self.places_window, bg=BG)
+                for index in range(994, 1000):
+                    self.frame_row.columnconfigure(index=index, weight=1, minsize=190)
+                self.frame_row.columnconfigure(index=1000, weight=1, minsize=120)
+                self.frame_row.grid()
                 place_name=counters[0].place_title
-                Label(self.frame_right, text=place_name, font=FONT2, bg='cyan', width=WORDS_WIDTH//2).pack(side=RIGHT, expand=True, fill=BOTH)
+                Label(self.frame_row, text=place_name, font=FONT2, bg=BG, fg=FG, width=WORDS_WIDTH//2).grid(row=i, column=1000, sticky='news', padx=4, pady=2)
                 for j, counter in enumerate(counters):
                     c = CounterWidget(
                         self.connection,
-                        self.frame_left,
+                        self.frame_row,
                         part=counter.part,
                         place=counter.place,
                         name=counter.name,
@@ -1191,14 +1180,26 @@ class PartWidget(MyWindows):
                         id=counter.id,
                         place_title=counter.place_title,
                         font=FONT2)
-                    c.grid(row=i, column=j, sticky='news', padx=4, pady=2)
-                    # c.pack(side=RIGHT, expand=1, fill=BOTH)
+                    # all_counters.append(c)
+                    c.grid(row=i, column=1000-1-j, sticky='news', padx=4, pady=2)
+        # print(all_counters)
 
 
 class CounterWidget(Counter, MyWindows):
     def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, previous_value=0, current_value=0, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, *args, **kwargs):
         super().__init__(part, place, name, variable_name, previous_value, current_value, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title)
         MyWindows.__init__(self, connection, root)
+        if self.formula != "":
+            parameters = get_formula_parameters(formula)
+            values = []
+            for p in parameters:
+                if p=='b':
+                    values.append(self.current_value)
+                elif p=='a':
+                    values.append(self.previous_value)
+                else:
+                    values.append(self.connection.get_current_value_of_counter_by_variable_name(p))
+            answer = calculate_fn(formula, parameters, values)
         self.frame = LabelFrame(self.root, text=f"پارامتر {self.name}", cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
         if self.type==COUNTER_TYPES[0]:
             self.img = Image.open('copy-icon.png')
@@ -1236,7 +1237,7 @@ class CounterWidget(Counter, MyWindows):
                 self.entry_current_counter.delete(0, END)
             self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID2)
         elif self.type==COUNTER_TYPES[2]:
-            self.entry_current_counter = Label(self.frame, text='در حال محاسبه', cnf=CNF_LBL2, width=17, *args, **kwargs)
+            self.entry_current_counter = Label(self.frame, text=answer, cnf=CNF_LBL2, width=17, *args, **kwargs)
             self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID2)
         self.entry_current_counter.bind('<Return>', self.confirm)
         self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
@@ -1256,17 +1257,21 @@ class CounterWidget(Counter, MyWindows):
             msb.showerror("ارور", result_message)
 
     def update_workout(self, event=None):
-        if self.type==COUNTER_TYPES[0] and (event.keysym in '0123456789' or event.keysym=='period'):
+        if self.type==COUNTER_TYPES[0] and (event.keysym in '0123456789' or event.keysym in ['period', 'BackSpace']):
             try:
-                workout = float(self.entry_current_counter.get()) - float(self.entry_previous_counter['text']) # میشه از دیتابیس گرفت که دقیق تر باشه. اما من نگرفتم و از رو همون ۳ رقم اعشار خووندم.
+                current = float(self.entry_current_counter.get().strip())
+                prev = float(self.entry_previous_counter['text'])  # میشه از دیتابیس گرفت که دقیق تر باشه. اما من نگرفتم و از رو همون ۳ رقم اعشار خووندم.
+                workout = current - prev
                 workout = round3(workout)
+            except:
+                workout = f"-{self.entry_previous_counter['text']}"
+                return
+            finally:
                 self.entry_workout.config(state='normal')
                 self.entry_workout.delete(0, END)
                 self.entry_workout.insert(0, workout)
                 self.entry_workout.config(state='readonly')
                 self.check_color()
-            except:
-                return
 
     def copy_down(self):
         self.boolean_var_bad.set(False)
