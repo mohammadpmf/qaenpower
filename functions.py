@@ -77,7 +77,6 @@ def what_is_formula_problem(formula: str, formula_parameters:str, variable_name:
             continue
         if p not in counters_variable_names:
             bad_params.append(p)
-    print(bad_params)
     if bad_params:
         return f"پارامترهای زیر از قبل به عنوان نام هیچ متغیری ثبت نشده اند\n{bad_params}"
     try:
@@ -116,8 +115,6 @@ def what_is_formula_problem(formula: str, formula_parameters:str, variable_name:
     except:
         return 'باز هم در نوشتن فرمول دقت کنید'
 
-
-# print(what_is_formula_problem('(a+b)*t+36*t+3+rrrt*a4+krt/krt2+ab', '', ('t', 'r', 'r2', 'a23', 'a', 'b', 'k')))
 
 if __name__=='__main__':
     print(hash_password('admin', '1'))

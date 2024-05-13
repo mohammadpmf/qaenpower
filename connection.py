@@ -178,7 +178,7 @@ class Connection():
         return self.cursor.fetchall()
     
     def get_all_counters_of_this_part_and_place(self, part_id, place_id):
-        query = "SELECT `qaenpower`.`counters`.`part`, `place`, `name`, `variable_name`, `previous_value`, `current_value`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `qaenpower`.`counters`.`id`, `title` FROM `qaenpower`.`counters` join `qaenpower`.`places` ON (`qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`) WHERE `qaenpower`.`counters`.`part`=%s AND `place`=%s;"
+        query = "SELECT `qaenpower`.`counters`.`part`, `place`, `name`, `variable_name`, `previous_value`, `current_value`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `qaenpower`.`counters`.`id`, `title` FROM `qaenpower`.`counters` join `qaenpower`.`places` ON (`qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`) WHERE `qaenpower`.`counters`.`part`=%s AND `place`=%s ORDER BY `qaenpower`.`places`.`order` ASC, `qaenpower`.`counters`.`order` DESC;"
         values = part_id, place_id
         self.cursor.execute(query, values)
         counters = []
@@ -212,7 +212,7 @@ class Connection():
         return ("ok", 0)
 
     def get_all_counters_variable_names(self):
-        query = "SELECT `variable_name` FROM `qaenpower`.`counters`;"
+        query = "SELECT `variable_name` FROM `qaenpower`.`counters` ORDER BY `order`;"
         self.cursor.execute(query)
         names = []
         for item in self.cursor.fetchall():
@@ -238,7 +238,7 @@ class Connection():
         return Counter(*temp)
 
     def get_current_value_of_counter_by_variable_name(self, variable_name):
-        query = "SELECT current_value FROM `qaenpower`.`counters` WHERE variable_name=%s;"
+        query = "SELECT `current_value` FROM `qaenpower`.`counters` WHERE `variable_name`=%s;"
         values = (variable_name, )
         self.cursor.execute(query, values)
         return self.cursor.fetchone()[0]
@@ -292,8 +292,8 @@ class Connection():
         return (result_message, _)
     
     def get_all_counters_short_info(self):
-        # query = "SELECT * FROM `qaenpower`.`counters` join `qaenpower`.`parts` join `qaenpower`.`places` WHERE `qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id` AND `qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`;"
-        query = "SELECT `qaenpower`.`counters`.`id`, `qaenpower`.`counters`.`name`, `qaenpower`.`places`.`title`, `qaenpower`.`parts`.`title` FROM `qaenpower`.`counters` join `qaenpower`.`parts` join `qaenpower`.`places` WHERE `qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id` AND `qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id` order by `qaenpower`.`counters`.`order`;"
+        # query = "SELECT * FROM `qaenpower`.`counters` join `qaenpower`.`parts` join `qaenpower`.`places` WHERE `qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id` AND `qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id` ORDER BY `qaenpower`.`parts`.`order`, `qaenpower`.`places`.`order`, `qaenpower`.`counters`.`order`;"
+        query = "SELECT `qaenpower`.`counters`.`id`, `qaenpower`.`counters`.`name`, `qaenpower`.`places`.`title`, `qaenpower`.`parts`.`title` FROM `qaenpower`.`counters` join `qaenpower`.`parts` join `qaenpower`.`places` WHERE `qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id` AND `qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id` ORDER BY `qaenpower`.`parts`.`order`, `qaenpower`.`places`.`order`, `qaenpower`.`counters`.`order`;"
         self.cursor.execute(query)
         return self.cursor.fetchall()
 

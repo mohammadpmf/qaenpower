@@ -594,7 +594,7 @@ class StaffWindow(MyWindows):
             return
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"پارامتر {name} با موفقیت در مکان {place} از بخش {part} ساخته شد")
-            self.refresh_all_counters_treeview()
+            self.refresh_ui()
         else:
             msb.showerror("خطا", result_message)
             print(_)
@@ -701,7 +701,7 @@ class StaffWindow(MyWindows):
             return
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"اطلاعات پارامتر با نام متغیر {variable_name} با موفقیت ویرایش شد")
-            self.refresh_all_counters_treeview()
+            self.refresh_ui()
         else:
             msb.showerror("خطا", result_message)
             print(_)
@@ -769,8 +769,7 @@ class StaffWindow(MyWindows):
         result_message, _ = self.connection.create_part(title)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"بخش {title} با موفقیت ساخته شد.")
-            self.refresh_parts_values_in_comboboxes()
-            self.refresh_parts_tree_view()
+            self.refresh_ui()
             self.entry_part_name.delete(0, END)
         else:
             msb.showerror("خطا", result_message)
@@ -839,17 +838,21 @@ class StaffWindow(MyWindows):
     
     # تابعی برای این که اولویت بخش ها رو به صورتی که تعیین کردیم در دیتابیس ذخیره کنه
     def confirm_tree_part(self, event=None):
-        for item in self.treev_part.get_children():
-            item = self.treev_part.item(item)
-            id=int(item['text'])
-            order=int(item['values'][-1])
-            result_message, _ = self.connection.change_parts_order(id, order)
-        if result_message=='ok':
-            self.refresh_parts_values_in_comboboxes()
-            msb.showinfo("پیام موفقیت", f"ترتیب بخش ها با موفقیت تغییر یافت")
-        else:
-            msb.showerror("خطا", result_message)
-            print(_)
+        try:
+            for item in self.treev_part.get_children():
+                item = self.treev_part.item(item)
+                id=int(item['text'])
+                order=int(item['values'][-1])
+                result_message, _ = self.connection.change_parts_order(id, order)
+            if result_message=='ok':
+                self.refresh_parts_values_in_comboboxes()
+                msb.showinfo("پیام موفقیت", f"ترتیب بخش ها با موفقیت تغییر یافت")
+                self.refresh_ui()
+            else:
+                msb.showerror("خطا", result_message)
+                print(_)
+        except UnboundLocalError:
+            msb.showerror("هشدار", f"ابتدا باید ترتیب بخش ها را مشخص کنید و سپس روی دکمه تایید بزنید.")
 
     ########################################## create place functions ##########################################
     # تابعی برای این که بعد از انتخاب کمبو باکس بخش، مقادیر کمبوباکس مکان هاش آپدیت بشن و نمایش داده بشن.
@@ -876,6 +879,7 @@ class StaffWindow(MyWindows):
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"مکان {title} در بخش {part} با موفقیت ساخته شد.")
             self.refresh_places_tree_view(part_id)
+            self.refresh_ui()
             # self.entry_place_name.delete(0, END) # گفتم شاید بخواد تو بخش های مختلف مکان همنام درست کنه کامنت کردم. ولی اگه بخوایم ریست کنیم گفتم سریع بشه آنکامنتش کرد.
         else:
             msb.showerror("خطا", result_message)
@@ -932,17 +936,23 @@ class StaffWindow(MyWindows):
 
     # تابعی برای این که اولویت مکان ها رو به صورتی که تعیین کردیم در دیتابیس ذخیره کنه
     def confirm_tree_place(self, event=None):
-        for item in self.treev_place.get_children():
-            item = self.treev_place.item(item)
-            id=int(item['text'])
-            order=int(item['values'][-1])
-            result_message, _ = self.connection.change_places_order(id, order)
-        if result_message=='ok':
-            # self.show_places_of_this_part() برای این گذاشته بودم که اگه ترتیب مکان ها رو برای یک بخش عوض کردیم، خود به خود تو بخش اضافه کردن پارامتر هم عوضش کنه. ولی در عمل به نظرم جالب نبود. خلاصه گذاشتم اینجا که اگه لازم شد کامنت رو فقط بردارم. چون بعدا یادم نمیاد چه تابعی رو باید صدا کنم و کلی وقت میگیرفت. گذاشتم اینجا باشه ولی کامنتش کردم.
-            msb.showinfo("پیام موفقیت", f"ترتیب مکان ها با موفقیت تغییر یافت")
-        else:
-            msb.showerror("خطا", result_message)
-            print(_)
+        try:
+            for item in self.treev_place.get_children():
+                item = self.treev_place.item(item)
+                id=int(item['text'])
+                order=int(item['values'][-1])
+                print(id, order)
+                result_message, _ = self.connection.change_places_order(id, order)
+            if result_message=='ok':
+                # self.show_places_of_this_part() برای این گذاشته بودم که اگه ترتیب مکان ها رو برای یک بخش عوض کردیم، خود به خود تو بخش اضافه کردن پارامتر هم عوضش کنه. ولی در عمل به نظرم جالب نبود. خلاصه گذاشتم اینجا که اگه لازم شد کامنت رو فقط بردارم. چون بعدا یادم نمیاد چه تابعی رو باید صدا کنم و کلی وقت میگیرفت. گذاشتم اینجا باشه ولی کامنتش کردم.
+                msb.showinfo("پیام موفقیت", f"ترتیب مکان ها با موفقیت تغییر یافت")
+                self.refresh_ui()
+            else:
+                msb.showerror("خطا", result_message)
+                print(_)
+        except UnboundLocalError:
+            msb.showerror("هشدار", f"ابتدا باید یک بخش را انتخاب کنید و مکان های آن را مرتب کنید. سپس روی دکمه تایید بزنید.")
+
 
     ########################################## all counter functions ##########################################
     # تابعی برای این که بشه اولویت نمایش یک پارامتر رو بالا برد
@@ -989,12 +999,12 @@ class StaffWindow(MyWindows):
     def confirm_tree_all_counters(self, event=None):
         for item in self.treev_all_counters.get_children():
             item = self.treev_all_counters.item(item)
-            print(item)
             id=int(item['text'])
             order=int(item['values'][-1])
             result_message, _ = self.connection.change_counters_order(id, order)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"ترتیب کنتور ها با موفقیت تغییر یافت")
+            self.refresh_ui()
         else:
             msb.showerror("خطا", result_message)
             print(_)
@@ -1008,6 +1018,12 @@ class StaffWindow(MyWindows):
     ######################################### add statistics functions ######################################
     # تابعی برای این که تب های درون قسمت آمار پارامتر ها رو مقداردهی کنه
     def seed_tabs_of_parts(self):
+        global rrr
+        if rrr==0:
+            rrr+=1
+        else:
+            for item in self.tab_control_frame.winfo_children():
+                item.destroy()
         tabs_list = []
         parts_tab = []
         places_with_counters = []
@@ -1032,6 +1048,15 @@ class StaffWindow(MyWindows):
     def back(self, event=None):
         self.main_window.destroy()
         self.root.deiconify()
+
+    def refresh_ui(self):
+        self.refresh_parts_tree_view()
+        self.refresh_parts_values_in_comboboxes()
+        # self.refresh_places_tree_view() # این ورودی میخواد. به خاطر همین کامنت کردم. گذاشتم که بعدا اشتباهی دوباره نذارمش.
+        self.refresh_places_frame_after_selecting_part()
+        self.refresh_all_counters_treeview()
+        self.seed_tabs_of_parts()
+
 
 
 class DatePicker(MyWindows):
@@ -1298,3 +1323,4 @@ class CounterWidget(Counter, MyWindows):
             self.entry_workout.config(state='normal', bg=bg)
         except:
             pass
+rrr = 0
