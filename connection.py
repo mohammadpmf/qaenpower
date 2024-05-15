@@ -178,7 +178,7 @@ class Connection():
         return self.cursor.fetchall()
     
     def get_all_counters_of_this_part_and_place(self, part_id, place_id):
-        query = "SELECT `qaenpower`.`counters`.`part`, `place`, `name`, `variable_name`, `previous_value`, `current_value`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `qaenpower`.`counters`.`id`, `title` FROM `qaenpower`.`counters` join `qaenpower`.`places` ON (`qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`) WHERE `qaenpower`.`counters`.`part`=%s AND `place`=%s ORDER BY `qaenpower`.`places`.`order` ASC, `qaenpower`.`counters`.`order` DESC;"
+        query = "SELECT `qaenpower`.`counters`.`part`, `place`, `name`, `variable_name`, `previous_value`, `current_value`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `qaenpower`.`counters`.`id`, `title` FROM `qaenpower`.`counters` join `qaenpower`.`places` ON (`qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`) WHERE `qaenpower`.`counters`.`part`=%s AND `place`=%s ORDER BY `qaenpower`.`places`.`order` ASC, `qaenpower`.`counters`.`order` ASC;"
         values = part_id, place_id
         self.cursor.execute(query, values)
         counters = []
