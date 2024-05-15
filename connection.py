@@ -296,6 +296,15 @@ class Connection():
         query = "SELECT `qaenpower`.`counters`.`id`, `qaenpower`.`counters`.`name`, `qaenpower`.`places`.`title`, `qaenpower`.`parts`.`title` FROM `qaenpower`.`counters` join `qaenpower`.`parts` join `qaenpower`.`places` WHERE `qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id` AND `qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id` ORDER BY `qaenpower`.`parts`.`order`, `qaenpower`.`places`.`order`, `qaenpower`.`counters`.`order`;"
         self.cursor.execute(query)
         return self.cursor.fetchall()
+    
+    def get_all_parameters_current_value(self):
+        query = "SELECT `variable_name`, `current_value` FROM `qaenpower`.`counters`;"
+        self.cursor.execute(query)
+        temp_dict = {}
+        for item in self.cursor.fetchall():
+            temp_dict[item[0]]=item[1]
+        return temp_dict
+
 
 if __name__ == "__main__":
     c = Connection()

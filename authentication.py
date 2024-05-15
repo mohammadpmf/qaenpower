@@ -5,7 +5,6 @@ from functions import calculate_fn, get_formula_parameters, what_is_variable_nam
 from models import Staff, Counter
 from ui_settings import Tk
 
-
 class MyWindows():
     def __init__(self, connection: Connection, root: Tk):
         self.connection = connection
@@ -83,6 +82,8 @@ class LoginForm(MyWindows):
 class StaffWindow(MyWindows):
     def __init__(self, connection: Connection, root: Tk, user: Staff):
         super().__init__(connection, root)
+        global all_variables_cuurent_value
+        all_variables_cuurent_value=self.connection.get_all_parameters_current_value() # این رو آخر سر اضافه کردم. برای این که مدام از دیتابیس نپرسیم مقادیر رو، اول کار مقدار فعلی همه متغیرها رو میگیریم که تو برنامه راحت بشه باهاشون کار کرد هی نریم سراغ دیتابیس. هر بار هم که تابع رفرش یو آی صدا زده میشه این متغیر رو با همین دستور آپدیت میکنم منتهی چون تو کلاس دیگه هم لازم داشتم، به جای ذخیره کردن در سلف، گلوبالش کردم.
         self.user = user
         self.main_window = Toplevel(self.frame)
         self.main_window.title(f'حساب کاربری {self.user}')
@@ -1039,6 +1040,7 @@ class StaffWindow(MyWindows):
             # parts[i].place(width=1024, height=400)
         self.tab_control_frame.pack(expand = 1, fill ="both")
 
+
     ########################################### generic functions ###########################################
     # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
     def back(self, event=None):
@@ -1046,6 +1048,8 @@ class StaffWindow(MyWindows):
         self.root.deiconify()
 
     def refresh_ui(self):
+        global all_variables_cuurent_value
+        all_variables_cuurent_value=self.connection.get_all_parameters_current_value()
         self.refresh_parts_tree_view()
         self.refresh_parts_values_in_comboboxes()
         # self.refresh_places_tree_view() # این ورودی میخواد. به خاطر همین کامنت کردم. گذاشتم که بعدا اشتباهی دوباره نذارمش.
@@ -1154,8 +1158,6 @@ class PartWidget(MyWindows):
         self.my_canvas.bind('<Configure>', lambda e: self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all")))
         self.places_window = Frame(self.my_canvas)
         self.my_canvas.create_window((0, 0), window=self.places_window, anchor="ne")
-        # all_counters = [] # برای بایند کردن تعریف کرده بودم که فعلا کاری نکردم.
-        # print(all_counters)
         for i, counters in enumerate(self.places_with_counters):
             if counters: # یعنی اگر یک مکان پارامتر هایی داشت این کارها رو انجام بده اگه نداشت الکی ردیف براش درست نکنه
                 self.frame_row = Frame(self.places_window, bg=BG)
@@ -1186,70 +1188,72 @@ class PartWidget(MyWindows):
                         id=counter.id,
                         place_title=counter.place_title,
                         font=FONT2)
-                    # all_counters.append(c)
                     c.grid(row=i, column=1000-1-j, sticky='news', padx=4, pady=2)
-        # print(all_counters)
-
 
 class CounterWidget(Counter, MyWindows):
     def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, previous_value=0, current_value=0, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, *args, **kwargs):
         super().__init__(part, place, name, variable_name, previous_value, current_value, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title)
         MyWindows.__init__(self, connection, root)
+        global all_variables_cuurent_value
+        self.frame = LabelFrame(self.root, text=f"پارامتر {self.name}", cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
+        self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
-            parameters = get_formula_parameters(formula)
+            parameters = get_formula_parameters(self.formula)
             values = []
             for p in parameters:
                 if p=='b':
                     values.append(self.current_value)
                 elif p=='a':
-                    values.append(self.previous_value)
+                    values.append(self.current_value)
                 else:
-                    values.append(self.connection.get_current_value_of_counter_by_variable_name(p))
-            answer = calculate_fn(formula, parameters, values)
-        self.frame = LabelFrame(self.root, text=f"پارامتر {self.name}", cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
-        if self.type==COUNTER_TYPES[0]:
-            self.img = Image.open('copy-icon.png')
-            self.img = self.img.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
-            self.img = ImageTk.PhotoImage(self.img)
-            self.btn_copy = Button(self.frame, image=self.img, cnf=CNF_BTN2, command=self.copy_down, *args, **kwargs)
-            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH2, *args, **kwargs)
+                    # values.append(self.connection.get_current_value_of_counter_by_variable_name(p))
+                    values.append(all_variables_cuurent_value.get(p))
+            self.answer = calculate_fn(self.formula, parameters, values)
+        if self.type==COUNTER_TYPES[2]:
+            self.entry_current_counter = Label(self.frame, text=self.answer, cnf=CNF_LBL2, width=17, *args, **kwargs)
+        elif self.type==COUNTER_TYPES[1]:
+            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, width=25, *args, **kwargs)
+            self.entry_current_counter.bind('<Return>', self.confirm)
+            self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
                 self.entry_current_counter.insert(0, round3(self.current_value))
             elif self.default_value==DEFAULT_VALUES[1]:
                 self.entry_current_counter.insert(0, DEFAULT_VALUES[1])
             elif self.default_value==DEFAULT_VALUES[2]:
                 self.entry_current_counter.delete(0, END)
+        elif self.type==COUNTER_TYPES[0]:
+            self.img = Image.open('copy-icon.png')
+            self.img = self.img.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
+            self.img = ImageTk.PhotoImage(self.img)
+            self.btn_copy = Label(self.frame, image=self.img, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
+            self.btn_copy.bind('<Button-1>', self.copy_paste)
+            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH2, *args, **kwargs)
             self.entry_previous_counter = Label(self.frame, cnf=CNF_LBL2, text=round3(self.current_value), *args, **kwargs)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
-            self.entry_workout.insert(0, 'کارکرد')
-            self.entry_workout.config(state='readonly')
             self.boolean_var_bad = BooleanVar(self.frame)
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
+            self.entry_current_counter.bind('<Return>', self.confirm)
+            self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
             self.entry_workout.bind('<Return>', self.confirm)
-            self.entry_workout.bind('<KeyRelease>', self.check_color)
-            self.entries = [self.entry_previous_counter, self.entry_current_counter, self.entry_workout] # میخواستم برای دیسبل کردن و اینیبل کردن یه حلقه بزنم. همه شون رو ریختم تو یه لیست داخل آبجکت که تو تابع چک کارم راحت تر بشه.
-            self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID2)
-            self.entry_current_counter.grid(row=2, column=2, cnf=CNF_GRID2)
-            self.btn_copy.grid(row=2, column=3, cnf=CNF_GRID2)
-            self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID2)
-            self.entry_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID2)
-        elif self.type==COUNTER_TYPES[1]:
-            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, width=25, *args, **kwargs)
+            self.entry_workout.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
-                self.entry_current_counter.insert(0, round3(self.previous_value))
+                self.entry_current_counter.insert(0, round3(self.current_value))
             elif self.default_value==DEFAULT_VALUES[1]:
                 self.entry_current_counter.insert(0, DEFAULT_VALUES[1])
             elif self.default_value==DEFAULT_VALUES[2]:
                 self.entry_current_counter.delete(0, END)
-            self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID2)
-        elif self.type==COUNTER_TYPES[2]:
-            self.entry_current_counter = Label(self.frame, text=answer, cnf=CNF_LBL2, width=17, *args, **kwargs)
-            self.entry_current_counter.grid(row=1, column=1, cnf=CNF_GRID2)
-        self.entry_current_counter.bind('<Return>', self.confirm)
-        self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
+            self.entry_workout.insert(0, self.answer)
+            self.entry_workout.config(state='readonly')
+            self.entries = [self.entry_previous_counter, self.entry_current_counter, self.entry_workout] # میخواستم برای دیسبل کردن و اینیبل کردن یه حلقه بزنم. همه شون رو ریختم تو یه لیست داخل آبجکت که تو تابع چک کارم راحت تر بشه.
+            self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID2)
+            self.btn_copy.grid(row=2, column=3, cnf=CNF_GRID2)
+            self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID2)
+            self.entry_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID2)
+        self.entry_current_counter.grid(row=2, column=2, cnf=CNF_GRID2)
+        self.check_color()
    
     def confirm(self, event=None):
-        value = self.entry_current_counter.get()
+        value = self.entry_workout.get()
         try:
             value = float(value)
         except:
@@ -1263,23 +1267,42 @@ class CounterWidget(Counter, MyWindows):
             msb.showerror("ارور", result_message)
 
     def update_workout(self, event=None):
-        if self.type==COUNTER_TYPES[0] and (event.keysym in '0123456789' or event.keysym in ['period', 'BackSpace']):
+        if self.boolean_var_bad.get():
+            self.check_color()
+            return
+        if self.type==COUNTER_TYPES[0]:
             try:
-                current = float(self.entry_current_counter.get().strip())
-                prev = float(self.entry_previous_counter['text'])  # میشه از دیتابیس گرفت که دقیق تر باشه. اما من نگرفتم و از رو همون ۳ رقم اعشار خووندم.
-                workout = current - prev
-                workout = round3(workout)
-            except:
-                workout = f"-{self.entry_previous_counter['text']}"
+                if self.entry_current_counter.get().strip()=='':
+                    current = 0
+                else:
+                    current = float(self.entry_current_counter.get().strip())
+                prev = float(self.current_value)
+                # چون همین الان داره آپدیت میکنه، پس مقدار فعلی که تو سلف هست میشه مقدار قبلی و مقدار 
+                # فعلی جدید رو از تو باکس میخوونه.
+                parameters = get_formula_parameters(self.formula)
+                values = []
+                for p in parameters:
+                    if p=='b':
+                        values.append(current)
+                    elif p=='a':
+                        values.append(prev)
+                    else:
+                        values.append(float(all_variables_cuurent_value.get(p)))
+                self.answer = calculate_fn(self.formula, parameters, values)
+                self.workout = round3(self.answer)
+            except ValueError:
+                msb.showwarning("هشدار", "مقدار پارامتر را به صورت عدد صحیح یا اعشاری وارد نمایید")
+                self.entry_current_counter.focus_set()
+                self.entry_current_counter.delete(0, END)
                 return
             finally:
                 self.entry_workout.config(state='normal')
                 self.entry_workout.delete(0, END)
-                self.entry_workout.insert(0, workout)
+                self.entry_workout.insert(0, self.workout)
                 self.entry_workout.config(state='readonly')
                 self.check_color()
 
-    def copy_down(self):
+    def copy_paste(self, event=None):
         self.boolean_var_bad.set(False)
         self.check()
         self.entry_current_counter.delete(0, END)
@@ -1316,14 +1339,14 @@ class CounterWidget(Counter, MyWindows):
         a_l = self.alarm_lower_bound
         a_u = self.alarm_upper_bound
         try:
-            workout = float(self.entry_workout.get())
-            if workout<=a_l:
+            self.workout = float(self.entry_workout.get())
+            if self.workout<=a_l:
                 bg = ALARM_COLOR
-            elif workout<=w_l:
+            elif self.workout<=w_l:
                 bg = WARNING_COLOR
-            elif workout>=a_u:
+            elif self.workout>=a_u:
                 bg = ALARM_COLOR
-            elif workout>=w_u:
+            elif self.workout>=w_u:
                 bg = WARNING_COLOR
             else:
                 bg=BG
