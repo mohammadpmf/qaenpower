@@ -1,6 +1,6 @@
 import pymysql
 from models import Staff, Counter
-from functions import hash_password, get_jnow
+from functions import hash_password, get_jnow, datetime
 
 WRONG_LIMIT=10
 
@@ -20,9 +20,9 @@ class Connection():
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `part` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), INDEX `part_idx` (`part` ASC) VISIBLE, UNIQUE INDEX `place_part` (`title` ASC, `part` ASC) INVISIBLE, CONSTRAINT `part` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `previous_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, `current_value` DECIMAL(20,10) UNSIGNED NOT NULL DEFAULT 0, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `counter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `counter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) UNSIGNED NOT NULL, `date_time` DATETIME NOT NULL, `counter` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `counter` FOREIGN KEY (`counter`) REFERENCES `qaenpower`.`counters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) UNSIGNED NOT NULL, `workout` DECIMAL(20,10) UNSIGNED NOT NULL,`date_time` DATETIME NOT NULL, `counter` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `counter` FOREIGN KEY (`counter`) REFERENCES `qaenpower`.`counters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
         self.cursor.execute(query)
 
     def create_user(self, name, surname, username, password):
@@ -153,11 +153,11 @@ class Connection():
             elif 'counters.counter_place_part' in temp:
                 return ("در این بخش و مکان، پارامتری با این نام قبلا ثبت شده است", 2)
 
-    def update_counter(self, name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place, previous_value, current_value):
-        query = "UPDATE `qaenpower`.`counters` SET `name` = %s, `type` = %s, `unit` = %s, `default_value` = %s, `variable_name` = %s, `warning_lower_bound` = %s, `warning_upper_bound` = %s, `alarm_lower_bound` = %s, `alarm_upper_bound` = %s, `formula` = %s, `part` = %s, `place` = %s, `previous_value` = %s, `current_value` = %s WHERE (`variable_name` = %s);"
+    def update_counter(self, name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place):
+        query = "UPDATE `qaenpower`.`counters` SET `name` = %s, `type` = %s, `unit` = %s, `default_value` = %s, `variable_name` = %s, `warning_lower_bound` = %s, `warning_upper_bound` = %s, `alarm_lower_bound` = %s, `alarm_upper_bound` = %s, `formula` = %s, `part` = %s, `place` = %s WHERE (`variable_name` = %s);"
         part_id, part_title, part_sort = self.get_part_by_title(part)
         place_id, place_title, place_part_id, place_sort = self.get_place_by_title_and_part_id(place, part_id)
-        values = name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part_id, place_id, previous_value, current_value, variable_name
+        values = name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part_id, place_id, variable_name
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
@@ -184,12 +184,21 @@ class Connection():
         self.cursor.execute(query, part_id)
         return self.cursor.fetchall()
     
-    def get_all_counters_of_this_part_and_place(self, part_id, place_id):
-        query = "SELECT `qaenpower`.`counters`.`part`, `place`, `name`, `variable_name`, `previous_value`, `current_value`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `qaenpower`.`counters`.`id`, `title` FROM `qaenpower`.`counters` join `qaenpower`.`places` ON (`qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`) WHERE `qaenpower`.`counters`.`part`=%s AND `place`=%s ORDER BY `qaenpower`.`places`.`order` ASC, `qaenpower`.`counters`.`order` ASC;"
+    def get_all_counters_of_this_part_and_place(self, part_id, place_id, date_time):
+        query = "SELECT `qaenpower`.`counters`.`part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `qaenpower`.`counters`.`id`, `qaenpower`.`places`.`title` as `place_title`, `qaenpower`.`parts`.`title` as `part_title` FROM `qaenpower`.`counters` join `qaenpower`.`places` ON (`qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`) join `qaenpower`.`parts` ON (`qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id`) WHERE `qaenpower`.`counters`.`part`=%s AND `place`=%s ORDER BY `qaenpower`.`parts`.`order` ASC, `qaenpower`.`places`.`order` ASC, `qaenpower`.`counters`.`order` ASC;"
         values = part_id, place_id
         self.cursor.execute(query, values)
         counters = []
         for counter in self.cursor.fetchall():
+            # counter_id = counter[12]
+            # query = "SELECT `id`, `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s AND `date_time`<%s ORDER BY `date_time` DESC LIMIT 1;"
+            # values = (counter_id, date_time)
+            # self.cursor.execute(query, values)
+            # last_value_of_counter = self.cursor.fetchone()
+            # if last_value_of_counter in [None, '', ()]:
+            #     value = 0
+            # else:
+            #     value = last_value_of_counter[1]
             t = Counter(*counter)
             counters.append(t)
         return counters
@@ -200,20 +209,9 @@ class Connection():
         self.cursor.execute(query, values)
         return self.cursor.fetchone()
 
-    def create_counter_log(self, value, counter_id):
-        query = "INSERT INTO `qaenpower`.`counters_log` (`value`, `date_time`, `counter`) VALUES (%s, %s, %s);"
-        values = value, get_jnow(), counter_id
-        self.cursor.execute(query, values)
-        self.connection.commit()
-        return ("ok", 0)
-
-    def update_counter_usage(self, value, counter_id):
-        query = "SELECT `previous_value`, `current_value` FROM `qaenpower`.`counters` where `id` = %s;"
-        values = (counter_id, )
-        self.cursor.execute(query, values)
-        a, b = self.cursor.fetchone()
-        query = "UPDATE `qaenpower`.`counters` SET `previous_value` = %s, `current_value` = %s WHERE (`id` = %s);"
-        values = (b, value, counter_id)
+    def create_counter_log(self, value, workout, counter_id):
+        query = "INSERT INTO `qaenpower`.`counters_log` (`value`, `workout`, `date_time`, `counter`) VALUES (%s, %s, %s, %s);"
+        values = (value, workout, datetime.now(), counter_id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
@@ -227,7 +225,7 @@ class Connection():
         return tuple(names)
     
     def get_counter_by_variable_name(self, variable_name): 
-        query = "SELECT `part`, `place`, `name`, `variable_name`, `previous_value`, `current_value`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `qaenpower`.`counters` WHERE `variable_name`=%s;"
+        query = "SELECT `part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `qaenpower`.`counters` WHERE `variable_name`=%s;"
         values = (variable_name, )
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()
@@ -236,7 +234,7 @@ class Connection():
         return Counter(*temp)
     
     def get_counter_by_id(self, id):
-        query = "SELECT `part`, `place`, `name`, `variable_name`, `previous_value`, `current_value`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `qaenpower`.`counters` WHERE `id`=%s;"
+        query = "SELECT `part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `qaenpower`.`counters` WHERE `id`=%s;"
         values = (id, )
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()
@@ -245,8 +243,12 @@ class Connection():
         return Counter(*temp)
 
     def get_current_value_of_counter_by_variable_name(self, variable_name):
-        query = "SELECT `current_value` FROM `qaenpower`.`counters` WHERE `variable_name`=%s;"
+        query = "SELECT `id` FROM `qaenpower`.`counters` WHERE `variable_name`=%s;"
         values = (variable_name, )
+        self.cursor.execute(query, values)
+        id = self.cursor.fetchone()[0]
+        query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s ORDER BY `date_time` DESC LIMIT 1;"
+        values = (id, )
         self.cursor.execute(query, values)
         return self.cursor.fetchone()[0]
 
@@ -305,11 +307,20 @@ class Connection():
         return self.cursor.fetchall()
     
     def get_all_parameters_current_value(self):
-        query = "SELECT `variable_name`, `current_value` FROM `qaenpower`.`counters`;"
+        query = "SELECT `id`, `variable_name` FROM `qaenpower`.`counters`;"
         self.cursor.execute(query)
         temp_dict = {}
         for item in self.cursor.fetchall():
-            temp_dict[item[0]]=item[1]
+            id = item[0]
+            variable_name = item[1]
+            query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s ORDER BY `date_time` DESC LIMIT 1;"
+            values = (id, )
+            self.cursor.execute(query, values)
+            temp_result = self.cursor.fetchone()
+            if temp_result in [None, '', ()]:
+                temp_dict[variable_name]=item[0]
+            else:
+                temp_dict[variable_name]=item[temp_result]
         return temp_dict
 
 

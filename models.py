@@ -36,15 +36,14 @@ class Place():
 
 
 class Counter():
-    def __init__(self, part, place, name, variable_name, previous_value=0, current_value=0, formula='',
+    def __init__(self, part, place, name, variable_name, formula='',
                  type='counter', default_value=0, unit=None, warning_lower_bound=None,
-                 warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None):
+                 warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None,
+                 place_title=None, part_title=None):
         self.part = part
         self.place = place
         self.name = name
         self.variable_name = variable_name
-        self.previous_value = previous_value
-        self.current_value = current_value
         self.formula = formula
         self.type = type                                    # counter               -   fixed   -  calculating
         self.default_value = default_value                  # previous day number   -   0       -  None
@@ -55,6 +54,7 @@ class Counter():
         self.alarm_upper_bound = alarm_upper_bound          # if not in range => bg red
         self.id = id
         self.place_title = place_title
+        self.part_title = part_title
 
     def __str__(self):
         return f"{self.name}"

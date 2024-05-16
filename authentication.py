@@ -1,7 +1,7 @@
 from ui_settings import *
 from PIL import Image, ImageTk
 from connection import Connection
-from functions import calculate_fn, get_formula_parameters, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime
+from functions import calculate_fn, get_formula_parameters, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime, datetime
 from models import Staff, Counter
 from ui_settings import Tk
 from threading import Thread
@@ -85,7 +85,8 @@ class LoginForm(MyWindows):
 class StaffWindow(MyWindows):
     def __init__(self, connection: Connection, root: Tk, user: Staff):
         super().__init__(connection, root)
-        global all_variables_cuurent_value, signal
+        global all_variables_cuurent_value, date_picker, signal, selected_date
+        selected_date = datetime.now()
         signal = 0 # برای این که وقتی یه آپدیتی کردیم رو یه پارامتر، ظاهر برنامه رو رفرش کنیم و به تابع رفرش یو آی این کلاس دسترسی داشته باشیم.
         Thread(target=self.refresh_ui_from_anywhere, daemon=True).start()
         all_variables_cuurent_value=self.connection.get_all_parameters_current_value() # این رو آخر سر اضافه کردم. برای این که مدام از دیتابیس نپرسیم مقادیر رو، اول کار مقدار فعلی همه متغیرها رو میگیریم که تو برنامه راحت بشه باهاشون کار کرد هی نریم سراغ دیتابیس. هر بار هم که تابع رفرش یو آی صدا زده میشه این متغیر رو با همین دستور آپدیت میکنم منتهی چون تو کلاس دیگه هم لازم داشتم، به جای ذخیره کردن در سلف، گلوبالش کردم.
@@ -139,8 +140,8 @@ class StaffWindow(MyWindows):
         self.date_picker_frame.pack(side=TOP, expand=True, fill='x')
         self.tab_control_frame = ttk.Notebook(self.frame_add_statistics)
         self.tab_control_frame.pack(side=RIGHT, expand=True, fill='both')
-        self.date_picker = DatePicker(self.connection, self.date_picker_frame)
-        self.date_picker.pack(side=RIGHT, expand=True, fill='both')
+        date_picker = DatePicker(self.connection, self.date_picker_frame)
+        date_picker.pack(side=RIGHT, expand=True, fill='both')
         self.seed_tabs_of_parts()
 
         ###################################### frame_change_users_password ######################################
@@ -1041,8 +1042,35 @@ class StaffWindow(MyWindows):
     ######################################### add statistics functions ######################################
     # تابعی برای این که تب های درون قسمت آمار پارامتر ها رو مقداردهی کنه
     def seed_tabs_of_parts(self):
+        global selected_date
         for item in self.tab_control_frame.winfo_children():
             item.destroy()
+        parts=self.connection.get_all_parts()
+        all_parts = []
+        all_places = []
+        all_counters = []
+        for part in parts:
+            all_parts.append({
+                'id': part[0],
+                'title': part[1],
+            })
+        # print(all_parts)
+        for i, part in enumerate(all_parts):
+            temp_places=self.connection.get_all_places_by_part_id(part['id'])
+            for place in temp_places:
+                all_places.append({
+                    'id': place[0],
+                    'title': place[1],
+                    'part': all_parts[i]
+                })
+        # print(all_places)
+        for place in all_places:
+            counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place['part']['id'], place_id=place['id'], date_time=selected_date)
+            for counter in counters:
+                all_counters.append(counter)
+        # for counter in all_counters:
+        #     print(counter.place_title)
+
         tabs_list = []
         parts_tab = []
         places_with_counters = []
@@ -1054,7 +1082,7 @@ class StaffWindow(MyWindows):
             self.tab_control_frame.add(tabs_list[i], text =f'{part[1]}')
             temp_places=self.connection.get_all_places_by_part_id(part[0])
             for place in temp_places:
-                counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place[2], place_id=place[0])
+                counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place[2], place_id=place[0], date_time=selected_date)
                 places_with_counters.append(counters)
             parts_tab.append(PartWidget(self.connection, tabs_list[i], places_with_counters))
             # parts[i].grid(row=1, column=1)
@@ -1070,8 +1098,6 @@ class StaffWindow(MyWindows):
         self.root.deiconify()
 
     def refresh_ui(self):
-        global all_variables_cuurent_value
-        all_variables_cuurent_value=self.connection.get_all_parameters_current_value()
         self.refresh_parts_tree_view()
         self.refresh_parts_values_in_comboboxes()
         # self.refresh_places_tree_view() # این ورودی میخواد. به خاطر همین کامنت کردم. گذاشتم که بعدا اشتباهی دوباره نذارمش.
@@ -1180,9 +1206,10 @@ class DatePicker(MyWindows):
             self.btn_confirm.pack_forget()
 
     def confirm(self):
-        date = self.label_date['text'] 
-        print(date)
-
+        global selected_date
+        jdate = jdatetime.date(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()))
+        selected_date = jdate.togregorian()
+        print(selected_date)
 
 class PartWidget(MyWindows):
     def __init__(self, connection: Connection, root: Tk, places_with_counters):
@@ -1221,8 +1248,6 @@ class PartWidget(MyWindows):
                         place=counter.place,
                         name=counter.name,
                         variable_name=counter.variable_name,
-                        previous_value=counter.previous_value,
-                        current_value=counter.current_value,
                         formula=counter.formula,
                         type=counter.type,
                         default_value=counter.default_value,
@@ -1237,11 +1262,12 @@ class PartWidget(MyWindows):
                     c.grid(row=i, column=1000-1-j, sticky='news', padx=4, pady=2)
 
 class CounterWidget(Counter, MyWindows):
-    def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, previous_value=0, current_value=0, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, *args, **kwargs):
-        super().__init__(part, place, name, variable_name, previous_value, current_value, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title)
+    def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, part_title=None, *args, **kwargs):
+        super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
-        global all_variables_cuurent_value
-        self.frame = LabelFrame(self.root, text=f"{self.name}", cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
+        global all_variables_cuurent_value, date_picker
+        self.current_value = 0
+        self.frame = LabelFrame(self.root, text=self.name, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
             parameters = get_formula_parameters(self.formula)
@@ -1290,7 +1316,6 @@ class CounterWidget(Counter, MyWindows):
                 self.entry_current_counter.delete(0, END)
             self.entry_workout.insert(0, self.answer)
             self.entry_workout.config(state='readonly')
-            self.entries = [self.entry_previous_counter, self.entry_current_counter, self.entry_workout] # میخواستم برای دیسبل کردن و اینیبل کردن یه حلقه بزنم. همه شون رو ریختم تو یه لیست داخل آبجکت که تو تابع چک کارم راحت تر بشه.
             self.entry_current_counter.grid(row=2, column=2, cnf=CNF_GRID2)
             self.btn_copy.grid(row=2, column=3, cnf=CNF_GRID2)
             self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID2)
@@ -1299,28 +1324,39 @@ class CounterWidget(Counter, MyWindows):
         self.check_color()
    
     def confirm(self, event=None):
-        global signal
-        value = self.entry_workout.get()
-        try:
-            value = float(value)
-            if value<0:
-                msb.showwarning("هشدار", "مقدار کارکرد نمیتواند منفی باشد")
+        global signal, all_variables_cuurent_value
+        if self.type==COUNTER_TYPES[0]:
+            previous = self.entry_previous_counter['text']
+            current_value=self.entry_current_counter.get()
+            workout = self.entry_workout.get()
+            try:
+                previous = float(previous)
+                current_value = float(current_value)
+                workout = float(workout)
+                if current_value<previous:
+                    msb.showwarning("هشدار", "مقدار کنتور جدید نمیتواند کمتر از قبل باشد")
+                    return
+                if workout<0:
+                    msb.showwarning("هشدار", "مقدار کارکرد نمیتواند منفی باشد")
+                    return
+            except:
+                msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
                 return
-        except:
-            msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
-            return
-        finally:
-            if self.type==COUNTER_TYPES[0]:
-                self.entry_current_counter.focus_set()
-            else:
-                self.entry_workout.focus_set()
-        result_message, ـ = self.connection.create_counter_log(value, self.id)
-        result_message, ـ = self.connection.update_counter_usage(value, self.id)
+        self.current_value = current_value
+        self.workout = workout
+        all_variables_cuurent_value[self.variable_name]=self.workout
+        result_message, ـ = self.connection.create_counter_log(self.current_value, self.workout, self.id)
+        # self.update_all_variables_current_value()
+        # result_message, ـ = self.connection.update_counter_usage(value, self.id)
         if result_message == "ok":
             signal=1 # برای این که به کلاس اولیه سیگنال بفرستم که تابع رفرش یو آی رو صدا کنه
-            msb.showinfo("پیام موفقیت", f"مقدار {value} با موفقیت برای پارامتر {self.name} از مکان {self.place_title} ثبت شد.")
         else:
             msb.showerror("ارور", result_message)
+    # def update_all_variables_current_value(self):
+    #     global all_variables_cuurent_value
+    #     for key, value in all_variables_cuurent_value.items():
+    #         print(key, value)
+    #     print(self.current_value, self.workout, self.id)
 
     def update_workout(self, event=None):
         if self.type==COUNTER_TYPES[2]:
@@ -1386,11 +1422,6 @@ class CounterWidget(Counter, MyWindows):
             self.entry_workout.delete(0, END)
             self.entry_workout.insert(0, self.workout)
             self.entry_workout.config(state='readonly')
-            for entry in self.entries:
-                if entry['state']=='normal':
-                    entry.config(fg=FG, bg=BG)
-                else:
-                    entry.config(fg=DISABLED_FG, bg=BG)
             self.check_color()
     
     def check(self):
