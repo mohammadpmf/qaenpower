@@ -317,10 +317,11 @@ class Connection():
             values = (id, )
             self.cursor.execute(query, values)
             temp_result = self.cursor.fetchone()
+            print(variable_name, temp_result)
             if temp_result in [None, '', ()]:
-                temp_dict[variable_name]=item[0]
+                temp_dict[variable_name]=0
             else:
-                temp_dict[variable_name]=item[temp_result]
+                temp_dict[variable_name]=temp_result[0]
         return temp_dict
 
 
