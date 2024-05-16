@@ -101,34 +101,51 @@ class StaffWindow(MyWindows):
         self.frame_change_password_tab = Frame(self.tab_control, bg=BG)
         self.frame_add_statistics_tab = Frame(self.tab_control, bg=BG)
         self.tab_control.add(self.frame_change_password_tab, text ='تغییر رمز عبور')
-        self.tab_control.add(self.frame_add_statistics_tab, text ='ثبت آمار')
         if self.user.access_level==1:
             self.frame_add_part_tab = Frame(self.tab_control, bg=BG)
             self.frame_add_place_tab = Frame(self.tab_control, bg=BG)
             self.frame_all_counters_tab = Frame(self.tab_control, bg=BG)
             self.frame_add_counter_tab = Frame(self.tab_control, bg=BG)
+            self.frame_set_default_date_tab = Frame(self.tab_control, bg=BG)
             self.frame_add_user_tab = Frame(self.tab_control, bg=BG)
             self.tab_control.add(self.frame_add_user_tab, text ='افزودن کاربر جدید')
-            self.tab_control.add(self.frame_add_counter_tab, text ='افزودن پارامتر جدید')
+            self.tab_control.add(self.frame_set_default_date_tab, text ='تاریخ پیش فرض')
             self.tab_control.add(self.frame_all_counters_tab, text ='پارامترهای موجود')
+            self.tab_control.add(self.frame_add_counter_tab, text ='افزودن پارامتر جدید')
             self.tab_control.add(self.frame_add_place_tab, text ='افزودن مکان جدید')
             self.tab_control.add(self.frame_add_part_tab, text ='افزودن بخش جدید')
+        self.tab_control.add(self.frame_add_statistics_tab, text ='ثبت آمار')
         self.tab_control.select(self.frame_add_statistics_tab)
+
+        ###################################### frame_set_default_date ######################################
+        self.frame_set_default_date = Frame(self.frame_set_default_date_tab, bg=BG)
+        self.frame_set_default_date.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
+        # self.frame_set_default_date.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
+        self.label_set_default_date = Label(self.frame_set_default_date, text='تاریخ پیش فرض', cnf=CNF_LABEL)
+        self.entry_set_default_date = ttk.Combobox(self.frame_set_default_date, values=DEFAULT_DATE_VALUES, font=FONT, width=WORDS_WIDTH, justify='center')
+        self.entry_set_default_date.insert(0, DEFAULT_DATE_VALUES[0])
+        self.entry_set_default_date.config(state='readonly')
+        self.btn_set_default_date = Button(self.frame_set_default_date, text='تایید', cnf=CNF_BTN, font=FONT3, command=self.confirm_default_date)
+        # self.btn_back_set_default_date = Button(self.frame_set_default_date, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
+        self.label_set_default_date.grid(row=1, column=3, cnf=CNF_GRID)
+        self.entry_set_default_date.grid(row=1, column=2, cnf=CNF_GRID)
+        self.btn_set_default_date.grid(row=1, column=1, cnf=CNF_GRID)
+        # self.btn_back_set_default_date.grid(row=1, column=0, cnf=CNF_GRID)
 
         ###################################### frame_add_statistics ######################################
         self.frame_add_statistics = Frame(self.frame_add_statistics_tab, bg=BG)
-        self.frame_add_statistics.pack(side=RIGHT)
+        self.frame_add_statistics.pack(side=RIGHT, anchor='ne')
         self.date_picker_frame = Frame(self.frame_add_statistics)
         self.date_picker_frame.pack(side=TOP, expand=True, fill='x')
         self.tab_control_frame = ttk.Notebook(self.frame_add_statistics)
         self.tab_control_frame.pack(side=RIGHT, expand=True, fill='both')
-        self.date_picker = DatePicker(self.root, self.date_picker_frame)
+        self.date_picker = DatePicker(self.connection, self.date_picker_frame)
         self.date_picker.pack(side=RIGHT, expand=True, fill='both')
         self.seed_tabs_of_parts()
 
         ###################################### frame_change_users_password ######################################
         self.frame_change_users_password = Frame(self.frame_change_password_tab, bg=BG)
-        self.frame_change_users_password.pack(side=RIGHT)
+        self.frame_change_users_password.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
         # self.frame_change_users_password.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
         self.label_username_change_users_password = Label(self.frame_change_users_password, text="نام کاربری", cnf=CNF_LABEL)
         self.entry_username_change_users_password = Entry(self.frame_change_users_password, cnf=CNF_ENTRY_USER)
@@ -161,7 +178,7 @@ class StaffWindow(MyWindows):
 
         ############################################## frame_user ##############################################
         self.frame_user = Frame(self.frame_add_user_tab, bg=BG)
-        self.frame_user.pack(side=RIGHT)
+        self.frame_user.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
         # self.frame_user.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
         self.label_name = Label(self.frame_user, text="نام", cnf=CNF_LABEL)
         self.entry_name = Entry(self.frame_user, cnf=CNF_ENTRY_USER, justify='right')
@@ -198,7 +215,7 @@ class StaffWindow(MyWindows):
 
         ############################################# frame_counter #############################################
         self.frame_counter = Frame(self.frame_add_counter_tab, bg=BG)
-        self.frame_counter.pack(side=RIGHT)
+        self.frame_counter.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
         self.label_counter_part = Label(self.frame_counter, text="بخش پارامتر", cnf=CNF_LABEL)
         self.entry_counter_part = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
         self.entry_counter_part.bind("<<ComboboxSelected>>", self.show_places_of_this_part)
@@ -223,9 +240,9 @@ class StaffWindow(MyWindows):
         self.entry_counter_warning_lower_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
         self.label_counter_warning_upper_bound = Label(self.frame_counter, text="حد بالای هشدار", cnf=CNF_LABEL)
         self.entry_counter_warning_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-        self.label_counter_alarm_lower_bound = Label(self.frame_counter, text="حد پایین خطر", cnf=CNF_LABEL)
+        self.label_counter_alarm_lower_bound = Label(self.frame_counter, text="حد پایین آلارم", cnf=CNF_LABEL)
         self.entry_counter_alarm_lower_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-        self.label_counter_alarm_upper_bound = Label(self.frame_counter, text="حد بالای خطر", cnf=CNF_LABEL)
+        self.label_counter_alarm_upper_bound = Label(self.frame_counter, text="حد بالای آلارم", cnf=CNF_LABEL)
         self.entry_counter_alarm_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
         self.label_counter_formula = Label(self.frame_counter, text="فرمول", cnf=CNF_LABEL)
         self.entry_counter_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
@@ -279,7 +296,7 @@ class StaffWindow(MyWindows):
 
         ############################################# frame_part #############################################
         self.frame_part = Frame(self.frame_add_part_tab, bg=BG)
-        self.frame_part.pack(side=RIGHT)
+        self.frame_part.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
         # self.frame_part.place(relx=0.22, rely=0.08, relwidth=1, relheight=1)
         self.label_part_name = Label(self.frame_part, text="نام بخش", cnf=CNF_LABEL)
         self.entry_part_name = Entry(self.frame_part, cnf=CNF_ENTRY_COUNTER, justify='right')
@@ -310,7 +327,7 @@ class StaffWindow(MyWindows):
 
         ############################################# frame_place #############################################
         self.frame_place = Frame(self.frame_add_place_tab, bg=BG)
-        self.frame_place.pack(side=RIGHT)
+        self.frame_place.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
         # self.frame_place.place(relx=0.2, rely=0.02, relwidth=1, relheight=1)
         self.label_place_part_name = Label(self.frame_place, text="نام بخش", cnf=CNF_LABEL)
         self.entry_place_part_name = ttk.Combobox(self.frame_place, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
@@ -346,7 +363,7 @@ class StaffWindow(MyWindows):
 
         ######################################### frame_all_counters ##########################################
         self.frame_all_counters = Frame(self.frame_all_counters_tab, bg=BG)
-        self.frame_all_counters.pack(side=RIGHT)
+        self.frame_all_counters.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
         # self.frame_all_counters.place(relx=0.2, rely=0.02, relwidth=1, relheight=1)
         self.btn_all_counters_back = Button(self.frame_all_counters, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
         self.btn_all_counters_back.grid(row=17, column=5, cnf=CNF_GRID)
@@ -558,7 +575,7 @@ class StaffWindow(MyWindows):
             try:
                 alarm_lower_bound = float(alarm_lower_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد پایین خطر را به صورت عددی وارد کنید")
+                msb.showwarning("هشدار", "لطفا حد پایین آلارم را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_lower_bound.focus_set()
                 return
         if alarm_upper_bound == "":
@@ -567,7 +584,7 @@ class StaffWindow(MyWindows):
             try:
                 alarm_upper_bound = float(alarm_upper_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد بالای خطر را به صورت عددی وارد کنید")
+                msb.showwarning("هشدار", "لطفا حد بالای آلارم را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
         if formula != "":
@@ -664,7 +681,7 @@ class StaffWindow(MyWindows):
             try:
                 alarm_lower_bound = float(alarm_lower_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد پایین خطر را به صورت عددی وارد کنید")
+                msb.showwarning("هشدار", "لطفا حد پایین آلارم را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_lower_bound.focus_set()
                 return
         if alarm_upper_bound == "":
@@ -673,7 +690,7 @@ class StaffWindow(MyWindows):
             try:
                 alarm_upper_bound = float(alarm_upper_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد بالای خطر را به صورت عددی وارد کنید")
+                msb.showwarning("هشدار", "لطفا حد بالای آلارم را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
         if formula != "":
@@ -1034,7 +1051,7 @@ class StaffWindow(MyWindows):
             places_with_counters.clear()
             tabs_list.append(ttk.Frame(self.tab_control_frame))
             tabs_list[i].pack()
-            self.tab_control_frame.add(tabs_list[i], text =f'بخش {part[1]}')
+            self.tab_control_frame.add(tabs_list[i], text =f'{part[1]}')
             temp_places=self.connection.get_all_places_by_part_id(part[0])
             for place in temp_places:
                 counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place[2], place_id=place[0])
@@ -1067,12 +1084,18 @@ class StaffWindow(MyWindows):
         while True:
             sleep(0.01)
             if signal:
-                temp = self.tab_control_frame.select()
                 signal=0
                 self.refresh_ui()
                 self.tab_control.select(self.frame_add_statistics_tab)
-                self.tab_control_frame.select(temp)
-
+    
+    def confirm_default_date(self):
+        res = self.entry_set_default_date.get().strip()
+        self.user.default_date=res
+        result_message, result = self.connection.update_default_date_of_user()
+        if result_message == "ok":
+            msb.showinfo("پیام موفقیت", f"تاریخ پیش فرض با موفقیت تغییر کرد")
+        else:
+            msb.showerror("ارور", result_message)
 
 
 
@@ -1103,8 +1126,8 @@ class DatePicker(MyWindows):
         self.combo_month.pack(cnf=CNF_PACK2)
         self.combo_year.pack(cnf=CNF_PACK2)
         self.btn_tomorrow.pack(cnf=CNF_PACK2)
-        self.label_date.pack(cnf=CNF_PACK2)
         self.refresh_date()
+        self.label_date.pack(cnf=CNF_PACK2)
 
     def time_delta(self, days):
         try:
@@ -1114,11 +1137,17 @@ class DatePicker(MyWindows):
             self.refresh_date(new_date)
         except ValueError:
             msb.showerror('', "تاریخ به درستی انتخاب نشده است")
-            pass
 
     def refresh_date(self, date=None):
         if date==None:
             date=get_jnow()
+            if self.connection.user.default_date==DEFAULT_DATE_VALUES[0]:
+                d = jdatetime.timedelta(days=-1)
+            elif self.connection.user.default_date==DEFAULT_DATE_VALUES[2]:
+                d = jdatetime.timedelta(days=1)
+            else:
+                d = jdatetime.timedelta(days=0)
+            date = date+d
         self.combo_year.config(state='normal')
         self.combo_month.config(state='normal')
         self.combo_day.config(state='normal')
@@ -1212,7 +1241,7 @@ class CounterWidget(Counter, MyWindows):
         super().__init__(part, place, name, variable_name, previous_value, current_value, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title)
         MyWindows.__init__(self, connection, root)
         global all_variables_cuurent_value
-        self.frame = LabelFrame(self.root, text=f"پارامتر {self.name}", cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
+        self.frame = LabelFrame(self.root, text=f"{self.name}", cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
             parameters = get_formula_parameters(self.formula)

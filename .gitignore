@@ -4,6 +4,10 @@
 __pycache__
 test_awsometkinter/
 test/
+build/
+dist/
+output/
+main.spec
 jadidha.py
 bg_pic.png
 bg_pic2.jpg

@@ -26,6 +26,7 @@ FONT2 = ('B Nazanin', 18)
 FONT3 = ('B Nazanin', 12)
 COUNTER_TYPES = ['کنتور', 'ثابت', 'محاسباتی']
 DEFAULT_VALUES = ['مقدار کنتور روز قبل', '0', 'خالی']
+DEFAULT_DATE_VALUES = ['روز قبل', 'روز جاری', 'روز بعد']
 
 CNF_LBL_FRM = {
     'bg': BG,
@@ -146,6 +147,7 @@ def create_my_theme():
                                 'padding': [5, 1],
                                 'background': BG,
                                 'foreground': FG,
+                                'font': FONT2
                                 }
                         }
                     })

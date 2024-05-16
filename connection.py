@@ -6,7 +6,7 @@ WRONG_LIMIT=10
 
 class Connection():
     def __init__(self, host='127.0.0.1', username='root', password='root'):
-        self.user = Staff("admin", "", "", "", 3, 0)
+        self.user = Staff("admin", "", "", "", 3, "روز قبل", 0)
         self.host = host
         self.username = username
         self.password = password
@@ -14,7 +14,7 @@ class Connection():
         self.cursor = self.connection.cursor()
         query = "CREATE SCHEMA IF NOT EXISTS `qaenpower`;"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`users` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `surname` VARCHAR(64) NOT NULL, `username` VARCHAR(64) NOT NULL, `password` VARCHAR(128) NOT NULL, `access_level` TINYINT(1) NOT NULL DEFAULT 2, `wrong_times` TINYINT(2) NOT NULL DEFAULT 0, PRIMARY KEY (`id`),UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE,UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`users` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `surname` VARCHAR(64) NOT NULL, `username` VARCHAR(64) NOT NULL, `password` VARCHAR(128) NOT NULL, `access_level` TINYINT(1) NOT NULL DEFAULT 2, `wrong_times` TINYINT(2) NOT NULL DEFAULT 0, `default_date` VARCHAR(64) NOT NULL DEFAULT 'روز قبل', PRIMARY KEY (`id`),UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE,UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);"
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`parts` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `title_UNIQUE` (`title` ASC) VISIBLE);"
         self.cursor.execute(query)
@@ -31,7 +31,7 @@ class Connection():
         try:
             self.cursor.execute(query, values)
             self.connection.commit()
-            query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `id` FROM `qaenpower`.`users` where username=%s;"
+            query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `qaenpower`.`users` where username=%s;"
             values = (username, )
             self.cursor.execute(query, values)
             result = self.cursor.fetchone()
@@ -61,7 +61,7 @@ class Connection():
         return ("ok", 0)
 
     def login(self, username, password):
-        query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `id` FROM `qaenpower`.`users` where username=%s;"
+        query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `qaenpower`.`users` where username=%s;"
         values = (username, )
         self.cursor.execute(query, values)
         result = self.cursor.fetchone()
@@ -73,6 +73,13 @@ class Connection():
     def update_wrong_times(self):
         query = "UPDATE `qaenpower`.`users` SET `wrong_times` = %s WHERE (`id` = %s);"
         values = (self.user.wrong_times, self.user.id)
+        self.cursor.execute(query, values)
+        self.connection.commit()
+        return ("ok", 0)
+    
+    def update_default_date_of_user(self):
+        query = "UPDATE `qaenpower`.`users` SET `default_date` = %s WHERE (`id` = %s);"
+        values = (self.user.default_date, self.user.id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
@@ -279,7 +286,7 @@ class Connection():
             return (f"رمز عبور اشتباه است. دقت کنید که نمیتوانید بیش از {WRONG_LIMIT} بار پشت سر هم رمز عبور خود را اشتباه وارد کنید. تعداد فرصت های باقیمانده: {WRONG_LIMIT-self.user.wrong_times}", -2)
 
     def change_users_password(self, username, old_password, new_password):
-        query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `id` FROM `qaenpower`.`users` where username=%s;"
+        query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `qaenpower`.`users` where username=%s;"
         values = (username, )
         self.cursor.execute(query, values)
         result = self.cursor.fetchone()

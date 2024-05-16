@@ -2,13 +2,14 @@ from functions import get_jnow
 
 
 class Staff():
-    def __init__(self, name, surname, username, password, access_level, wrong_times, id=None):
+    def __init__(self, name, surname, username, password, access_level, wrong_times, default_date, id=None):
         self.name=name
         self.surname=surname
         self.username=username
         self.password=password
         self.access_level=access_level
         self.wrong_times=wrong_times
+        self.default_date=default_date
         self.id=id
 
     def __str__(self):
