@@ -1085,7 +1085,34 @@ class StaffWindow(MyWindows):
             parts_tab[i].pack()
             places_with_counters.clear()
         self.tab_control_frame.pack(expand=1, fill="both")
+        i = 0
+        length = len(all_counter_widgets)
+        for counter_widget in all_counter_widgets:
+            i += 1
+            i %= length
+            if counter_widget.type==COUNTER_TYPES[2]:
+                pass
+            elif counter_widget.type==COUNTER_TYPES[1]:
+                # counter_widget.entry_workout.bind('<Insert>', lambda e, i=i: None if all_counter_widgets[i].type==COUNTER_TYPES[2] else all_counter_widgets[i].entry_workout.focus_set() if all_counter_widgets[i].type==COUNTER_TYPES[1] else all_counter_widgets[i].entry_current_counter.focus_set() if all_counter_widgets[i].boolean_var_bad.get()==False else all_counter_widgets[i].entry_workout.focus_set())
+                counter_widget.entry_workout.bind('<Insert>', lambda e, i=i: self.goto_next_counter_widget(i))
+            elif counter_widget.type==COUNTER_TYPES[0]:
+                # counter_widget.entry_current_counter.bind('<Insert>', lambda e, i=i: None if all_counter_widgets[i].type==COUNTER_TYPES[2] else all_counter_widgets[i].entry_workout.focus_set() if all_counter_widgets[i].type==COUNTER_TYPES[1] else all_counter_widgets[i].entry_current_counter.focus_set() if all_counter_widgets[i].boolean_var_bad.get()==False else all_counter_widgets[i].entry_workout.focus_set())
+                # counter_widget.entry_workout.bind('<Insert>', lambda e, i=i: None if all_counter_widgets[i].type==COUNTER_TYPES[2] else all_counter_widgets[i].entry_workout.focus_set() if all_counter_widgets[i].type==COUNTER_TYPES[1] else all_counter_widgets[i].entry_current_counter.focus_set() if all_counter_widgets[i].boolean_var_bad.get()==False else all_counter_widgets[i].entry_workout.focus_set())
+                counter_widget.entry_current_counter.bind('<Insert>', lambda e, i=i: self.goto_next_counter_widget(i))
+                counter_widget.entry_workout.bind('<Insert>', lambda e, i=i: self.goto_next_counter_widget(i))
 
+    def goto_next_counter_widget(self, i):
+        global all_counter_widgets
+        print(all_counter_widgets[i].type, COUNTER_TYPES[2])
+        if all_counter_widgets[i].type==COUNTER_TYPES[2]:
+            pass
+        elif all_counter_widgets[i].type==COUNTER_TYPES[1]:
+            all_counter_widgets[i].entry_workout.focus_set()
+        elif all_counter_widgets[i].type==COUNTER_TYPES[0]:
+            if all_counter_widgets[i].boolean_var_bad.get():
+                all_counter_widgets[i].entry_workout.focus_set()
+            else:
+                all_counter_widgets[i].entry_current_counter.focus_set()
 
     ########################################### generic functions ###########################################
     # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
@@ -1413,6 +1440,7 @@ class CounterWidget(Counter, MyWindows):
     def update_all_variables_current_value(self):
         global all_variables_current_value, all_counter_widgets
         for counter_widget in all_counter_widgets:
+            counter_widget:CounterWidget
             if counter_widget.formula != "":
                 parameters = get_formula_parameters(counter_widget.formula)
                 values = []
