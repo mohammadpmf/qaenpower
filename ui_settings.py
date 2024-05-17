@@ -1,4 +1,5 @@
-from tkinter import *
+from tkinter import Tk, Label, Entry, Button, BooleanVar, Checkbutton, Toplevel, Frame, StringVar, LabelFrame, Canvas, Scrollbar
+from tkinter import TOP, RIGHT, END, VERTICAL, HORIZONTAL
 from tkinter import ttk
 from tkinter import messagebox as msb
 

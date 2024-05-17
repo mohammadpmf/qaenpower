@@ -26,10 +26,11 @@ class Part():
 
 
 class Place():
-    def __init__(self, title, part_id, id=None):
+    def __init__(self, title, part_id, id=None, part_title=None):
         self.title=title
         self.part_id=part_id
         self.id=id
+        self.part_title=part_title
     
     def __str__(self):
         return f"{self.title}"

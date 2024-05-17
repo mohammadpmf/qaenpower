@@ -2,7 +2,7 @@ from ui_settings import *
 from PIL import Image, ImageTk
 from connection import Connection
 from functions import calculate_fn, get_formula_parameters, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime, datetime
-from models import Staff, Counter
+from models import Part, Place, Staff, Counter
 from ui_settings import Tk
 from threading import Thread
 from time import sleep
@@ -807,8 +807,8 @@ class StaffWindow(MyWindows):
     def refresh_parts_values_in_comboboxes(self, event=None):
         parts = self.connection.get_all_parts()
         values = []
-        for part_id, part_name, part_order in parts:
-            values.append(part_name)
+        for part in parts:
+            values.append(part.title)
         self.entry_place_part_name.config(state='normal', values=values)
         self.entry_place_part_name.config(state='readonly')
         self.entry_counter_part.config(state='normal', values=values)
@@ -820,7 +820,7 @@ class StaffWindow(MyWindows):
         self.treev_part.delete(*self.treev_part.get_children())
         parts = self.connection.get_all_parts()
         for i, part in enumerate(parts):
-            self.treev_part.insert("", i, text=part[0], values=(part[1], i+1))
+            self.treev_part.insert("", i, text=part.id, values=(part.title, i+1))
     
     # تابعی برای این که بشه اولویت نمایش یک بخش رو بالا برد
     def up_tree_part(self):
@@ -1044,53 +1044,47 @@ class StaffWindow(MyWindows):
     ######################################### add statistics functions ######################################
     # تابعی برای این که تب های درون قسمت آمار پارامتر ها رو مقداردهی کنه
     def seed_tabs_of_parts(self):
-        global selected_date
+        global selected_date, all_counter_widgets
+        all_counter_widgets= [] # یه لیست از تمام کنتور ویجت هایی که میسازیم رو ذخیره میکنم که وسط برنامه بشه تغییرشون داد. هر بار که تابع سید تبز او پارتز صدا میشه، این لیست خالی میشه. چون از اول اومده. داخل رفرشی که میخوام بنویسم فقط تغییر میکنن. پاک نمیشن. اما اگه بخش یا مکان جدیدی به دیتابیس اضافه بشه، همه چیز از اول شروع میشه و این لیست هم از نو تعریف میشه.
         for item in self.tab_control_frame.winfo_children():
             item.destroy()
-        parts=self.connection.get_all_parts()
-        all_parts = []
-        all_places = []
-        all_counters = []
-        for part in parts:
-            all_parts.append({
-                'id': part[0],
-                'title': part[1],
-            })
+        all_parts=self.connection.get_all_parts() # یک لیست تک بعدی از کل بخش ها
         # print(all_parts)
-        for i, part in enumerate(all_parts):
-            temp_places=self.connection.get_all_places_by_part_id(part['id'])
-            for place in temp_places:
-                all_places.append({
-                    'id': place[0],
-                    'title': place[1],
-                    'part': all_parts[i]
-                })
+        # for p in all_parts:
+        #     print(p)
+        all_places = [] # یک لیست دو بعدی از کل مکان ها. تو لایه اول بخش ها هستند و لایه دوم، مکان های اون بخش.
+        for part in all_parts:
+            temp_places=self.connection.get_all_places_by_part_id(part.id)
+            all_places.append(temp_places)
         # print(all_places)
-        for place in all_places:
-            counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place['part']['id'], place_id=place['id'], date_time=selected_date)
+        # for places in all_places:
+        #     print(places)
+        all_counters_2d = [] # لیست دو بعدی از تمام کنتور ها برای ارسال به پارت ویجت که تمام کنتورهای یک بخش رو بسازه. دو بعدی هست. دقت کنم که بعضی از لیست هاش هم خالی هستند. چون بخشی هست که ممکنه کنتوری نداشته باشه.
+        for places in all_places: # آل پلیسس یه لیست از مکان های هر بخش هست. پس روش دوباره حلقه میزنیم
+            for place in places:
+                all_counters_2d.append(self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id, date_time=selected_date))
+        # print(all_counters_2d)
+        # for counters in all_counters_2d:
+        #     print(counters)
+        all_counters_in_a_single_list_for_binding = [] # این یک لیست از تمام کنتورهای موجود هست. دقت کنم که چون دو تا فور نوشتم، اون لیست ها که مکان های خالی از کنتور بودند حذف شدن. پس این دقیقا یک لیست از تمامی کنتورهاست.
+        for counters in all_counters_2d:
             for counter in counters:
-                all_counters.append(counter)
-        # for counter in all_counters:
-        #     print(counter.place_title)
-
+                all_counters_in_a_single_list_for_binding.append(counter)
+        # print(all_counters_in_a_single_list_for_binding)
         tabs_list = []
         parts_tab = []
         places_with_counters = []
-        parts=self.connection.get_all_parts()
-        for i, part in enumerate(parts):
-            places_with_counters.clear()
+        for i, part in enumerate(all_parts):
             tabs_list.append(ttk.Frame(self.tab_control_frame))
             tabs_list[i].pack()
-            self.tab_control_frame.add(tabs_list[i], text =f'{part[1]}')
-            temp_places=self.connection.get_all_places_by_part_id(part[0])
-            for place in temp_places:
-                counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place[2], place_id=place[0], date_time=selected_date)
+            self.tab_control_frame.add(tabs_list[i], text =f'{part.title}')
+            for place in all_places[i]:
+                counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id, date_time=selected_date)
                 places_with_counters.append(counters)
             parts_tab.append(PartWidget(self.connection, tabs_list[i], places_with_counters))
-            # parts[i].grid(row=1, column=1)
             parts_tab[i].pack()
-            # parts[i].place(width=1024, height=400)
-        self.tab_control_frame.pack(expand = 1, fill ="both")
+            places_with_counters.clear()
+        self.tab_control_frame.pack(expand=1, fill="both")
 
 
     ########################################### generic functions ###########################################
@@ -1218,6 +1212,7 @@ class DatePicker(MyWindows):
 class PartWidget(MyWindows):
     def __init__(self, connection: Connection, root: Tk, places_with_counters):
         super().__init__(connection, root)
+        global all_counter_widgets
         self.places_with_counters=places_with_counters # یک لیستی از مکان ها با پارامترهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه پارامتر هست.
         self.my_canvas = Canvas(self.frame, width=S_WIDTH*1, height=S_HEIGHT*1, bg=BG)
         self.ver_scrollbar = Scrollbar(self.frame, orient=VERTICAL, command=self.my_canvas.yview)
@@ -1263,6 +1258,7 @@ class PartWidget(MyWindows):
                         id=counter.id,
                         place_title=counter.place_title,
                         font=FONT2)
+                    all_counter_widgets.append(c)
                     c.grid(row=i, column=1000-1-j, sticky='news', padx=4, pady=2)
 
 class CounterWidget(Counter, MyWindows):
@@ -1365,7 +1361,10 @@ class CounterWidget(Counter, MyWindows):
             msb.showerror("ارور", result_message)
 
     def update_all_variables_current_value(self):
-        global all_variables_cuurent_value
+        global all_variables_cuurent_value, all_counter_widgets
+        for counter_widget in all_counter_widgets:
+            if counter_widget.type == COUNTER_TYPES[0]:
+                counter_widget.entry_current_counter.insert(0, 'salam')
         # for key, value in all_variables_cuurent_value.items():
         #     print(key, value)
         print(self.b, self.workout, self.id)

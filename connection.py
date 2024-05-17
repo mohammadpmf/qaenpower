@@ -1,5 +1,5 @@
 import pymysql
-from models import Staff, Counter
+from models import Part, Place, Staff, Counter
 from functions import hash_password, get_jnow, datetime
 
 WRONG_LIMIT=10
@@ -175,14 +175,21 @@ class Connection():
         return self.cursor.fetchone()
 
     def get_all_parts(self):
-        query = "SELECT * FROM `qaenpower`.`parts` ORDER BY `order`;"
+        query = "SELECT `title`, `id` FROM `qaenpower`.`parts` ORDER BY `order`;"
         self.cursor.execute(query)
-        return self.cursor.fetchall()
+        all_parts = []
+        for part in self.cursor.fetchall():
+            all_parts.append(Part(*part))
+        return all_parts
     
     def get_all_places_by_part_id(self, part_id):
-        query = "SELECT * FROM `qaenpower`.`places` WHERE `part`=%s ORDER BY `order`;"
-        self.cursor.execute(query, part_id)
-        return self.cursor.fetchall()
+        query = "SELECT `qaenpower`.`places`.`title`, `qaenpower`.`places`.`part` as `part_id`, `qaenpower`.`places`.`id`, `qaenpower`.`parts`.`title` as `part_title` FROM `qaenpower`.`places` join `qaenpower`.`parts` ON (`qaenpower`.`places`.`part`=`qaenpower`.`parts`.`id`) WHERE `qaenpower`.`places`.`part`=%s ORDER BY `qaenpower`.`places`.`order`;"
+        values=(part_id, )
+        self.cursor.execute(query, values)
+        all_places = []
+        for place in self.cursor.fetchall():
+            all_places.append(Place(*place))
+        return all_places
     
     def get_all_counters_of_this_part_and_place(self, part_id, place_id, date_time):
         query = "SELECT `qaenpower`.`counters`.`part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `qaenpower`.`counters`.`id`, `qaenpower`.`places`.`title` as `place_title`, `qaenpower`.`parts`.`title` as `part_title` FROM `qaenpower`.`counters` join `qaenpower`.`places` ON (`qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`) join `qaenpower`.`parts` ON (`qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id`) WHERE `qaenpower`.`counters`.`part`=%s AND `place`=%s ORDER BY `qaenpower`.`parts`.`order` ASC, `qaenpower`.`places`.`order` ASC, `qaenpower`.`counters`.`order` ASC;"
@@ -317,7 +324,6 @@ class Connection():
             values = (id, )
             self.cursor.execute(query, values)
             temp_result = self.cursor.fetchone()
-            print(variable_name, temp_result)
             if temp_result in [None, '', ()]:
                 temp_dict[variable_name]=0
             else:
