@@ -85,12 +85,12 @@ class LoginForm(MyWindows):
 class StaffWindow(MyWindows):
     def __init__(self, connection: Connection, root: Tk, user: Staff):
         super().__init__(connection, root)
-        global all_variables_cuurent_value, date_picker, signal, selected_date
+        global all_variables_current_value, date_picker, signal, selected_date
         self.is_staff_window_running = True # وقتی برمیگشتیم به صفحه ورود و دوباره وارد میشدیم، بعضی وقت ها ارور میداد و نفهمیدم دلیلش چی بود. اما به خاطر ترد قبلی بود که به خاطر وایل ترو زنده مونده بود. به خاطر همین این متغیر رو تعریف کردم که با اول کار میشه ترو و وقتی بک رو میزنیم مقدارش میشه فالس که خود به خود ترد کارش تموم بشه و نابود بشه. احتمالا چند باری که ارور نداد به خاطر گاربیج کالکتور بود که ترد بیخود رو حذف میکرد. اما خب همیشه این کار رو نمیکرد و این طوری چندین بار تست کردم ارور نداد. 
         selected_date = datetime.now()
         signal = 0 # برای این که وقتی یه آپدیتی کردیم رو یه پارامتر، ظاهر برنامه رو رفرش کنیم و به تابع رفرش یو آی این کلاس دسترسی داشته باشیم.
         Thread(target=self.refresh_ui_from_anywhere, daemon=True).start()
-        all_variables_cuurent_value=self.connection.get_all_parameters_current_value() # این رو آخر سر اضافه کردم. برای این که مدام از دیتابیس نپرسیم مقادیر رو، اول کار مقدار فعلی همه متغیرها رو میگیریم که تو برنامه راحت بشه باهاشون کار کرد هی نریم سراغ دیتابیس. هر بار هم که تابع رفرش یو آی صدا زده میشه این متغیر رو با همین دستور آپدیت میکنم منتهی چون تو کلاس دیگه هم لازم داشتم، به جای ذخیره کردن در سلف، گلوبالش کردم.
+        all_variables_current_value=self.connection.get_all_parameters_current_value() # این رو آخر سر اضافه کردم. برای این که مدام از دیتابیس نپرسیم مقادیر رو، اول کار مقدار فعلی همه متغیرها رو میگیریم که تو برنامه راحت بشه باهاشون کار کرد هی نریم سراغ دیتابیس. هر بار هم که تابع رفرش یو آی صدا زده میشه این متغیر رو با همین دستور آپدیت میکنم منتهی چون تو کلاس دیگه هم لازم داشتم، به جای ذخیره کردن در سلف، گلوبالش کردم.
         self.user = user
         self.main_window = Toplevel(self.frame)
         self.main_window.title(f'حساب کاربری {self.user}')
@@ -1265,8 +1265,8 @@ class CounterWidget(Counter, MyWindows):
     def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, part_title=None, *args, **kwargs):
         super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
-        global all_variables_cuurent_value, date_picker
-        self.a = self.b = round3(float(all_variables_cuurent_value.get(self.variable_name)))
+        global all_variables_current_value, date_picker
+        self.a = self.b = round3(float(all_variables_current_value.get(self.variable_name, 0)))
         self.frame = LabelFrame(self.root, text=self.name, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
@@ -1276,13 +1276,13 @@ class CounterWidget(Counter, MyWindows):
                 if p in ['a', 'b']:
                     values.append(self.b)
                 else:
-                    values.append(round3(float(all_variables_cuurent_value.get(p))))
+                    values.append(round3(float(all_variables_current_value.get(p, 0))))
             self.answer = calculate_fn(self.formula, parameters, values)
         if self.type==COUNTER_TYPES[2]:
             self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LBL2, width=17, *args, **kwargs)
         elif self.type==COUNTER_TYPES[1]:
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=25, *args, **kwargs)
-            self.entry_workout.bind('<Return>', self.confirm)
+            self.entry_workout.bind('<Return>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
                 self.entry_workout.insert(0, round3(self.a))
@@ -1301,9 +1301,9 @@ class CounterWidget(Counter, MyWindows):
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
-            self.entry_current_counter.bind('<Return>', self.confirm)
+            self.entry_current_counter.bind('<Return>', self.next)
             self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
-            self.entry_workout.bind('<Return>', self.confirm)
+            self.entry_workout.bind('<Return>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
                 self.entry_current_counter.insert(0, round3(self.a))
@@ -1321,55 +1321,131 @@ class CounterWidget(Counter, MyWindows):
         self.check_color()
    
     def confirm(self, event=None):
-        global signal, all_variables_cuurent_value
-        if self.type==COUNTER_TYPES[0]:
-            self.a = self.label_previous_counter['text']
-            self.b = self.entry_current_counter.get().strip()
-            self.workout = self.entry_workout.get().strip()
-            try:
-                self.a = float(self.a)
-                self.b = float(self.b)
-                self.workout = float(self.workout)
-                if self.b<self.a:
-                    msb.showwarning("هشدار", "مقدار کنتور جدید نمیتواند کمتر از قبل باشد")
-                    return
-                if self.workout<0:
-                    msb.showwarning("هشدار", "مقدار کارکرد نمیتواند منفی باشد")
-                    return
-                all_variables_cuurent_value[self.variable_name]=self.b
-                result_message, ـ = self.connection.create_counter_log(self.b, self.workout, self.id)
-            except:
-                msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
-                return
+        pass
+        # کد قبلی این شکلی بود. الان خیلی هاش رو بردم تو تابع نکست. اینجا قراره به دیتابیس وصل شه و تغییرات رو اعمال کنه
+        # global signal, all_variables_current_value
+        # if self.type==COUNTER_TYPES[0]:
+        #     self.a = self.label_previous_counter['text']
+        #     self.b = self.entry_current_counter.get().strip()
+        #     self.workout = self.entry_workout.get().strip()
+        #     try:
+        #         self.a = float(self.a)
+        #         self.b = float(self.b)
+        #         self.workout = float(self.workout)
+        #         if self.b<self.a:
+        #             msb.showwarning("هشدار", "مقدار کنتور جدید نمیتواند کمتر از قبل باشد")
+        #             return
+        #         if self.workout<0:
+        #             msb.showwarning("هشدار", "مقدار کارکرد نمیتواند منفی باشد")
+        #             return
+        #         all_variables_current_value[self.variable_name]=self.b
+        #         result_message, ـ = self.connection.create_counter_log(self.b, self.workout, self.id)
+        #     except:
+        #         msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
+        #         return
+        # elif self.type==COUNTER_TYPES[1]:
+        #     self.workout = self.entry_workout.get().strip()
+        #     try:
+        #         self.workout = float(self.workout)
+        #         if self.workout<0:
+        #             msb.showwarning("هشدار", "این مقدار نمیتواند منفی باشد")
+        #             return
+        #         all_variables_current_value[self.variable_name]=self.workout
+        #         result_message, ـ = self.connection.create_counter_log(self.workout, 0, self.id)
+        #     except:
+        #         msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
+        #         return
+        # self.update_all_variables_current_value()
+        # # result_message, ـ = self.connection.update_counter_usage(value, self.id)
+        # if result_message == "ok":
+        #     signal=1 # برای این که به کلاس اولیه سیگنال بفرستم که تابع رفرش یو آی رو صدا کنه
+        # else:
+        #     msb.showerror("ارور", result_message)
+    
+    def next(self, event=None):
+        global all_variables_current_value
+        if self.type==COUNTER_TYPES[2]: # نمیتونه باشه. نوشتم که بدونم بررسی شده. رو محاسباتی ها نمیشه اینتر زد.
+            pass
         elif self.type==COUNTER_TYPES[1]:
             self.workout = self.entry_workout.get().strip()
             try:
                 self.workout = float(self.workout)
                 if self.workout<0:
                     msb.showwarning("هشدار", "این مقدار نمیتواند منفی باشد")
+                    self.entry_workout.focus_set()
                     return
-                all_variables_cuurent_value[self.variable_name]=self.workout
-                result_message, ـ = self.connection.create_counter_log(self.workout, 0, self.id)
+                all_variables_current_value[self.variable_name]=self.workout
             except:
                 msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
                 return
+        elif self.type==COUNTER_TYPES[0]:
+            self.a = self.label_previous_counter['text']
+            self.b = self.entry_current_counter.get().strip()
+            self.workout = self.entry_workout.get().strip()
+            try:
+                self.a = round3(float(self.a))
+                self.b = round3(float(self.b))
+                self.workout = round3(float(self.workout))
+                if self.b<self.a:
+                    msb.showwarning("هشدار", "مقدار کنتور جدید نمیتواند کمتر از قبل باشد")
+                    self.entry_current_counter.focus_set()
+                    return
+                if self.workout<0:
+                    msb.showwarning("هشدار", "مقدار کارکرد نمیتواند منفی باشد")
+                    if self.boolean_var_bad.get():
+                        self.entry_workout.focus_set()
+                    else:
+                        self.entry_current_counter.focus_set()
+                    return
+                if self.boolean_var_bad.get():
+                    all_variables_current_value[self.variable_name]=self.workout
+                else:
+                    all_variables_current_value[self.variable_name]=self.b
+            except:
+                msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
+                if self.boolean_var_bad.get():
+                    self.entry_workout.focus_set()
+                else:
+                    self.entry_current_counter.focus_set()
+                return
         self.update_all_variables_current_value()
-        # result_message, ـ = self.connection.update_counter_usage(value, self.id)
-        if result_message == "ok":
-            signal=1 # برای این که به کلاس اولیه سیگنال بفرستم که تابع رفرش یو آی رو صدا کنه
-        else:
-            msb.showerror("ارور", result_message)
 
     def update_all_variables_current_value(self):
-        global all_variables_cuurent_value, all_counter_widgets
+        global all_variables_current_value, all_counter_widgets
         for counter_widget in all_counter_widgets:
-            if counter_widget.type == COUNTER_TYPES[0]:
-                counter_widget.entry_current_counter.insert(0, 'salam')
-        # for key, value in all_variables_cuurent_value.items():
-        #     print(key, value)
-        print(self.b, self.workout, self.id)
+            if counter_widget.formula != "":
+                parameters = get_formula_parameters(counter_widget.formula)
+                values = []
+                for p in parameters:
+                    if p=='b':
+                        values.append(counter_widget.b)
+                    elif p=='a':
+                        values.append(counter_widget.a)
+                    else:
+                        values.append(round3(float(all_variables_current_value.get(p, 0))))
+                counter_widget.answer = round3(calculate_fn(counter_widget.formula, parameters, values))
+            if counter_widget.type==COUNTER_TYPES[2]:
+                counter_widget.entry_workout.config(text=counter_widget.answer)
+                counter_widget.check_color()
+            elif counter_widget.type==COUNTER_TYPES[1]:
+                pass
+                # لازم نیست کاری بکنیم. چون پارامترهای ثابت با تغییر بقیه تغییر نمیکنند.
+                # اگر خودشون تغییر بکنند که همون لحظه با کی ریلیز بایندش کردیم و تغییر میکنه
+                # اما تغییر بقیه باعث تغییر پارامتر ثابت نمیشه. پس الکی بررسیش نمیکنیم.
+            elif counter_widget.type==COUNTER_TYPES[0]:
+                counter_widget.entry_workout.config(state='normal')
+                counter_widget.entry_workout.delete(0, END)
+                if counter_widget.boolean_var_bad.get()==False:
+                    counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
+                    counter_widget.entry_workout.config(state='readonly')
+                else:
+                    counter_widget.entry_workout.insert(0, round3(counter_widget.workout))
+            counter_widget.check_color()
 
     def update_workout(self, event=None):
+        if event and event.keysym=='Return': # باگ داشت وقتی اینتر میزدیم آپدیت میشد. اما چون دکمه اینتر ول شده بود دوباره میومد این رو صدا میکرد و به هم میزد همون کنتور ویجت رو. به خاطر همین اینتر رو ازش حذف کردم که موقعی که انگشت رو از رو اینتر برداشتیم آپدیت نکنه.
+            # حالا اگه رو دکمه کپی میزدیم هیچ ایونتی ارسال نمیشد و این ایف ارور میداد. پس گفتم اگه ایونتی وجود داشت و اینتر بود ریترن کن. در غیر این صورت کارت رو انجام بده.
+            return
         if self.type==COUNTER_TYPES[2]:
             # این حالت قرار نیست هیچ وقت اتفاق بیفته. چون ما نمیتونیم آپدیتش کنیم. خود برنامه آپدیت میکنه
             # نوشتم که فقط بدونم اینجا بررسی شده
@@ -1393,7 +1469,7 @@ class CounterWidget(Counter, MyWindows):
                         self.b = 0
                     else:
                         self.b = float(self.entry_current_counter.get().strip())
-                    self.a = round3(float(all_variables_cuurent_value.get(self.variable_name)))
+                    # self.a = round3(float(all_variables_current_value.get(self.variable_name)))
                     parameters = get_formula_parameters(self.formula)
                     values = []
                     for p in parameters:
@@ -1402,7 +1478,7 @@ class CounterWidget(Counter, MyWindows):
                         elif p=='a':
                             values.append(self.a)
                         else:
-                            values.append(float(all_variables_cuurent_value.get(p)))
+                            values.append(float(all_variables_current_value.get(p)))
                     self.answer = calculate_fn(self.formula, parameters, values)
                     self.workout = round3(self.answer)
                 except ValueError:
@@ -1432,9 +1508,9 @@ class CounterWidget(Counter, MyWindows):
                 self.entry_workout.config(state='normal')
                 self.entry_workout.focus_set()
             else:
-                self.entry_current_counter.focus_set()
                 self.entry_workout.config(state='readonly')
-            self.check_color()
+                self.entry_current_counter.focus_set()
+            self.update_workout()
 
     def check_color(self, event=None):
         w_l = self.warning_lower_bound
