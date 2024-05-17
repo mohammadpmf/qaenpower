@@ -191,21 +191,12 @@ class Connection():
             all_places.append(Place(*place))
         return all_places
     
-    def get_all_counters_of_this_part_and_place(self, part_id, place_id, date_time):
+    def get_all_counters_of_this_part_and_place(self, part_id, place_id):
         query = "SELECT `qaenpower`.`counters`.`part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `qaenpower`.`counters`.`id`, `qaenpower`.`places`.`title` as `place_title`, `qaenpower`.`parts`.`title` as `part_title` FROM `qaenpower`.`counters` join `qaenpower`.`places` ON (`qaenpower`.`counters`.`place`=`qaenpower`.`places`.`id`) join `qaenpower`.`parts` ON (`qaenpower`.`counters`.`part`=`qaenpower`.`parts`.`id`) WHERE `qaenpower`.`counters`.`part`=%s AND `place`=%s ORDER BY `qaenpower`.`parts`.`order` ASC, `qaenpower`.`places`.`order` ASC, `qaenpower`.`counters`.`order` ASC;"
         values = part_id, place_id
         self.cursor.execute(query, values)
         counters = []
         for counter in self.cursor.fetchall():
-            # counter_id = counter[12]
-            # query = "SELECT `id`, `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s AND `date_time`<%s ORDER BY `date_time` DESC LIMIT 1;"
-            # values = (counter_id, date_time)
-            # self.cursor.execute(query, values)
-            # last_value_of_counter = self.cursor.fetchone()
-            # if last_value_of_counter in [None, '', ()]:
-            #     value = 0
-            # else:
-            #     value = last_value_of_counter[1]
             t = Counter(*counter)
             counters.append(t)
         return counters
@@ -313,15 +304,15 @@ class Connection():
         self.cursor.execute(query)
         return self.cursor.fetchall()
     
-    def get_all_parameters_current_value(self):
+    def get_all_parameters_current_value(self, selected_date):
         query = "SELECT `id`, `variable_name` FROM `qaenpower`.`counters`;"
         self.cursor.execute(query)
         temp_dict = {}
         for item in self.cursor.fetchall():
             id = item[0]
             variable_name = item[1]
-            query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s ORDER BY `date_time` DESC LIMIT 1;"
-            values = (id, )
+            query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s AND `date_time`<%s ORDER BY `date_time` DESC LIMIT 1;"
+            values = (id, selected_date)
             self.cursor.execute(query, values)
             temp_result = self.cursor.fetchone()
             if temp_result in [None, '', ()]:

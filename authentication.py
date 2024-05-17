@@ -85,12 +85,10 @@ class LoginForm(MyWindows):
 class StaffWindow(MyWindows):
     def __init__(self, connection: Connection, root: Tk, user: Staff):
         super().__init__(connection, root)
-        global all_variables_current_value, date_picker, signal, selected_date
+        global date_picker, signal
         self.is_staff_window_running = True # وقتی برمیگشتیم به صفحه ورود و دوباره وارد میشدیم، بعضی وقت ها ارور میداد و نفهمیدم دلیلش چی بود. اما به خاطر ترد قبلی بود که به خاطر وایل ترو زنده مونده بود. به خاطر همین این متغیر رو تعریف کردم که با اول کار میشه ترو و وقتی بک رو میزنیم مقدارش میشه فالس که خود به خود ترد کارش تموم بشه و نابود بشه. احتمالا چند باری که ارور نداد به خاطر گاربیج کالکتور بود که ترد بیخود رو حذف میکرد. اما خب همیشه این کار رو نمیکرد و این طوری چندین بار تست کردم ارور نداد. 
-        selected_date = datetime.now()
         signal = 0 # برای این که وقتی یه آپدیتی کردیم رو یه پارامتر، ظاهر برنامه رو رفرش کنیم و به تابع رفرش یو آی این کلاس دسترسی داشته باشیم.
         Thread(target=self.refresh_ui_from_anywhere, daemon=True).start()
-        all_variables_current_value=self.connection.get_all_parameters_current_value() # این رو آخر سر اضافه کردم. برای این که مدام از دیتابیس نپرسیم مقادیر رو، اول کار مقدار فعلی همه متغیرها رو میگیریم که تو برنامه راحت بشه باهاشون کار کرد هی نریم سراغ دیتابیس. هر بار هم که تابع رفرش یو آی صدا زده میشه این متغیر رو با همین دستور آپدیت میکنم منتهی چون تو کلاس دیگه هم لازم داشتم، به جای ذخیره کردن در سلف، گلوبالش کردم.
         self.user = user
         self.main_window = Toplevel(self.frame)
         self.main_window.title(f'حساب کاربری {self.user}')
@@ -137,12 +135,14 @@ class StaffWindow(MyWindows):
         ###################################### frame_add_statistics ######################################
         self.frame_add_statistics = Frame(self.frame_add_statistics_tab, bg=BG)
         self.frame_add_statistics.pack(side=RIGHT, anchor='ne')
-        self.date_picker_frame = Frame(self.frame_add_statistics)
+        self.date_picker_frame = Frame(self.frame_add_statistics, bg=BG)
         self.date_picker_frame.pack(side=TOP, expand=True, fill='x')
         self.tab_control_frame = ttk.Notebook(self.frame_add_statistics)
-        self.tab_control_frame.pack(side=RIGHT, expand=True, fill='both')
+        self.tab_control_frame.pack(side='left', expand=True, fill='both')
         date_picker = DatePicker(self.connection, self.date_picker_frame)
         date_picker.pack(side=RIGHT, expand=True, fill='both')
+        self.btn_confirm_changes_off_all_counters = Button(self.date_picker_frame, text="تایید مقادیر تمامی کنتورها", font=FONT2, cnf=CNF_BTN, command=self.confirm)
+        self.btn_confirm_changes_off_all_counters.pack(side=RIGHT, padx=PADX)
         self.seed_tabs_of_parts()
 
         ###################################### frame_change_users_password ######################################
@@ -391,7 +391,7 @@ class StaffWindow(MyWindows):
             self.btn_up_tree_all_counters.grid(row=19, column=0, cnf=CNF_GRID, sticky='s')
             self.btn_confirm_tree_all_counters.grid(row=20, column=0, cnf=CNF_GRID)
             self.btn_down_tree_all_counters.grid(row=21, column=0, cnf=CNF_GRID, sticky='n')
-            self.refresh_all_counters_treeview()
+            self.refresh_all_counters_treeview() #inja
 
     ######################################### change password functions #########################################
     # تابعی جهت بررسی این که پسووردها در بخش تغییر پسوورد نمایش داده شوند یا خیر
@@ -491,8 +491,8 @@ class StaffWindow(MyWindows):
         part_id, part_name, part_order = self.connection.get_part_by_title(part_name)
         places = self.connection.get_all_places_by_part_id(part_id)
         values = []
-        for place_id, place_title, place_part, place_sort in places:
-            values.append(place_title)
+        for place in places:
+            values.append(place.title)
         self.entry_counter_place.config(state='normal', values=values)
         self.entry_counter_place.delete(0, END)
         self.entry_counter_place.config(state='readonly')
@@ -918,7 +918,7 @@ class StaffWindow(MyWindows):
         self.treev_place.delete(*self.treev_place.get_children())
         places = self.connection.get_all_places_by_part_id(part_id)
         for i, place in enumerate(places):
-            self.treev_place.insert("", i, text=place[0], values=(place[1], i+1))
+            self.treev_place.insert("", i, text=place.id, values=(place.title, i+1))
                
     # تابعی برای این که بشه اولویت نمایش یک مکان رو بالا برد
     def up_tree_place(self):
@@ -967,7 +967,6 @@ class StaffWindow(MyWindows):
                 item = self.treev_place.item(item)
                 id=int(item['text'])
                 order=int(item['values'][-1])
-                print(id, order)
                 result_message, _ = self.connection.change_places_order(id, order)
             if result_message=='ok':
                 # self.show_places_of_this_part() برای این گذاشته بودم که اگه ترتیب مکان ها رو برای یک بخش عوض کردیم، خود به خود تو بخش اضافه کردن پارامتر هم عوضش کنه. ولی در عمل به نظرم جالب نبود. خلاصه گذاشتم اینجا که اگه لازم شد کامنت رو فقط بردارم. چون بعدا یادم نمیاد چه تابعی رو باید صدا کنم و کلی وقت میگیرفت. گذاشتم اینجا باشه ولی کامنتش کردم.
@@ -1044,11 +1043,12 @@ class StaffWindow(MyWindows):
     ######################################### add statistics functions ######################################
     # تابعی برای این که تب های درون قسمت آمار پارامتر ها رو مقداردهی کنه
     def seed_tabs_of_parts(self):
-        global selected_date, all_counter_widgets
+        global all_counter_widgets
         all_counter_widgets= [] # یه لیست از تمام کنتور ویجت هایی که میسازیم رو ذخیره میکنم که وسط برنامه بشه تغییرشون داد. هر بار که تابع سید تبز او پارتز صدا میشه، این لیست خالی میشه. چون از اول اومده. داخل رفرشی که میخوام بنویسم فقط تغییر میکنن. پاک نمیشن. اما اگه بخش یا مکان جدیدی به دیتابیس اضافه بشه، همه چیز از اول شروع میشه و این لیست هم از نو تعریف میشه.
         for item in self.tab_control_frame.winfo_children():
             item.destroy()
         all_parts=self.connection.get_all_parts() # یک لیست تک بعدی از کل بخش ها
+        all_parts.reverse() # خودش گفته بود که ترتیب از راست به چپ بشه به خاطر همین ریورس کردم اینجا. دقت کنم که جاش همین جاست. اگه بعدا ریورس کنم، اطلاعات رو اشتباه مینویسه.
         # print(all_parts)
         # for p in all_parts:
         #     print(p)
@@ -1062,31 +1062,27 @@ class StaffWindow(MyWindows):
         all_counters_2d = [] # لیست دو بعدی از تمام کنتور ها برای ارسال به پارت ویجت که تمام کنتورهای یک بخش رو بسازه. دو بعدی هست. دقت کنم که بعضی از لیست هاش هم خالی هستند. چون بخشی هست که ممکنه کنتوری نداشته باشه.
         for places in all_places: # آل پلیسس یه لیست از مکان های هر بخش هست. پس روش دوباره حلقه میزنیم
             for place in places:
-                all_counters_2d.append(self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id, date_time=selected_date))
+                all_counters_2d.append(self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id))
         # print(all_counters_2d)
         # for counters in all_counters_2d:
         #     print(counters)
-        all_counters_in_a_single_list_for_binding = [] # این یک لیست از تمام کنتورهای موجود هست. دقت کنم که چون دو تا فور نوشتم، اون لیست ها که مکان های خالی از کنتور بودند حذف شدن. پس این دقیقا یک لیست از تمامی کنتورهاست.
-        for counters in all_counters_2d:
-            for counter in counters:
-                all_counters_in_a_single_list_for_binding.append(counter)
-        # print(all_counters_in_a_single_list_for_binding)
+
         tabs_list = []
         parts_tab = []
-        places_with_counters = []
         for i, part in enumerate(all_parts):
-            tabs_list.append(ttk.Frame(self.tab_control_frame))
+            tabs_list.append(Frame(self.tab_control_frame))
             tabs_list[i].pack()
             self.tab_control_frame.add(tabs_list[i], text =f'{part.title}')
+            places_with_counters = []
             for place in all_places[i]:
-                counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id, date_time=selected_date)
+                counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id)
                 places_with_counters.append(counters)
             parts_tab.append(PartWidget(self.connection, tabs_list[i], places_with_counters))
             parts_tab[i].pack()
-            places_with_counters.clear()
         self.tab_control_frame.pack(expand=1, fill="both")
         i = 0
         length = len(all_counter_widgets)
+        # for i, counter_widget in enumerate(all_counter_widgets):
         for counter_widget in all_counter_widgets:
             i += 1
             i %= length
@@ -1103,7 +1099,6 @@ class StaffWindow(MyWindows):
 
     def goto_next_counter_widget(self, i):
         global all_counter_widgets
-        print(all_counter_widgets[i].type, COUNTER_TYPES[2])
         if all_counter_widgets[i].type==COUNTER_TYPES[2]:
             pass
         elif all_counter_widgets[i].type==COUNTER_TYPES[1]:
@@ -1113,6 +1108,59 @@ class StaffWindow(MyWindows):
                 all_counter_widgets[i].entry_workout.focus_set()
             else:
                 all_counter_widgets[i].entry_current_counter.focus_set()
+
+    def confirm(self, event=None):
+        message = "اطلاعات در تمام بخش ها تغییر کرده اند. اما هنوز تغییرات در دیتابیس ذخیره نشده است."
+        msb.showinfo("بازیابی صفحه",  message)
+        message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید.\n"
+        message += "با انتخاب دکمه تایید، تمامی اطلاعات در دیتابیس ذخیره میشوند و صفحه بازیابی می شود.\n"
+        message += "در صورت اطمنیان، دکمه تایید را فشار دهید."
+        self.root.bell()
+        answer = msb.askyesno("اطمینان",  message)
+        if not answer:
+            return
+        # for counter_widget in all_counter_widgets:
+        #     if counter_widget.type==COUNTER_TYPES[2]:
+        #         counter_widget.
+        for counter_widget in all_counter_widgets:
+            counter_widget: CounterWidget
+            if counter_widget.type==COUNTER_TYPES[2]:
+                print(f"{counter_widget.entry_workout['text']=}, {counter_widget.workout=}")
+                result_message, ـ = counter_widget.connection.create_counter_log(0, counter_widget.workout, counter_widget.id)
+            elif counter_widget.type==COUNTER_TYPES[1]:
+                counter_widget.workout = counter_widget.entry_workout.get().strip()
+                try:
+                    counter_widget.workout = float(counter_widget.workout)
+                    if counter_widget.workout<0:
+                        msb.showwarning("هشدار", f"مقدار {counter_widget} نمیتواند منفی باشد")
+                        counter_widget.entry_workout.focus_set()
+                        return
+                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, 0, counter_widget.id)
+                except:
+                    msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
+                    counter_widget.entry_workout.focus_set()
+                    return
+            elif counter_widget.type==COUNTER_TYPES[0]:
+                try:
+                    counter_widget.b = float(counter_widget.b)
+                    counter_widget.workout = float(counter_widget.workout)
+                    if counter_widget.workout<0:
+                        msb.showwarning("هشدار", f"مقدار کارکرد {counter_widget} نمیتواند منفی باشد")
+                        counter_widget.entry_current_counter.focus_set()
+                        return
+                    if counter_widget.boolean_var_bad.get():
+                        result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.a, counter_widget.workout, counter_widget.id)
+                    else:
+                        result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.a+counter_widget.workout, counter_widget.workout, counter_widget.id)
+                except:
+                    msb.showwarning("هشدار", f"مقدار {counter_widget} باید به صورت عدد صحیح یا اعشاری باشد")
+                    counter_widget.entry_current_counter.focus_set()
+                    return
+        if result_message == "ok":
+            self.refresh_ui()
+        else:
+            msb.showerror("ارور", result_message)
+
 
     ########################################### generic functions ###########################################
     # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
@@ -1140,8 +1188,7 @@ class StaffWindow(MyWindows):
                 self.tab_control.select(self.frame_add_statistics_tab)
     
     def confirm_default_date(self):
-        res = self.entry_set_default_date.get().strip()
-        self.user.default_date=res
+        self.user.default_date=self.entry_set_default_date.get().strip()
         result_message, result = self.connection.update_default_date_of_user()
         if result_message == "ok":
             msb.showinfo("پیام موفقیت", f"تاریخ پیش فرض با موفقیت تغییر کرد")
@@ -1190,7 +1237,8 @@ class DatePicker(MyWindows):
             msb.showerror('', "تاریخ به درستی انتخاب نشده است")
 
     def refresh_date(self, date=None):
-        if date==None:
+        global selected_date, all_variables_current_value
+        if date==None: # این برای اول کار هست. وقتی که تابع تایم دلتا این رو صدا میکنه بهش روز رو میده و نان نیست. پس این ایف اجرا نمیشه.
             date=get_jnow()
             if self.connection.user.default_date==DEFAULT_DATE_VALUES[0]:
                 d = jdatetime.timedelta(days=-1)
@@ -1199,6 +1247,8 @@ class DatePicker(MyWindows):
             else:
                 d = jdatetime.timedelta(days=0)
             date = date+d
+        selected_date = date.togregorian()
+        all_variables_current_value=self.connection.get_all_parameters_current_value(selected_date) # این رو آخر سر اضافه کردم. برای این که مدام از دیتابیس نپرسیم مقادیر رو، اول کار مقدار فعلی همه متغیرها رو میگیریم که تو برنامه راحت بشه باهاشون کار کرد هی نریم سراغ دیتابیس. هر بار هم که تابع رفرش یو آی صدا زده میشه این متغیر رو با همین دستور آپدیت میکنم منتهی چون تو کلاس دیگه هم لازم داشتم، به جای ذخیره کردن در سلف، گلوبالش کردم.
         self.combo_year.config(state='normal')
         self.combo_month.config(state='normal')
         self.combo_day.config(state='normal')
@@ -1231,17 +1281,25 @@ class DatePicker(MyWindows):
             self.btn_confirm.pack_forget()
 
     def confirm(self):
-        global selected_date
+        global selected_date, all_variables_current_value, signal
         jdate = jdatetime.date(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()))
+        message = "آیا از تغییر تاریخ مطمئنید؟\n"
+        message += "در صورتی که تغییرات فعلی را ذخیره نکرده باشید، اطلاعات فعلی در دیتابیس ذخیره نمی شوند."
+        message += "پس از اطمینان از ذخیره تغییرات فعلی، تاریخ را تغییر دهید."
+        self.root.bell()
+        answer = msb.askyesno("اطمینان", message)
+        if not answer:
+            return
         selected_date = jdate.togregorian()
-        print(selected_date)
+        all_variables_current_value=self.connection.get_all_parameters_current_value(selected_date)
+        signal=1
 
 class PartWidget(MyWindows):
     def __init__(self, connection: Connection, root: Tk, places_with_counters):
         super().__init__(connection, root)
         global all_counter_widgets
         self.places_with_counters=places_with_counters # یک لیستی از مکان ها با پارامترهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه پارامتر هست.
-        self.my_canvas = Canvas(self.frame, width=S_WIDTH*1, height=S_HEIGHT*1, bg=BG)
+        self.my_canvas = Canvas(self.frame, width=S_WIDTH*1.02, height=S_HEIGHT*1, bg=BG)
         self.ver_scrollbar = Scrollbar(self.frame, orient=VERTICAL, command=self.my_canvas.yview)
         self.hor_scrollbar = Scrollbar(self.frame, orient=HORIZONTAL, command=self.my_canvas.xview)
         self.my_canvas.configure(yscrollcommand=self.ver_scrollbar.set, xscrollcommand=self.hor_scrollbar.set)
@@ -1309,6 +1367,8 @@ class CounterWidget(Counter, MyWindows):
             self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LBL2, width=17, *args, **kwargs)
         elif self.type==COUNTER_TYPES[1]:
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=25, *args, **kwargs)
+            self.frame.bind('<FocusOut>', self.next)
+            # self.frame.bind('<Leave>', self.next)
             self.entry_workout.bind('<Return>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
@@ -1328,6 +1388,8 @@ class CounterWidget(Counter, MyWindows):
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
+            self.frame.bind('<FocusOut>', self.next)
+            # self.frame.bind('<Leave>', self.next)
             self.entry_current_counter.bind('<Return>', self.next)
             self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
             self.entry_workout.bind('<Return>', self.next)
@@ -1346,49 +1408,7 @@ class CounterWidget(Counter, MyWindows):
             self.label_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID2)
         self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID2)
         self.check_color()
-   
-    def confirm(self, event=None):
-        pass
-        # کد قبلی این شکلی بود. الان خیلی هاش رو بردم تو تابع نکست. اینجا قراره به دیتابیس وصل شه و تغییرات رو اعمال کنه
-        # global signal, all_variables_current_value
-        # if self.type==COUNTER_TYPES[0]:
-        #     self.a = self.label_previous_counter['text']
-        #     self.b = self.entry_current_counter.get().strip()
-        #     self.workout = self.entry_workout.get().strip()
-        #     try:
-        #         self.a = float(self.a)
-        #         self.b = float(self.b)
-        #         self.workout = float(self.workout)
-        #         if self.b<self.a:
-        #             msb.showwarning("هشدار", "مقدار کنتور جدید نمیتواند کمتر از قبل باشد")
-        #             return
-        #         if self.workout<0:
-        #             msb.showwarning("هشدار", "مقدار کارکرد نمیتواند منفی باشد")
-        #             return
-        #         all_variables_current_value[self.variable_name]=self.b
-        #         result_message, ـ = self.connection.create_counter_log(self.b, self.workout, self.id)
-        #     except:
-        #         msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
-        #         return
-        # elif self.type==COUNTER_TYPES[1]:
-        #     self.workout = self.entry_workout.get().strip()
-        #     try:
-        #         self.workout = float(self.workout)
-        #         if self.workout<0:
-        #             msb.showwarning("هشدار", "این مقدار نمیتواند منفی باشد")
-        #             return
-        #         all_variables_current_value[self.variable_name]=self.workout
-        #         result_message, ـ = self.connection.create_counter_log(self.workout, 0, self.id)
-        #     except:
-        #         msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
-        #         return
-        # self.update_all_variables_current_value()
-        # # result_message, ـ = self.connection.update_counter_usage(value, self.id)
-        # if result_message == "ok":
-        #     signal=1 # برای این که به کلاس اولیه سیگنال بفرستم که تابع رفرش یو آی رو صدا کنه
-        # else:
-        #     msb.showerror("ارور", result_message)
-    
+           
     def next(self, event=None):
         global all_variables_current_value
         if self.type==COUNTER_TYPES[2]: # نمیتونه باشه. نوشتم که بدونم بررسی شده. رو محاسباتی ها نمیشه اینتر زد.
@@ -1471,6 +1491,7 @@ class CounterWidget(Counter, MyWindows):
             counter_widget.check_color()
 
     def update_workout(self, event=None):
+        global all_variables_current_value
         if event and event.keysym=='Return': # باگ داشت وقتی اینتر میزدیم آپدیت میشد. اما چون دکمه اینتر ول شده بود دوباره میومد این رو صدا میکرد و به هم میزد همون کنتور ویجت رو. به خاطر همین اینتر رو ازش حذف کردم که موقعی که انگشت رو از رو اینتر برداشتیم آپدیت نکنه.
             # حالا اگه رو دکمه کپی میزدیم هیچ ایونتی ارسال نمیشد و این ایف ارور میداد. پس گفتم اگه ایونتی وجود داشت و اینتر بود ریترن کن. در غیر این صورت کارت رو انجام بده.
             return
