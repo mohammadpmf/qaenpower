@@ -94,7 +94,8 @@ class StaffWindow(MyWindows):
         self.main_window.title(f'حساب کاربری {self.user}')
         self.main_window.config(bg=BG)
         # self.main_window.resizable(False, False)
-        self.main_window.geometry(f"+{S_WIDTH//4}+0")
+        self.main_window.geometry('1280x800+500+0')
+        # self.main_window.geometry(f"+{S_WIDTH//4}+0")
         self.main_window.protocol("WM_DELETE_WINDOW", self.root.destroy)
         self.tab_control = ttk.Notebook(self.main_window) 
         self.tab_control.pack(anchor='n')
@@ -141,8 +142,8 @@ class StaffWindow(MyWindows):
         self.tab_control_frame.pack(side='left', expand=True, fill='both')
         date_picker = DatePicker(self.connection, self.date_picker_frame)
         date_picker.pack(side=RIGHT, expand=True, fill='both')
-        self.btn_confirm_changes_off_all_counters = Button(self.date_picker_frame, text="تایید مقادیر تمامی کنتورها", font=FONT2, cnf=CNF_BTN, command=self.confirm)
-        self.btn_confirm_changes_off_all_counters.pack(side=RIGHT, padx=PADX)
+        self.btn_confirm_changes_off_all_counters_of_this_part = Button(self.date_picker_frame, text="ذخیره", font=FONT2, cnf=CNF_BTN, command=self.confirm)
+        self.btn_confirm_changes_off_all_counters_of_this_part.pack(side=RIGHT, padx=PADX)
         self.seed_tabs_of_parts()
 
         ###################################### frame_change_users_password ######################################
@@ -1120,57 +1121,79 @@ class StaffWindow(MyWindows):
                 all_counter_widgets[i].entry_current_counter.focus_set()
 
     def confirm(self, event=None):
-        message = "اطلاعات در تمام بخش ها تغییر کرده اند. اما هنوز تغییرات در دیتابیس ذخیره نشده است."
-        msb.showinfo("بازیابی صفحه",  message)
-        message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید.\n"
-        message += "با انتخاب دکمه تایید، تمامی اطلاعات در دیتابیس ذخیره میشوند و صفحه بازیابی می شود.\n"
-        message += "در صورت اطمنیان، دکمه تایید را فشار دهید."
+        part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
+        result = self.precheck_before_confirm(part_name)
+        if result==None:
+            return
+        message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
+        message += "با انتخاب دکمه تایید، تمامی اطلاعات این بخش در دیتابیس ذخیره میشوند\n"
+        message += "در صورت اطمنیان، دکمه تایید را فشار دهید"
         self.root.bell()
-        answer = msb.askyesno("اطمینان",  message)
+        answer = msb.askyesno("هشدار", message)
         if not answer:
             return
-        # for counter_widget in all_counter_widgets:
-        #     if counter_widget.type==COUNTER_TYPES[2]:
-        #         counter_widget.
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
-            if counter_widget.type==COUNTER_TYPES[2]:
-                result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, 0, counter_widget.id)
-            elif counter_widget.type==COUNTER_TYPES[1]:
-                counter_widget.workout = counter_widget.entry_workout.get().strip()
-                try:
-                    counter_widget.workout = float(counter_widget.workout)
-                    if counter_widget.workout<0:
-                        msb.showwarning("هشدار", f"مقدار {counter_widget} نمیتواند منفی باشد")
-                        counter_widget.entry_workout.focus_set()
-                        return
-                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, 0, counter_widget.id)
-                except:
-                    msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
-                    counter_widget.entry_workout.focus_set()
-                    return
-            elif counter_widget.type==COUNTER_TYPES[0]:
-                try:
-                    counter_widget.b = float(counter_widget.b)
-                    counter_widget.workout = float(counter_widget.workout)
-                    if counter_widget.workout<0:
-                        msb.showwarning("هشدار", f"مقدار کارکرد {counter_widget} نمیتواند منفی باشد")
-                        counter_widget.entry_current_counter.focus_set()
-                        return
-                    if counter_widget.boolean_var_bad.get():
-                        result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.a, counter_widget.workout, counter_widget.id)
-                    else:
-                        result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.a+counter_widget.workout, counter_widget.workout, counter_widget.id)
-                except:
-                    msb.showwarning("هشدار", f"مقدار {counter_widget} باید به صورت عدد صحیح یا اعشاری باشد")
-                    counter_widget.entry_current_counter.focus_set()
-                    return
+            if counter_widget.part_title==part_name:
+                if counter_widget.type in COUNTER_TYPES[1:3]:
+                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, counter_widget.workout, 0, counter_widget.id, self.user.id)
+                # elif counter_widget.type==COUNTER_TYPES[0]:
+                # try:
+                #     is_broken = 1 if counter_widget.boolean_var_bad.get()==True else 0
+                #     counter_widget.b = float(counter_widget.b)
+                #     counter_widget.workout = float(counter_widget.workout)
+                #     if counter_widget.workout<0:
+                #         msb.showwarning("هشدار", f"مقدار کارکرد {counter_widget} نمیتواند منفی باشد")
+                #         counter_widget.entry_current_counter.focus_set()
+                #         return
+                #     if counter_widget.boolean_var_bad.get():
+                #         result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.a, counter_widget.workout, counter_widget.id)
+                #     else:
+                #         result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.a+counter_widget.workout, counter_widget.workout, counter_widget.id)
+                # except:
+                #     msb.showwarning("هشدار", f"مقدار {counter_widget} باید به صورت عدد صحیح یا اعشاری باشد")
+                #     counter_widget.entry_current_counter.focus_set()
+                #     return
         if result_message == "ok":
-            self.btn_confirm_changes_off_all_counters.config(state='disabled')
+            pass
+            # self.btn_confirm_changes_off_all_counters_of_this_part.config(state='disabled')
             # self.refresh_ui()
         else:
             msb.showerror("ارور", result_message)
-
+    
+    # تابی برای بررسی این که اعداد با ظاهر فعلی در صفحه در دیتابیس ذخیره شوند یا نه
+    # اگر اشتباه باشند که اجازه نمیدهد. اگر منفی باشند کاربر باید تایید کند تا به مرحله بعد برود.
+    def precheck_before_confirm(self, part_name):
+        negative_numbers = 0
+        for counter_widget in all_counter_widgets:
+            counter_widget: CounterWidget
+            if counter_widget.part_title==part_name:
+                try:
+                    if counter_widget.type==COUNTER_TYPES[2]:
+                        temp=float(counter_widget.entry_workout['text'])
+                        if temp<0:
+                            negative_numbers+=1
+                    elif counter_widget.type==COUNTER_TYPES[1]:
+                        temp=float(counter_widget.entry_workout.get().strip())
+                        if temp<0:
+                            negative_numbers+=1
+                    elif counter_widget.type==COUNTER_TYPES[0]:
+                        temp=float(counter_widget.entry_workout.get().strip())
+                        if temp<0:
+                            negative_numbers+=1
+                        temp=float(counter_widget.entry_current_counter.get().strip())
+                        if temp<0:
+                            negative_numbers+=1
+                except:
+                    msb.showerror("اخطار", "به مقادیر دقت کنید. ظاهرا برخی از مقادیر یا ثبت نشده اند و یا به درستی ثبت نشده اند")
+                    return
+        if negative_numbers>0:
+            message = f"{negative_numbers} عدد از فیلدها منفی شده اند.\n"
+            message += "لطفا اعداد را با دقت بیشتری وارد کنید"
+            answer = msb.askretrycancel("هشدار", message)
+            if not answer:
+                return None
+        return "ok"
 
     ########################################### generic functions ###########################################
     # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
@@ -1423,8 +1446,9 @@ class CounterWidget(Counter, MyWindows):
                 bg = WARNING_COLOR
             else:
                 bg=BG
-        except ValueError as error:
-            print(error)
+        except ValueError:
+            bg=ALARM_COLOR
+        except TypeError:
             bg=ALARM_COLOR
         finally:
             if self.type==COUNTER_TYPES[0]:
@@ -1449,6 +1473,8 @@ class CounterWidget(Counter, MyWindows):
                 }) # برای پارامترهای با مقدار ثابت گفته بود فرقی نداره و برای هر دو تا همین رو ذخیره میکنم.
             except ValueError:
                 return
+            except TypeError:
+                return
             finally:
                 self.check_color()
         elif self.type==COUNTER_TYPES[0]:
@@ -1464,6 +1490,8 @@ class CounterWidget(Counter, MyWindows):
                     'workout': self.workout
                 }) # گفته بود در هر صورت چه سالم باشه چه خراب تو ولیو خود مقدار جدید ذخیره بشه و ورک اوت هم همین طور. من هم ایف رو دیگه پاک کردم.
             except ValueError:
+                return
+            except TypeError:
                 return
             finally:
                 self.check_color()
@@ -1517,6 +1545,8 @@ class CounterWidget(Counter, MyWindows):
             except ValueError:
                 # اگه این خط رو نذارم ارور میده چون کلا قسمت اکسپت رو ننوشتم. اما من اینجا گفتم کاری نکنه.
                 return
+            except TypeError:
+                return
             finally:
                 self.check_color()
         elif self.type==COUNTER_TYPES[0]:
@@ -1537,6 +1567,8 @@ class CounterWidget(Counter, MyWindows):
                     self.answer = calculate_fn(self.formula, parameters, values)
                     self.workout = self.answer
                 except ValueError:
+                    return
+                except TypeError:
                     return
                 finally:
                     self.check_color()

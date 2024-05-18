@@ -125,10 +125,14 @@ def get_formula_parameters(formula: str) -> list:
 def calculate_fn(formula: str, parameters: list, values: list):
     '''
     مقدار محاسبه را با دقت سه رقم اعشار تحویل میدهد
+    در صورتی که به مشکل بخورد ۰ تحویل می دهد
     '''
     fn = Expression(formula, parameters)
-    answer = round3(fn(*values))
-    return answer
+    try:
+        answer = round3(fn(*values))
+        return answer
+    except TypeError:
+        return 0
 
 if __name__=='__main__':
     print(hash_password('admin', '1'))

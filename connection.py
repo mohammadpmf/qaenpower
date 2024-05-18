@@ -207,12 +207,20 @@ class Connection():
         self.cursor.execute(query, values)
         return self.cursor.fetchone()
 
-    def create_counter_log(self, value, workout, counter_id):
-        query = "INSERT INTO `qaenpower`.`counters_log` (`value`, `workout`, `date_time_created`, `counter_id`) VALUES (%s, %s, %s, %s);"
-        values = (value, workout, datetime.now(), counter_id)
+    def create_counter_log(self, value, workout, is_broken, counter_id, user_id):
+        query = "INSERT INTO `qaenpower`.`counters_log` (`value`, `workout`, `is_broken`, `date_time_created`, `date_time_modified`, `counter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        values = (value, workout, is_broken, datetime.now(), datetime.now(), counter_id, user_id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
+
+    def update_counter_log(self, value, workout, is_broken, counter_id, user_id):
+        pass # همینجوری بالایی رو کپی پیست کردم بعد تغییرش بدم
+        # query = "INSERT INTO `qaenpower`.`counters_log` (`value`, `workout`, `is_broken`, `date_time_created`, `date_time_modified`, `counter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        # values = (value, workout, is_broken, datetime.now(), datetime.now(), counter_id, user_id)
+        # self.cursor.execute(query, values)
+        # self.connection.commit()
+        # return ("ok", 0)
 
     # الکی همینجوری داشتم مینوشتم که بعدا کارم راحت شه. گفتم شاید لازم نشه ادامه ندادم.
     # def get_counter_log_by_date_time_created(self, date_time_created):
