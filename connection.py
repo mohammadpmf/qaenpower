@@ -311,7 +311,7 @@ class Connection():
         for item in self.cursor.fetchall():
             id = item[0]
             variable_name = item[1]
-            query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s AND `date_time`<%s ORDER BY `date_time` DESC LIMIT 1;"
+            query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s AND `date_time`<=%s ORDER BY `date_time` DESC LIMIT 1;"
             values = (id, selected_date)
             self.cursor.execute(query, values)
             temp_result = self.cursor.fetchone()
@@ -319,6 +319,29 @@ class Connection():
                 temp_dict[variable_name]=0
             else:
                 temp_dict[variable_name]=temp_result[0]
+        return temp_dict
+
+    def get_all_parameters_current_value_and_workout(self, selected_date):
+        query = "SELECT `id`, `variable_name` FROM `qaenpower`.`counters`;"
+        self.cursor.execute(query)
+        temp_dict = {}
+        for item in self.cursor.fetchall():
+            id = item[0]
+            variable_name = item[1]
+            query = "SELECT `value`, `workout` FROM `qaenpower`.`counters_log` WHERE `counter`=%s AND `date_time`<=%s ORDER BY `date_time` DESC LIMIT 1;"
+            values = (id, selected_date)
+            self.cursor.execute(query, values)
+            temp_result = self.cursor.fetchone()
+            if temp_result in [None, '', ()]:
+                temp_dict[variable_name]={
+                    'value': 0,
+                    'workout': 0
+                }
+            else:
+                temp_dict[variable_name]={
+                    'value': temp_result[0],
+                    'workout': temp_result[1],
+                }
         return temp_dict
 
 

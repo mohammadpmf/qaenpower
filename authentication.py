@@ -1125,8 +1125,7 @@ class StaffWindow(MyWindows):
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
             if counter_widget.type==COUNTER_TYPES[2]:
-                print(f"{counter_widget.entry_workout['text']=}, {counter_widget.workout=}")
-                result_message, ـ = counter_widget.connection.create_counter_log(0, counter_widget.workout, counter_widget.id)
+                result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, 0, counter_widget.id)
             elif counter_widget.type==COUNTER_TYPES[1]:
                 counter_widget.workout = counter_widget.entry_workout.get().strip()
                 try:
@@ -1157,7 +1156,8 @@ class StaffWindow(MyWindows):
                     counter_widget.entry_current_counter.focus_set()
                     return
         if result_message == "ok":
-            self.refresh_ui()
+            self.btn_confirm_changes_off_all_counters.config(state='disabled')
+            # self.refresh_ui()
         else:
             msb.showerror("ارور", result_message)
 
@@ -1282,7 +1282,8 @@ class DatePicker(MyWindows):
 
     def confirm(self):
         global selected_date, all_variables_current_value, signal
-        jdate = jdatetime.date(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()))
+        now = datetime.now()
+        jdate = jdatetime.datetime(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()), now.hour, now.minute, now.second)
         message = "آیا از تغییر تاریخ مطمئنید؟\n"
         message += "در صورتی که تغییرات فعلی را ذخیره نکرده باشید، اطلاعات فعلی در دیتابیس ذخیره نمی شوند."
         message += "پس از اطمینان از ذخیره تغییرات فعلی، تاریخ را تغییر دهید."
