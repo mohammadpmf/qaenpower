@@ -1180,6 +1180,7 @@ class StaffWindow(MyWindows):
     
     def refresh_ui_from_anywhere(self):
         global signal
+        sleep(1)
         while self.is_staff_window_running:
             sleep(0.01)
             if signal:
@@ -1195,8 +1196,6 @@ class StaffWindow(MyWindows):
         else:
             msb.showerror("ارور", result_message)
 
-
-
 class DatePicker(MyWindows):
     days_list = [i for i in range(1, 32)]
     months_list = [i for i in range(1, 13)]
@@ -1206,9 +1205,6 @@ class DatePicker(MyWindows):
         self.year = StringVar(self.frame)
         self.month = StringVar(self.frame)
         self.day = StringVar(self.frame)
-        self.year.set('سال')
-        self.month.set('ماه')
-        self.day.set('روز')
         self.btn_yesterday = Button(self.frame, text='روز قبل', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(-1))
         self.btn_tomorrow = Button(self.frame, text='روز بعد', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(1))
         self.combo_year = ttk.Combobox(self.frame, values=self.years_list, textvariable=self.year, width=7, state='readonly', font=FONT, justify='center')
@@ -1218,23 +1214,13 @@ class DatePicker(MyWindows):
         self.combo_month.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_day.bind("<<ComboboxSelected>>", self.check_date)
         self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL, pady=32, width=20)
-        self.btn_confirm = Button(self.frame, text="تایید تاریخ", cnf=CNF_BTN, font=FONT2, padx=0, pady=0, command=self.confirm)
         self.btn_yesterday.pack(cnf=CNF_PACK2)
         self.combo_day.pack(cnf=CNF_PACK2)
         self.combo_month.pack(cnf=CNF_PACK2)
         self.combo_year.pack(cnf=CNF_PACK2)
         self.btn_tomorrow.pack(cnf=CNF_PACK2)
-        self.refresh_date()
         self.label_date.pack(cnf=CNF_PACK2)
-
-    def time_delta(self, days):
-        try:
-            jdate = jdatetime.date(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()))
-            d = jdatetime.timedelta(days=days)
-            new_date = jdate + d
-            self.refresh_date(new_date)
-        except ValueError:
-            msb.showerror('', "تاریخ به درستی انتخاب نشده است")
+        self.refresh_date()
 
     def refresh_date(self, date=None):
         global selected_date, all_variables_current_value
@@ -1268,32 +1254,31 @@ class DatePicker(MyWindows):
         m = self.month.get()
         d = self.day.get()
         try:
-            if y=='سال' or m=='ماه' or d=='روز':
-                return
-            else:
-                date = jdatetime.date(int(y), int(m), int(d))
-                temp = f"{'تاریخ':10} {WEEKDAYS.get(date.weekday())} {d} {MONTH_NAMES.get(int(m))} {y}"
-                self.label_date.config(text=temp)
-                self.btn_confirm.pack(cnf=CNF_PACK2)
+            date = jdatetime.date(int(y), int(m), int(d))
+            temp = f"{'تاریخ':10} {WEEKDAYS.get(date.weekday())} {d} {MONTH_NAMES.get(int(m))} {y}"
+            self.label_date.config(text=temp)
+            self.confirm()
         except ValueError:
             temp = "!!! تاریخ نامعتبر !!!"
             self.label_date.config(text=temp)
-            self.btn_confirm.pack_forget()
 
     def confirm(self):
         global selected_date, all_variables_current_value, signal
         now = datetime.now()
         jdate = jdatetime.datetime(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()), now.hour, now.minute, now.second)
-        message = "آیا از تغییر تاریخ مطمئنید؟\n"
-        message += "در صورتی که تغییرات فعلی را ذخیره نکرده باشید، اطلاعات فعلی در دیتابیس ذخیره نمی شوند."
-        message += "پس از اطمینان از ذخیره تغییرات فعلی، تاریخ را تغییر دهید."
-        self.root.bell()
-        answer = msb.askyesno("اطمینان", message)
-        if not answer:
-            return
         selected_date = jdate.togregorian()
         all_variables_current_value=self.connection.get_all_parameters_current_value(selected_date)
         signal=1
+
+    def time_delta(self, days):
+        try:
+            now = datetime.now()
+            jdate = jdatetime.datetime(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()), now.hour, now.minute, now.second)
+            d = jdatetime.timedelta(days=days)
+            new_date = jdate + d
+            self.refresh_date(new_date)
+        except ValueError:
+            msb.showerror('', "تاریخ به درستی انتخاب نشده است")
 
 class PartWidget(MyWindows):
     def __init__(self, connection: Connection, root: Tk, places_with_counters):
