@@ -1180,7 +1180,7 @@ class StaffWindow(MyWindows):
     
     def refresh_ui_from_anywhere(self):
         global signal
-        sleep(1)
+        sleep(0.4)
         while self.is_staff_window_running:
             sleep(0.01)
             if signal:
@@ -1223,7 +1223,7 @@ class DatePicker(MyWindows):
         self.refresh_date()
 
     def refresh_date(self, date=None):
-        global selected_date, all_variables_current_value
+        global selected_date, all_variables_current_value_and_workout
         if date==None: # این برای اول کار هست. وقتی که تابع تایم دلتا این رو صدا میکنه بهش روز رو میده و نان نیست. پس این ایف اجرا نمیشه.
             date=get_jnow()
             if self.connection.user.default_date==DEFAULT_DATE_VALUES[0]:
@@ -1234,7 +1234,7 @@ class DatePicker(MyWindows):
                 d = jdatetime.timedelta(days=0)
             date = date+d
         selected_date = date.togregorian()
-        all_variables_current_value=self.connection.get_all_parameters_current_value(selected_date) # این رو آخر سر اضافه کردم. برای این که مدام از دیتابیس نپرسیم مقادیر رو، اول کار مقدار فعلی همه متغیرها رو میگیریم که تو برنامه راحت بشه باهاشون کار کرد هی نریم سراغ دیتابیس. هر بار هم که تابع رفرش یو آی صدا زده میشه این متغیر رو با همین دستور آپدیت میکنم منتهی چون تو کلاس دیگه هم لازم داشتم، به جای ذخیره کردن در سلف، گلوبالش کردم.
+        all_variables_current_value_and_workout=self.connection.get_all_parameters_current_value_and_workout(selected_date) # این رو آخر سر اضافه کردم. برای این که مدام از دیتابیس نپرسیم مقادیر رو، اول کار مقدار فعلی همه متغیرها رو میگیریم که تو برنامه راحت بشه باهاشون کار کرد هی نریم سراغ دیتابیس. هر بار هم که تابع رفرش یو آی صدا زده میشه این متغیر رو با همین دستور آپدیت میکنم منتهی چون تو کلاس دیگه هم لازم داشتم، به جای ذخیره کردن در سلف، گلوبالش کردم.
         self.combo_year.config(state='normal')
         self.combo_month.config(state='normal')
         self.combo_day.config(state='normal')
@@ -1263,11 +1263,11 @@ class DatePicker(MyWindows):
             self.label_date.config(text=temp)
 
     def confirm(self):
-        global selected_date, all_variables_current_value, signal
+        global selected_date, all_variables_current_value_and_workout, signal
         now = datetime.now()
         jdate = jdatetime.datetime(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()), now.hour, now.minute, now.second)
         selected_date = jdate.togregorian()
-        all_variables_current_value=self.connection.get_all_parameters_current_value(selected_date)
+        all_variables_current_value_and_workout=self.connection.get_all_parameters_current_value_and_workout(selected_date)
         signal=1
 
     def time_delta(self, days):
@@ -1336,8 +1336,8 @@ class CounterWidget(Counter, MyWindows):
     def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, part_title=None, *args, **kwargs):
         super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
-        global all_variables_current_value, date_picker
-        self.a = self.b = round3(float(all_variables_current_value.get(self.variable_name, 0)))
+        global all_variables_current_value_and_workout, date_picker
+        self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
         self.frame = LabelFrame(self.root, text=self.name, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
@@ -1347,15 +1347,13 @@ class CounterWidget(Counter, MyWindows):
                 if p in ['a', 'b']:
                     values.append(self.b)
                 else:
-                    values.append(round3(float(all_variables_current_value.get(p, 0))))
+                    values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
             self.answer = calculate_fn(self.formula, parameters, values)
         if self.type==COUNTER_TYPES[2]:
             self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LBL2, width=17, *args, **kwargs)
         elif self.type==COUNTER_TYPES[1]:
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=25, *args, **kwargs)
             self.frame.bind('<FocusOut>', self.next)
-            # self.frame.bind('<Leave>', self.next)
-            self.entry_workout.bind('<Return>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
                 self.entry_workout.insert(0, round3(self.a))
@@ -1375,10 +1373,7 @@ class CounterWidget(Counter, MyWindows):
             self.boolean_var_bad = BooleanVar(self.frame)
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
             self.frame.bind('<FocusOut>', self.next)
-            # self.frame.bind('<Leave>', self.next)
-            self.entry_current_counter.bind('<Return>', self.next)
             self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
-            self.entry_workout.bind('<Return>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
                 self.entry_current_counter.insert(0, round3(self.a))
@@ -1394,57 +1389,77 @@ class CounterWidget(Counter, MyWindows):
             self.label_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID2)
         self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID2)
         self.check_color()
-           
+ 
+    def check_color(self, event=None):
+        w_l = self.warning_lower_bound
+        w_u = self.warning_upper_bound
+        a_l = self.alarm_lower_bound
+        a_u = self.alarm_upper_bound
+        try:
+            if self.type == COUNTER_TYPES[2]:
+                self.workout = float(self.entry_workout['text'])
+            else:
+                self.workout = float(self.entry_workout.get())
+            if self.type == COUNTER_TYPES[0] and self.boolean_var_bad.get()==False:
+                float(self.entry_current_counter.get()) # کاری باهاش ندارم. فقط الکی گرفتم که اگه مقدار فلوت نداشت ارور بده و باعث شه قرمز شه. دقت کنم که اولش هم چک کردم که مدلش کنتور باشه که بولین ور رو داشته باشه. اگه مدل کنتور نباشه که خب ورک اوت رو برای همه دارم چک میکنم در ادامه. 
+            if isinstance(a_l, Decimal) and self.workout<a_l:
+                bg = ALARM_COLOR
+            elif isinstance(w_l, Decimal) and self.workout<w_l:
+                bg = WARNING_COLOR
+            elif isinstance(a_u, Decimal) and self.workout>a_u:
+                bg = ALARM_COLOR
+            elif isinstance(w_u, Decimal) and self.workout>w_u:
+                bg = WARNING_COLOR
+            else:
+                bg=BG
+        except ValueError as error:
+            print(error)
+            bg=ALARM_COLOR
+        finally:
+            if self.type==COUNTER_TYPES[0]:
+                if self.boolean_var_bad.get():
+                    self.entry_workout.config(state='normal', bg=bg)
+                else:
+                    self.entry_workout.config(state='disabled', disabledbackground=bg)
+            else:
+                self.entry_workout.config(state='normal', bg=bg)
+          
     def next(self, event=None):
-        global all_variables_current_value
+        global all_variables_current_value_and_workout
         if self.type==COUNTER_TYPES[2]: # نمیتونه باشه. نوشتم که بدونم بررسی شده. رو محاسباتی ها نمیشه اینتر زد.
             pass
         elif self.type==COUNTER_TYPES[1]:
             self.workout = self.entry_workout.get().strip()
             try:
                 self.workout = float(self.workout)
-                if self.workout<0:
-                    msb.showwarning("هشدار", "این مقدار نمیتواند منفی باشد")
-                    self.entry_workout.focus_set()
-                    return
-                all_variables_current_value[self.variable_name]=self.workout
-            except:
-                msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
+                all_variables_current_value_and_workout[self.variable_name].update({
+                    'value': self.workout,
+                    'workout': self.workout
+                }) # برای پارامترهای با مقدار ثابت گفته بود فرقی نداره و برای هر دو تا همین رو ذخیره میکنم.
+            except ValueError:
                 return
+            finally:
+                self.check_color()
         elif self.type==COUNTER_TYPES[0]:
             self.a = self.label_previous_counter['text']
             self.b = self.entry_current_counter.get().strip()
             self.workout = self.entry_workout.get().strip()
             try:
-                self.a = round3(float(self.a))
-                self.b = round3(float(self.b))
-                self.workout = round3(float(self.workout))
-                if self.b<self.a:
-                    msb.showwarning("هشدار", "مقدار کنتور جدید نمیتواند کمتر از قبل باشد")
-                    self.entry_current_counter.focus_set()
-                    return
-                if self.workout<0:
-                    msb.showwarning("هشدار", "مقدار کارکرد نمیتواند منفی باشد")
-                    if self.boolean_var_bad.get():
-                        self.entry_workout.focus_set()
-                    else:
-                        self.entry_current_counter.focus_set()
-                    return
-                if self.boolean_var_bad.get():
-                    all_variables_current_value[self.variable_name]=self.workout
-                else:
-                    all_variables_current_value[self.variable_name]=self.b
-            except:
-                msb.showwarning("هشدار", "مقدار باید به صورت عدد صحیح یا اعشاری باشد")
-                if self.boolean_var_bad.get():
-                    self.entry_workout.focus_set()
-                else:
-                    self.entry_current_counter.focus_set()
+                self.a = float(self.a)
+                self.b = float(self.b)
+                self.workout = float(self.workout)
+                all_variables_current_value_and_workout[self.variable_name].update({
+                    'value': self.b,
+                    'workout': self.workout
+                }) # گفته بود در هر صورت چه سالم باشه چه خراب تو ولیو خود مقدار جدید ذخیره بشه و ورک اوت هم همین طور. من هم ایف رو دیگه پاک کردم.
+            except ValueError:
                 return
-        self.update_all_variables_current_value()
+            finally:
+                self.check_color()
+        self.update_all_variables_current_value_and_workout()
 
-    def update_all_variables_current_value(self):
-        global all_variables_current_value, all_counter_widgets
+    def update_all_variables_current_value_and_workout(self):
+        global all_variables_current_value_and_workout, all_counter_widgets
         for counter_widget in all_counter_widgets:
             counter_widget:CounterWidget
             if counter_widget.formula != "":
@@ -1456,11 +1471,10 @@ class CounterWidget(Counter, MyWindows):
                     elif p=='a':
                         values.append(counter_widget.a)
                     else:
-                        values.append(round3(float(all_variables_current_value.get(p, 0))))
-                counter_widget.answer = round3(calculate_fn(counter_widget.formula, parameters, values))
+                        values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
+                counter_widget.answer = calculate_fn(counter_widget.formula, parameters, values)
             if counter_widget.type==COUNTER_TYPES[2]:
                 counter_widget.entry_workout.config(text=counter_widget.answer)
-                counter_widget.check_color()
             elif counter_widget.type==COUNTER_TYPES[1]:
                 pass
                 # لازم نیست کاری بکنیم. چون پارامترهای ثابت با تغییر بقیه تغییر نمیکنند.
@@ -1477,7 +1491,7 @@ class CounterWidget(Counter, MyWindows):
             counter_widget.check_color()
 
     def update_workout(self, event=None):
-        global all_variables_current_value
+        global all_variables_current_value_and_workout
         if event and event.keysym=='Return': # باگ داشت وقتی اینتر میزدیم آپدیت میشد. اما چون دکمه اینتر ول شده بود دوباره میومد این رو صدا میکرد و به هم میزد همون کنتور ویجت رو. به خاطر همین اینتر رو ازش حذف کردم که موقعی که انگشت رو از رو اینتر برداشتیم آپدیت نکنه.
             # حالا اگه رو دکمه کپی میزدیم هیچ ایونتی ارسال نمیشد و این ایف ارور میداد. پس گفتم اگه ایونتی وجود داشت و اینتر بود ریترن کن. در غیر این صورت کارت رو انجام بده.
             return
@@ -1490,21 +1504,16 @@ class CounterWidget(Counter, MyWindows):
             try:
                 self.workout=float(self.entry_workout.get().strip())
             except ValueError:
-                msb.showwarning("هشدار", "مقدار پارامتر را به صورت عدد صحیح یا اعشاری وارد نمایید")
-                self.entry_workout.delete(0, END)
-                self.entry_workout.insert(0, 0)
-                self.entry_workout.focus_set()
+                # اگه این خط رو نذارم ارور میده چون کلا قسمت اکسپت رو ننوشتم. اما من اینجا گفتم کاری نکنه.
                 return
             finally:
                 self.check_color()
         elif self.type==COUNTER_TYPES[0]:
-            if self.boolean_var_bad.get()==False:
+            if self.boolean_var_bad.get():
+                self.check_color()
+            else:
                 try:
-                    if self.entry_current_counter.get().strip()=='':
-                        self.b = 0
-                    else:
-                        self.b = float(self.entry_current_counter.get().strip())
-                    # self.a = round3(float(all_variables_current_value.get(self.variable_name)))
+                    self.b = float(self.entry_current_counter.get().strip())
                     parameters = get_formula_parameters(self.formula)
                     values = []
                     for p in parameters:
@@ -1513,23 +1522,20 @@ class CounterWidget(Counter, MyWindows):
                         elif p=='a':
                             values.append(self.a)
                         else:
-                            values.append(float(all_variables_current_value.get(p)))
+                            values.append(float(all_variables_current_value_and_workout.get(p).get('workout')))
                     self.answer = calculate_fn(self.formula, parameters, values)
-                    self.workout = round3(self.answer)
+                    self.workout = self.answer
                 except ValueError:
-                    msb.showwarning("هشدار", "مقدار پارامتر را به صورت عدد صحیح یا اعشاری وارد نمایید")
-                    self.entry_current_counter.focus_set()
-                    self.entry_current_counter.delete(0, END)
                     return
                 finally:
-                    self.entry_workout.config(state='normal')
-                    self.entry_workout.delete(0, END)
-                    self.entry_workout.insert(0, self.workout)
-                    self.entry_workout.config(state='readonly')
                     self.check_color()
-            else:
-                self.check_color()
-
+        self.next()
+        self.next()
+        # :D
+        # اینجا یه بار که تابع نکست رو کال میکردم خودش درست میشد. اما بقیه ها نه. باید رو یکی دیگه کلیک میکردم.
+        # هاور هم گذاشتم باید دوبار ماوس رو میبردیم بیرون که خیلی جالب نبود.
+        # بهترین راه حل به نظرم این بود که دو بار خودم نکست رو پشت سر هم صدا کنم که هم خودش همون لحظه آپدیت
+        # بشه و هم کنتورهایی که بهش وابسته هستند.
 
     def copy_paste(self, event=None):
         if self.type==COUNTER_TYPES[0]: # اگه انواع دیگه باشن، بولین ور براشون تعریف نشده و این تابع براشون ارور میده. پس شرط گذاشتم براش.
@@ -1546,33 +1552,3 @@ class CounterWidget(Counter, MyWindows):
                 self.entry_workout.config(state='readonly')
                 self.entry_current_counter.focus_set()
             self.update_workout()
-
-    def check_color(self, event=None):
-        w_l = self.warning_lower_bound
-        w_u = self.warning_upper_bound
-        a_l = self.alarm_lower_bound
-        a_u = self.alarm_upper_bound
-        try:
-            if self.type == COUNTER_TYPES[2]:
-                self.workout = float(self.entry_workout['text'])
-            else:
-                self.workout = float(self.entry_workout.get())
-            if isinstance(a_l, Decimal) and self.workout<a_l:
-                bg = ALARM_COLOR
-            elif isinstance(w_l, Decimal) and self.workout<w_l:
-                bg = WARNING_COLOR
-            elif isinstance(a_u, Decimal) and self.workout>a_u:
-                bg = ALARM_COLOR
-            elif isinstance(w_u, Decimal) and self.workout>w_u:
-                bg = WARNING_COLOR
-            else:
-                bg=BG
-            if self.type==COUNTER_TYPES[0]:
-                if self.boolean_var_bad.get():
-                    self.entry_workout.config(state='normal', bg=bg)
-                else:
-                    self.entry_workout.config(state='disabled', disabledbackground=bg)
-            else:
-                self.entry_workout.config(state='normal', bg=bg)
-        except ValueError as error:
-            print(error)

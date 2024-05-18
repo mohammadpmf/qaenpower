@@ -123,6 +123,9 @@ def get_formula_parameters(formula: str) -> list:
 
 # تابعی که در برنامه مقدار پارامتر مورد نظر را حساب کند و نمایش دهد.
 def calculate_fn(formula: str, parameters: list, values: list):
+    '''
+    مقدار محاسبه را با دقت سه رقم اعشار تحویل میدهد
+    '''
     fn = Expression(formula, parameters)
     answer = round3(fn(*values))
     return answer
