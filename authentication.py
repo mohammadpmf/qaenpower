@@ -377,7 +377,7 @@ class StaffWindow(MyWindows):
             self.verscrlbar_all_counters.grid(row=19, rowspan=3, column=11, sticky='ns')
             self.treev_all_counters.configure(yscrollcommand = self.verscrlbar_all_counters.set)
             self.treev_all_counters["columns"] = ("1", "2", "3", "4")
-            self.treev_all_counters.column("1", width = 200, anchor ='c')
+            self.treev_all_counters.column("1", width = 250, anchor ='c')
             self.treev_all_counters.column("2", width = 200, anchor ='c')
             self.treev_all_counters.column("3", width = 200, anchor ='c')
             self.treev_all_counters.column("4", width = 100, anchor ='c')
@@ -520,6 +520,7 @@ class StaffWindow(MyWindows):
 
     # تابعی جهت ایجاد پارامتر
     def create_counter(self, event=None):
+        global all_variables_current_value_and_workout
         is_everything_ok = True # برای ایجاد پارامتر اول فرض میکنیم همه چی اوکی هست. اگه مشکلی پیش اومد فالسش میکنیم.
         part = self.entry_counter_part.get()
         place = self.entry_counter_place.get()
@@ -619,6 +620,15 @@ class StaffWindow(MyWindows):
         else:
             return
         if result_message=='ok':
+            # اگه ساخته شده باشه، تو دیتابیس تغییر کرده اما برنامه ازش خبر نداریم. پس دیکشنری مربوط به اون رو هم آپدیت میکنیم.
+            # چون تازه ساخته شده هر دو مقدار رو صفر میذاریم و اگه بعدا ثبت کنیم خود به خود لاگ براش ثبت میشه.
+            # فقط ایجا داخل سلف ذخیره اش نکرده بودم چون موقت بود و اسم متغیرش همون وریبل نیم هست بدون سل.
+            all_variables_current_value_and_workout.update({
+                variable_name: {
+                    'value': 0,
+                    'workout': 0
+                }
+            })
             msb.showinfo("پیام موفقیت", f"پارامتر {name} با موفقیت در مکان {place} از بخش {part} ساخته شد")
             self.refresh_ui()
         else:
@@ -1328,6 +1338,7 @@ class PartWidget(MyWindows):
                         alarm_upper_bound=counter.alarm_upper_bound,
                         id=counter.id,
                         place_title=counter.place_title,
+                        part_title=counter.part_title,
                         font=FONT2)
                     all_counter_widgets.append(c)
                     c.grid(row=i, column=1000-1-j, sticky='news', padx=4, pady=2)
@@ -1350,7 +1361,7 @@ class CounterWidget(Counter, MyWindows):
                     values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
             self.answer = calculate_fn(self.formula, parameters, values)
         if self.type==COUNTER_TYPES[2]:
-            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LBL2, width=17, *args, **kwargs)
+            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LBL2, width=17, height=2, *args, **kwargs)
         elif self.type==COUNTER_TYPES[1]:
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=25, *args, **kwargs)
             self.frame.bind('<FocusOut>', self.next)

@@ -1,12 +1,12 @@
 import pymysql
-from models import Part, Place, Staff, Counter
+from models import CounterLog, Part, Place, Staff, Counter
 from functions import hash_password, get_jnow, datetime
 
 WRONG_LIMIT=10
 
 class Connection():
     def __init__(self, host='127.0.0.1', username='root', password='root'):
-        self.user = Staff("admin", "", "", "", 3, "روز قبل", 0)
+        self.user = Staff("admin", "admin", "admin", "admin", 3, 0, "روز قبل", 1)
         self.host = host
         self.username = username
         self.password = password
@@ -14,7 +14,7 @@ class Connection():
         self.cursor = self.connection.cursor()
         query = "CREATE SCHEMA IF NOT EXISTS `qaenpower`;"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`users` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `surname` VARCHAR(64) NOT NULL, `username` VARCHAR(64) NOT NULL, `password` VARCHAR(128) NOT NULL, `access_level` TINYINT(1) NOT NULL DEFAULT 2, `wrong_times` TINYINT(2) NOT NULL DEFAULT 0, `default_date` VARCHAR(64) NOT NULL DEFAULT 'روز قبل', PRIMARY KEY (`id`),UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE,UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`users` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `surname` VARCHAR(64) NOT NULL, `username` VARCHAR(64) NOT NULL, `password` VARCHAR(128) NOT NULL, `access_level` TINYINT(1) NOT NULL DEFAULT 2, `wrong_times` TINYINT(2) NOT NULL DEFAULT 0, `default_date` VARCHAR(64) NOT NULL DEFAULT 'روز قبل', PRIMARY KEY (`id`), UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);"
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`parts` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `title_UNIQUE` (`title` ASC) VISIBLE);"
         self.cursor.execute(query)
@@ -22,7 +22,7 @@ class Connection():
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `counter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) UNSIGNED NOT NULL, `workout` DECIMAL(20,10) UNSIGNED NOT NULL,`date_time` DATETIME NOT NULL, `counter` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `counter` FOREIGN KEY (`counter`) REFERENCES `qaenpower`.`counters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) UNSIGNED NOT NULL, `workout` DECIMAL(20,10) NOT NULL, `is_broken` TINYINT(1) NOT NULL DEFAULT 0, `date_time_created` DATETIME NOT NULL, `date_time_modified` DATETIME NOT NULL, `counter_id` INT UNSIGNED NOT NULL, `user_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `counter_id` FOREIGN KEY (`counter_id`) REFERENCES `qaenpower`.`counters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `qaenpower`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
         self.cursor.execute(query)
 
     def create_user(self, name, surname, username, password):
@@ -208,11 +208,22 @@ class Connection():
         return self.cursor.fetchone()
 
     def create_counter_log(self, value, workout, counter_id):
-        query = "INSERT INTO `qaenpower`.`counters_log` (`value`, `workout`, `date_time`, `counter`) VALUES (%s, %s, %s, %s);"
+        query = "INSERT INTO `qaenpower`.`counters_log` (`value`, `workout`, `date_time_created`, `counter_id`) VALUES (%s, %s, %s, %s);"
         values = (value, workout, datetime.now(), counter_id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
+
+    # الکی همینجوری داشتم مینوشتم که بعدا کارم راحت شه. گفتم شاید لازم نشه ادامه ندادم.
+    # def get_counter_log_by_date_time_created(self, date_time_created):
+    #     query = "SELECT * FROM `qaenpower`.`counters_log` WHERE `date_time_created`<=%s ORDER BY `date_time_created` DESC LIMIT 1;"
+    #     values = (date_time_created, )
+    #     self.cursor.execute(query, values)
+    #     temp = self.cursor.fetchone()
+    #     print(temp, type(temp))
+    #     if temp == None:
+    #         return temp
+    #     return CounterLog(*temp)
 
     def get_all_counters_variable_names(self):
         query = "SELECT `variable_name` FROM `qaenpower`.`counters` ORDER BY `order`;"
@@ -245,7 +256,7 @@ class Connection():
         values = (variable_name, )
         self.cursor.execute(query, values)
         id = self.cursor.fetchone()[0]
-        query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s ORDER BY `date_time` DESC LIMIT 1;"
+        query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s ORDER BY `date_time_created` DESC LIMIT 1;"
         values = (id, )
         self.cursor.execute(query, values)
         return self.cursor.fetchone()[0]
@@ -311,7 +322,7 @@ class Connection():
         for item in self.cursor.fetchall():
             id = item[0]
             variable_name = item[1]
-            query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s AND `date_time`<=%s ORDER BY `date_time` DESC LIMIT 1;"
+            query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter`=%s AND `date_time_created`<=%s ORDER BY `date_time_created` DESC LIMIT 1;"
             values = (id, selected_date)
             self.cursor.execute(query, values)
             temp_result = self.cursor.fetchone()
@@ -328,7 +339,7 @@ class Connection():
         for item in self.cursor.fetchall():
             id = item[0]
             variable_name = item[1]
-            query = "SELECT `value`, `workout` FROM `qaenpower`.`counters_log` WHERE `counter`=%s AND `date_time`<=%s ORDER BY `date_time` DESC LIMIT 1;"
+            query = "SELECT `value`, `workout` FROM `qaenpower`.`counters_log` WHERE `counter_id`=%s AND `date_time_created`<=%s ORDER BY `date_time_created` DESC LIMIT 1;"
             values = (id, selected_date)
             self.cursor.execute(query, values)
             temp_result = self.cursor.fetchone()

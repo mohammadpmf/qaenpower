@@ -2,7 +2,7 @@ from functions import get_jnow
 
 
 class Staff():
-    def __init__(self, name, surname, username, password, access_level, wrong_times, default_date, id=None):
+    def __init__(self, name, surname, username, password, access_level, wrong_times, default_date, id):
         self.name=name
         self.surname=surname
         self.username=username
@@ -17,7 +17,7 @@ class Staff():
 
 
 class Part():
-    def __init__(self, title, id=None):
+    def __init__(self, title, id):
         self.title=title
         self.id=id
 
@@ -26,7 +26,7 @@ class Part():
 
 
 class Place():
-    def __init__(self, title, part_id, id=None, part_title=None):
+    def __init__(self, title, part_id, id, part_title):
         self.title=title
         self.part_id=part_id
         self.id=id
@@ -37,10 +37,9 @@ class Place():
 
 
 class Counter():
-    def __init__(self, part, place, name, variable_name, formula='',
-                 type='counter', default_value=0, unit=None, warning_lower_bound=None,
-                 warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None,
-                 place_title=None, part_title=None):
+    def __init__(self, part, place, name, variable_name, formula, type, default_value, unit,
+                 warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound,
+                 id, place_title=None, part_title=None):
         self.part = part
         self.place = place
         self.name = name
@@ -62,13 +61,13 @@ class Counter():
 
 
 class CounterLog():
-    def __init__(self, value, counter_id, date_time=None, id=None):
+    def __init__(self, value, workout, date_time, date_time_modified, counter_id, user_id, id):
         self.value=value
-        if date_time!=None:
-            self.date_time=date_time
-        else:
-            self.date_time=get_jnow()
+        self.workout=workout
+        self.date_time=date_time
+        self.date_time_modified=date_time_modified
         self.counter_id=counter_id
+        self.user_id=user_id
         self.id=id
 
     def __str__(self):
