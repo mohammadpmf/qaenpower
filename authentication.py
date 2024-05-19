@@ -88,6 +88,7 @@ class StaffWindow(MyWindows):
         global date_picker, signal
         self.is_staff_window_running = True # وقتی برمیگشتیم به صفحه ورود و دوباره وارد میشدیم، بعضی وقت ها ارور میداد و نفهمیدم دلیلش چی بود. اما به خاطر ترد قبلی بود که به خاطر وایل ترو زنده مونده بود. به خاطر همین این متغیر رو تعریف کردم که با اول کار میشه ترو و وقتی بک رو میزنیم مقدارش میشه فالس که خود به خود ترد کارش تموم بشه و نابود بشه. احتمالا چند باری که ارور نداد به خاطر گاربیج کالکتور بود که ترد بیخود رو حذف میکرد. اما خب همیشه این کار رو نمیکرد و این طوری چندین بار تست کردم ارور نداد. 
         signal = 0 # برای این که وقتی یه آپدیتی کردیم رو یه پارامتر، ظاهر برنامه رو رفرش کنیم و به تابع رفرش یو آی این کلاس دسترسی داشته باشیم.
+        self.logged_parts_names = set() # یه لیست از پارت هایی که امروز لاگ رو ثبت کردند. البته اول لیست گرفته بودم. بعد گفتم مجموعه کنم بهتره. اگه ثبت کردند، اسمشون میره تو این مجموعه که دیگه نتونن ثبت کنن و فقط بتونن ویرایش کنن. اول کار هیچ کس ثبت نکرده، پس فقط یه مجموعه خالی داریم. هر بخشی که ثبت کرد وارد این مجموعه میشه و بعد از اون فقط میتونه ویرایش کنه.
         Thread(target=self.refresh_ui_from_anywhere, daemon=True).start()
         self.user = user
         self.main_window = Toplevel(self.frame)
@@ -140,10 +141,14 @@ class StaffWindow(MyWindows):
         self.date_picker_frame.pack(side=TOP, expand=True, fill='x')
         self.tab_control_frame = ttk.Notebook(self.frame_add_statistics)
         self.tab_control_frame.pack(side='left', expand=True, fill='both')
+        self.tab_control_frame.bind('<<NotebookTabChanged>>', self.enable_or_disable_confirm_button) # اینجا مینویسم ارور میده. اما برنامه کار میکنه. موقع مرتب کردن جا به جاش کنم. البته میشه به کلیک موس هم بایندش کرد. اما مشکل این بود که اگه طرف با کیبورد جا به جا بشه تابعش صدا نمیشه. به خاطر همین این رو گذاشتم.
+        # self.tab_control_frame.bind('<Button-1>', self.enable_or_disable_confirm_button)
         date_picker = DatePicker(self.connection, self.date_picker_frame)
         date_picker.pack(side=RIGHT, expand=True, fill='both')
-        self.btn_confirm_changes_off_all_counters_of_this_part = Button(self.date_picker_frame, text="ذخیره", font=FONT2, cnf=CNF_BTN, command=self.confirm)
-        self.btn_confirm_changes_off_all_counters_of_this_part.pack(side=RIGHT, padx=PADX)
+        self.btn_confirm_counter_log_update = Button(self.date_picker_frame, text="ویرایش", font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
+        self.btn_confirm_counter_log_update.pack(side=RIGHT, padx=PADX)
+        self.btn_confirm_counter_log_insert = Button(self.date_picker_frame, text="ذخیره", font=FONT2, cnf=CNF_BTN, command=self.confirm_log_insert)
+        self.btn_confirm_counter_log_insert.pack(side=RIGHT, padx=PADX)
         self.seed_tabs_of_parts()
 
         ###################################### frame_change_users_password ######################################
@@ -392,7 +397,7 @@ class StaffWindow(MyWindows):
             self.btn_up_tree_all_counters.grid(row=19, column=0, cnf=CNF_GRID, sticky='s')
             self.btn_confirm_tree_all_counters.grid(row=20, column=0, cnf=CNF_GRID)
             self.btn_down_tree_all_counters.grid(row=21, column=0, cnf=CNF_GRID, sticky='n')
-            self.refresh_all_counters_treeview() #inja
+            self.refresh_all_counters_treeview()
 
     ######################################### change password functions #########################################
     # تابعی جهت بررسی این که پسووردها در بخش تغییر پسوورد نمایش داده شوند یا خیر
@@ -1070,14 +1075,14 @@ class StaffWindow(MyWindows):
         # print(all_places)
         # for places in all_places:
         #     print(places)
-        all_counters_2d = [] # لیست دو بعدی از تمام کنتور ها برای ارسال به پارت ویجت که تمام کنتورهای یک بخش رو بسازه. دو بعدی هست. دقت کنم که بعضی از لیست هاش هم خالی هستند. چون بخشی هست که ممکنه کنتوری نداشته باشه.
+        self.all_counters_2d = [] # لیست دو بعدی از تمام کنتور ها برای ارسال به پارت ویجت که تمام کنتورهای یک بخش رو بسازه. دو بعدی هست. دقت کنم که بعضی از لیست هاش هم خالی هستند. چون بخشی هست که ممکنه کنتوری نداشته باشه.
         for places in all_places: # آل پلیسس یه لیست از مکان های هر بخش هست. پس روش دوباره حلقه میزنیم
             for place in places:
-                all_counters_2d.append(self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id))
-        # print(all_counters_2d)
-        # for counters in all_counters_2d:
+                self.all_counters_2d.append(self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id))
+        # print(self.all_counters_2d)
+        # for counters in self.all_counters_2d:
         #     print(counters)
-
+        self.set_logged_parts_names()
         tabs_list = []
         parts_tab = []
         for i, part in enumerate(all_parts):
@@ -1120,7 +1125,31 @@ class StaffWindow(MyWindows):
             else:
                 all_counter_widgets[i].entry_current_counter.focus_set()
 
-    def confirm(self, event=None):
+    def enable_or_disable_confirm_button(self, event=None):
+        part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
+        if part_name in self.logged_parts_names:
+            self.btn_confirm_counter_log_insert.config(state='disabled')
+            self.btn_confirm_counter_log_update.config(state='normal')
+        else:
+            self.btn_confirm_counter_log_insert.config(state='normal')
+            self.btn_confirm_counter_log_update.config(state='disabled')
+
+    def set_logged_parts_names(self):
+        global date_picker
+        self.logged_parts_names.clear()
+        temp_date = date_picker.get_date()
+        for counters in self.all_counters_2d:
+            for counter in counters:
+                counter: Counter
+                last_log = self.connection.get_last_log_of_counter_by_id(counter.id)
+                if last_log!=None and temp_date<=last_log:
+                    self.logged_parts_names.add(counter.part_title)
+
+    def confirm_log_insert(self, event=None):
+        temp_date = date_picker.get_date()
+        if temp_date == None:
+            msb.showerror("هشدار", "لطفا تاریخ را به درستی انتخاب کنید")
+            return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         result = self.precheck_before_confirm(part_name)
         if result==None:
@@ -1132,35 +1161,23 @@ class StaffWindow(MyWindows):
         answer = msb.askyesno("هشدار", message)
         if not answer:
             return
+        print(temp_date)
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
                 if counter_widget.type in COUNTER_TYPES[1:3]:
-                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, counter_widget.workout, 0, counter_widget.id, self.user.id)
-                # elif counter_widget.type==COUNTER_TYPES[0]:
-                # try:
-                #     is_broken = 1 if counter_widget.boolean_var_bad.get()==True else 0
-                #     counter_widget.b = float(counter_widget.b)
-                #     counter_widget.workout = float(counter_widget.workout)
-                #     if counter_widget.workout<0:
-                #         msb.showwarning("هشدار", f"مقدار کارکرد {counter_widget} نمیتواند منفی باشد")
-                #         counter_widget.entry_current_counter.focus_set()
-                #         return
-                #     if counter_widget.boolean_var_bad.get():
-                #         result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.a, counter_widget.workout, counter_widget.id)
-                #     else:
-                #         result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.a+counter_widget.workout, counter_widget.workout, counter_widget.id)
-                # except:
-                #     msb.showwarning("هشدار", f"مقدار {counter_widget} باید به صورت عدد صحیح یا اعشاری باشد")
-                #     counter_widget.entry_current_counter.focus_set()
-                #     return
+                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, counter_widget.workout, 0, temp_date, counter_widget.id, self.user.id)
+                elif counter_widget.type==COUNTER_TYPES[0]:
+                    is_broken = 1 if counter_widget.boolean_var_bad.get()==True else 0
+                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.b, counter_widget.workout, is_broken, temp_date, counter_widget.id, self.user.id)
         if result_message == "ok":
-            pass
-            # self.btn_confirm_changes_off_all_counters_of_this_part.config(state='disabled')
-            # self.refresh_ui()
+            self.btn_confirm_counter_log_insert.config(state='disabled')
+            self.btn_confirm_counter_log_update.config(state='normal')
+            message = f"اطلاعات بخش با {part_name} موفقیت در دیتابیس ذخیره شدند"
+            msb.showinfo('success', message)
         else:
             msb.showerror("ارور", result_message)
-    
+
     # تابی برای بررسی این که اعداد با ظاهر فعلی در صفحه در دیتابیس ذخیره شوند یا نه
     # اگر اشتباه باشند که اجازه نمیدهد. اگر منفی باشند کاربر باید تایید کند تا به مرحله بعد برود.
     def precheck_before_confirm(self, part_name):
@@ -1195,6 +1212,10 @@ class StaffWindow(MyWindows):
                 return None
         return "ok"
 
+    def confirm_log_update(self):
+        # inja
+        pass
+
     ########################################### generic functions ###########################################
     # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
     def back(self, event=None):
@@ -1228,7 +1249,7 @@ class StaffWindow(MyWindows):
             msb.showinfo("پیام موفقیت", f"تاریخ پیش فرض با موفقیت تغییر کرد")
         else:
             msb.showerror("ارور", result_message)
-
+    
 class DatePicker(MyWindows):
     days_list = [i for i in range(1, 32)]
     months_list = [i for i in range(1, 13)]
@@ -1312,6 +1333,15 @@ class DatePicker(MyWindows):
             self.refresh_date(new_date)
         except ValueError:
             msb.showerror('', "تاریخ به درستی انتخاب نشده است")
+
+    def get_date(self):
+        try:
+            jdate = jdatetime.date(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()))
+            date = jdate.togregorian()
+            return date
+        except:
+            return None
+        
 
 class PartWidget(MyWindows):
     def __init__(self, connection: Connection, root: Tk, places_with_counters):
@@ -1423,12 +1453,17 @@ class CounterWidget(Counter, MyWindows):
             self.label_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID2)
         self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID2)
         self.check_color()
+        self.next() # پارامترهایی از جنس کنتور که فرمول محاسباتی از بقیه کنتورها داشتن، مقدار قبلی دیتابیس رو مینوشتن و باید روی فیلدهای وابسته به فرمولشون کلیک میکردیم و جابه جا میشدیم تا فوکس اوت کنه و مقدارشون بر اساس داده هایی باشه که در صفحه در حال نمایش هستند. این تابع رو به خاطر همین صدا کردم که خودش این کار رو بکنه. اگه به باگ خوردم بازم ازش کپی پیست کنم. تابع خیلی خوبی هست :D
  
     def check_color(self, event=None):
         w_l = self.warning_lower_bound
         w_u = self.warning_upper_bound
         a_l = self.alarm_lower_bound
         a_u = self.alarm_upper_bound
+        bg=ALARM_COLOR # یه سری ارور میداد با این که ترای و اکسپت گذاشته بودم. خلاصه حالتی پیش میومد که میگفت بی جی تعریف شده نیست.
+        # من هم گفتم اول کار میذارم رنگش آلارم باشه. اگه تغییر کرد که خب درست میشه. اگه نکرد که خب تعریف شده و قرمز هست بهم ارور نمیده دیگه
+        # باز هم ارور میداد. فکر کنم به خاطر تب هایی
+        # هست که از بین رفتن. اما چون داخل ترای نوشتم برنامه درست کار میکنه. فعلا گفتم روش وقت نذارم.
         try:
             if self.type == COUNTER_TYPES[2]:
                 self.workout = float(self.entry_workout['text'])
@@ -1464,8 +1499,8 @@ class CounterWidget(Counter, MyWindows):
         if self.type==COUNTER_TYPES[2]: # نمیتونه باشه. نوشتم که بدونم بررسی شده. رو محاسباتی ها نمیشه اینتر زد.
             pass
         elif self.type==COUNTER_TYPES[1]:
-            self.workout = self.entry_workout.get().strip()
             try:
+                self.workout = self.entry_workout.get().strip()
                 self.workout = float(self.workout)
                 all_variables_current_value_and_workout[self.variable_name].update({
                     'value': self.workout,
