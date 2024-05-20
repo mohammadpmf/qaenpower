@@ -230,16 +230,15 @@ class Connection():
         self.connection.commit()
         return ("ok", 0)
 
-    # الکی همینجوری داشتم مینوشتم که بعدا کارم راحت شه. گفتم شاید لازم نشه ادامه ندادم.
-    # def get_counter_log_by_date_created(self, date_created):
-    #     query = "SELECT * FROM `qaenpower`.`counters_log` WHERE `date_created`<=%s ORDER BY `date_created` DESC LIMIT 1;"
-    #     values = (date_created, )
-    #     self.cursor.execute(query, values)
-    #     temp = self.cursor.fetchone()
-    #     print(temp, type(temp))
-    #     if temp == None:
-    #         return temp
-    #     return CounterLog(*temp)
+    def get_counters_log_by_date_created(self, date_created):
+        query = "SELECT * FROM `qaenpower`.`counters_log` WHERE `date_created`<=%s ORDER BY `date_created` DESC;" # چون ممکنه تو اون تاریخ لاگی ثبت نشده باشه، کوچکتر یا مساوی باید بذارم. اگه مساوی باشه ممکنه خالی بده. در حالی که روزهای قبل ترش لاگ ثبت کرده
+        values = (date_created, )
+        self.cursor.execute(query, values)
+        temp = self.cursor.fetchall()
+        print(temp, type(temp))
+        # if temp == None:
+        #     return temp
+        # return CounterLog(*temp)
 
     def get_all_counters_variable_names(self):
         query = "SELECT `variable_name` FROM `qaenpower`.`counters` ORDER BY `order`;"

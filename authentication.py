@@ -1096,34 +1096,30 @@ class StaffWindow(MyWindows):
             parts_tab.append(PartWidget(self.connection, tabs_list[i], places_with_counters))
             parts_tab[i].pack()
         self.tab_control_frame.pack(expand=1, fill="both")
-        i = 0
-        length = len(all_counter_widgets)
-        # for i, counter_widget in enumerate(all_counter_widgets):
-        for counter_widget in all_counter_widgets:
-            i += 1
-            i %= length
+        for i, counter_widget in enumerate(all_counter_widgets):
+            counter_widget: CounterWidget
             if counter_widget.type==COUNTER_TYPES[2]:
-                pass
-            elif counter_widget.type==COUNTER_TYPES[1]:
-                # counter_widget.entry_workout.bind('<Insert>', lambda e, i=i: None if all_counter_widgets[i].type==COUNTER_TYPES[2] else all_counter_widgets[i].entry_workout.focus_set() if all_counter_widgets[i].type==COUNTER_TYPES[1] else all_counter_widgets[i].entry_current_counter.focus_set() if all_counter_widgets[i].boolean_var_bad.get()==False else all_counter_widgets[i].entry_workout.focus_set())
-                counter_widget.entry_workout.bind('<Insert>', lambda e, i=i: self.goto_next_counter_widget(i))
-            elif counter_widget.type==COUNTER_TYPES[0]:
-                # counter_widget.entry_current_counter.bind('<Insert>', lambda e, i=i: None if all_counter_widgets[i].type==COUNTER_TYPES[2] else all_counter_widgets[i].entry_workout.focus_set() if all_counter_widgets[i].type==COUNTER_TYPES[1] else all_counter_widgets[i].entry_current_counter.focus_set() if all_counter_widgets[i].boolean_var_bad.get()==False else all_counter_widgets[i].entry_workout.focus_set())
-                # counter_widget.entry_workout.bind('<Insert>', lambda e, i=i: None if all_counter_widgets[i].type==COUNTER_TYPES[2] else all_counter_widgets[i].entry_workout.focus_set() if all_counter_widgets[i].type==COUNTER_TYPES[1] else all_counter_widgets[i].entry_current_counter.focus_set() if all_counter_widgets[i].boolean_var_bad.get()==False else all_counter_widgets[i].entry_workout.focus_set())
-                counter_widget.entry_current_counter.bind('<Insert>', lambda e, i=i: self.goto_next_counter_widget(i))
-                counter_widget.entry_workout.bind('<Insert>', lambda e, i=i: self.goto_next_counter_widget(i))
-
-    def goto_next_counter_widget(self, i):
-        global all_counter_widgets
-        if all_counter_widgets[i].type==COUNTER_TYPES[2]:
-            pass
-        elif all_counter_widgets[i].type==COUNTER_TYPES[1]:
-            all_counter_widgets[i].entry_workout.focus_set()
-        elif all_counter_widgets[i].type==COUNTER_TYPES[0]:
-            if all_counter_widgets[i].boolean_var_bad.get():
-                all_counter_widgets[i].entry_workout.focus_set()
+                pass # چون اصلا نمیشه روش اینتر زد.
             else:
-                all_counter_widgets[i].entry_current_counter.focus_set()
+                counter_widget.entry_workout.bind('<Return>', lambda e, i=i: self.goto_next_counter_widget(i)) # چون هر دو نوع ثابت و کنتور، این ویجت رو دارند و انتری هست.
+                if counter_widget.type==COUNTER_TYPES[0]: # نوع کنتور، یه انتری دیگه هم داره. پس اون رو هم بایند میکنیم.
+                    counter_widget.entry_current_counter.bind('<Return>', lambda e, i=i: self.goto_next_counter_widget(i))
+
+    def goto_next_counter_widget(self, index):
+        global all_counter_widgets
+        length = len(all_counter_widgets)
+        for i in range(index+1, length):
+            if all_counter_widgets[i].type==COUNTER_TYPES[2]:
+                continue
+            elif all_counter_widgets[i].type==COUNTER_TYPES[1]:
+                all_counter_widgets[i].entry_workout.focus_set()
+                return
+            elif all_counter_widgets[i].type==COUNTER_TYPES[0]:
+                if all_counter_widgets[i].boolean_var_bad.get():
+                    all_counter_widgets[i].entry_workout.focus_set()
+                else:
+                    all_counter_widgets[i].entry_current_counter.focus_set()
+                return
 
     def enable_or_disable_confirm_button(self, event=None):
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
@@ -1213,8 +1209,40 @@ class StaffWindow(MyWindows):
         return "ok"
 
     def confirm_log_update(self):
-        # inja
-        pass
+        temp_date = date_picker.get_date()
+        if temp_date == None:
+            msb.showerror("هشدار", "لطفا تاریخ را به درستی انتخاب کنید")
+            return
+        part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
+        result = self.precheck_before_confirm(part_name)
+        if result==None:
+            return
+        message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
+        message += "با انتخاب دکمه تایید، تمامی اطلاعات این بخش در دیتابیس ویرایش میشوند\n"
+        message += "در صورت اطمنیان، دکمه تایید را فشار دهید"
+        self.root.bell()
+        answer = msb.askyesno("هشدار", message)
+        if not answer:
+            return
+        print(temp_date)
+        last_log_of_counters = self.connection.get_counters_log_by_date_created(temp_date)
+        #inja
+        # for counter_widget in all_counter_widgets:
+        #     counter_widget: CounterWidget
+        #     if counter_widget.part_title==part_name:
+        #         print(last_log_of_counters)
+        #         if counter_widget.type in COUNTER_TYPES[1:3]:
+        #             result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.workout, counter_widget.workout, 0, temp_date, counter_widget.id, self.user.id)
+        #         elif counter_widget.type==COUNTER_TYPES[0]:
+        #             is_broken = 1 if counter_widget.boolean_var_bad.get()==True else 0
+        #             result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.b, counter_widget.workout, is_broken, temp_date, counter_widget.id, self.user.id)
+        # if result_message == "ok":
+        #     self.btn_confirm_counter_log_insert.config(state='disabled')
+        #     self.btn_confirm_counter_log_update.config(state='normal')
+        #     message = f"اطلاعات بخش با {part_name} موفقیت در دیتابیس ذخیره شدند"
+        #     msb.showinfo('success', message)
+        # else:
+        #     msb.showerror("ارور", result_message)
 
     ########################################### generic functions ###########################################
     # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
