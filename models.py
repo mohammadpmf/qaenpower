@@ -61,10 +61,11 @@ class Counter():
 
 
 class CounterLog():
-    def __init__(self, value, workout, date_time, date_time_modified, counter_id, user_id, id):
+    def __init__(self, value, workout, is_broken, date, date_time_modified, counter_id, user_id, id):
         self.value=value
         self.workout=workout
-        self.date_time=date_time
+        self.is_broken=is_broken
+        self.date=date
         self.date_time_modified=date_time_modified
         self.counter_id=counter_id
         self.user_id=user_id

@@ -141,13 +141,17 @@ class StaffWindow(MyWindows):
         self.date_picker_frame.pack(side=TOP, expand=True, fill='x')
         self.tab_control_frame = ttk.Notebook(self.frame_add_statistics)
         self.tab_control_frame.pack(side='left', expand=True, fill='both')
-        self.tab_control_frame.bind('<<NotebookTabChanged>>', self.enable_or_disable_confirm_button) # اینجا مینویسم ارور میده. اما برنامه کار میکنه. موقع مرتب کردن جا به جاش کنم. البته میشه به کلیک موس هم بایندش کرد. اما مشکل این بود که اگه طرف با کیبورد جا به جا بشه تابعش صدا نمیشه. به خاطر همین این رو گذاشتم.
-        # self.tab_control_frame.bind('<Button-1>', self.enable_or_disable_confirm_button)
+        # self.tab_control_frame.bind('<<NotebookTabChanged>>', self.enable_or_disable_confirm_button)
+        # این خیلی ارور میداد اذیت میکرد عوضش کردم. کار میکرد برنامه اما واقعا خووندن ارورها و
+        # دیباگ کردن رو خیلی سخت کرده بود. به جاش این سه تا بایند رو گذاشتم
+        self.tab_control_frame.bind('<Button-1>', self.disable_confirm_button)
+        self.tab_control_frame.bind('<Key>', self.disable_confirm_button)
+        self.tab_control_frame.bind('<ButtonRelease-1>', self.enable_or_disable_confirm_button)
         date_picker = DatePicker(self.connection, self.date_picker_frame)
         date_picker.pack(side=RIGHT, expand=True, fill='both')
-        self.btn_confirm_counter_log_update = Button(self.date_picker_frame, text="ویرایش", font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
+        self.btn_confirm_counter_log_update = Button(self.date_picker_frame, text="ویرایش", state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
         self.btn_confirm_counter_log_update.pack(side=RIGHT, padx=PADX)
-        self.btn_confirm_counter_log_insert = Button(self.date_picker_frame, text="ذخیره", font=FONT2, cnf=CNF_BTN, command=self.confirm_log_insert)
+        self.btn_confirm_counter_log_insert = Button(self.date_picker_frame, text="ذخیره", state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_insert)
         self.btn_confirm_counter_log_insert.pack(side=RIGHT, padx=PADX)
         self.seed_tabs_of_parts()
 
@@ -1121,14 +1125,30 @@ class StaffWindow(MyWindows):
                     all_counter_widgets[i].entry_current_counter.focus_set()
                 return
 
+    def disable_confirm_button(self, event=None):
+        self.btn_confirm_counter_log_insert.config(state='disabled')
+        self.btn_confirm_counter_log_update.config(state='disabled')
+        
     def enable_or_disable_confirm_button(self, event=None):
+        global all_counter_widgets
+        # با این که تابع جدا برای دیسیبل کردن نوشتم. ولی حالات زیادی برای باگ خوردن داشت.
+        # باز هم گفتم برای باگ نخوردن، اینجا هم یه بار دیسیبل کنم و بعد با شرط اونی که اوکی هست
+        # رو اینیبل کنم.
+        self.btn_confirm_counter_log_insert.config(state='disabled')
+        self.btn_confirm_counter_log_update.config(state='disabled')
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         if part_name in self.logged_parts_names:
-            self.btn_confirm_counter_log_insert.config(state='disabled')
             self.btn_confirm_counter_log_update.config(state='normal')
+            for counter_widget in all_counter_widgets:
+                counter_widget: CounterWidget
+                if counter_widget.type in COUNTER_TYPES[1:3]:
+                    continue
+                elif counter_widget.type==COUNTER_TYPES[0]:
+                    previous_value = counter_widget.connection.get_previous_value_of_counter_by_id_and_date(counter_widget.id, date_picker.get_date())
+                    counter_widget.label_previous_counter.config(text=round3(previous_value))
+                    counter_widget.update_workout()
         else:
             self.btn_confirm_counter_log_insert.config(state='normal')
-            self.btn_confirm_counter_log_update.config(state='disabled')
 
     def set_logged_parts_names(self):
         global date_picker
@@ -1224,13 +1244,11 @@ class StaffWindow(MyWindows):
         answer = msb.askyesno("هشدار", message)
         if not answer:
             return
-        print(temp_date)
-        last_log_of_counters = self.connection.get_counters_log_by_date_created(temp_date)
-        #inja
+        last_log_of_counters = self.connection.get_counters_log_by_date(temp_date)
+        print(last_log_of_counters)
         # for counter_widget in all_counter_widgets:
         #     counter_widget: CounterWidget
         #     if counter_widget.part_title==part_name:
-        #         print(last_log_of_counters)
         #         if counter_widget.type in COUNTER_TYPES[1:3]:
         #             result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.workout, counter_widget.workout, 0, temp_date, counter_widget.id, self.user.id)
         #         elif counter_widget.type==COUNTER_TYPES[0]:
@@ -1259,6 +1277,7 @@ class StaffWindow(MyWindows):
             self.refresh_places_frame_after_selecting_part()
             self.refresh_all_counters_treeview()
         self.seed_tabs_of_parts()
+        self.enable_or_disable_confirm_button()
     
     def refresh_ui_from_anywhere(self):
         global signal
