@@ -235,7 +235,8 @@ class Connection():
         return ("ok", 0)
 
     def get_counter_log_by_counter_id_and_date(self, counter_id, date):
-        query = "SELECT `value`, `workout`, `is_broken`, `date`, `date_time_modified`, `counter_id`, `user_id`, `id` FROM `qaenpower`.`counters_log` WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        query = "SELECT `value`, `workout`, `is_broken`, `date`, `date_time_modified`, `counter_id`, `user_id`, `qaenpower`.`counters_log`.`id`, `qaenpower`.`users`.`name` as `users_name`, `qaenpower`.`users`.`surname` as `users_surname` FROM `qaenpower`.`counters_log` join `qaenpower`.`users` ON (`qaenpower`.`counters_log`.`user_id`=`qaenpower`.`users`.`id`)  WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        # query = "SELECT `value`, `workout`, `is_broken`, `date`, `date_time_modified`, `counter_id`, `user_id`, `id` FROM `qaenpower`.`counters_log` WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (counter_id, date)
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()

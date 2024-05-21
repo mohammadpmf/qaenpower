@@ -61,7 +61,7 @@ class Counter():
 
 
 class CounterLog():
-    def __init__(self, value, workout, is_broken, date, date_time_modified, counter_id, user_id, id):
+    def __init__(self, value, workout, is_broken, date, date_time_modified, counter_id, user_id, id, users_name, users_surname):
         self.value=value
         self.workout=workout
         self.is_broken=is_broken
@@ -70,6 +70,7 @@ class CounterLog():
         self.counter_id=counter_id
         self.user_id=user_id
         self.id=id
+        self.users_full_name = f"{users_name} {users_surname}"
 
     def __str__(self):
         return f"{self.value}"
