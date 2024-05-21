@@ -1269,23 +1269,45 @@ class StaffWindow(MyWindows):
         if result_message == "ok":
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ویرایش شدند"
             msb.showinfo('success', message)
-            self.update_next_logs_because_they_may_be_related_to_this_log()
+            self.update_next_logs_because_they_may_be_related_to_this_logs()
         else:
             msb.showerror("ارور", result_message)
 
-    def update_next_logs_because_they_may_be_related_to_this_log(self):
-        temp_date = date_picker.get_date()
-        updated_values_and_workouts=self.connection.get_all_parameters_current_value_and_workout(temp_date)
-        for i in updated_values_and_workouts.items():
-            print(i)
-        last_log_of_counters = self.connection.get_counters_log_by_date(temp_date)
-        for i in last_log_of_counters.values():
-            i: CounterLog
-            print(i.is_ok)
-        # برای اینکه ایزوله باشه و کار بقیه برنامه رو خراب نکنه، تو یه متغیر جدید ذخیره کردم و همینجا
-        # فقط ازش استفاده میشه. این تابع که تموم شه دیگه کاری باهاش نداریم
-
-        del updated_values_and_workouts
+    def update_next_logs_because_they_may_be_related_to_this_logs(self):
+        global all_variables_current_value_and_workout, all_counter_widgets
+        # temp_date = date_picker.get_date()
+        # # برای اینکه ایزوله باشه و کار بقیه برنامه رو خراب نکنه، تو یه متغیر جدید ذخیره کردم و همینجا
+        # # فقط ازش استفاده میشه. این تابع که تموم شه دیگه کاری باهاش نداریم
+        # updated_logs = self.connection.get_counters_log_by_date(temp_date)
+        # next_day_logs = self.connection.get_counters_next_log_by_date(temp_date)
+        # for counters in self.all_counters_2d:
+        #     for counter in counters:
+        #         counter: Counter
+        #         if counter.formula != "":
+        #             parameters = get_formula_parameters(counter.formula)
+        #             values = []
+        #             for p in parameters:
+        #                 if p=='b':
+        #                     values.append(next_day_logs.get(counter.variable_name).value)
+        #                 elif p=='a':
+        #                     values.append(updated_logs.get(counter.variable_name).value)
+        #                 else:
+        #                     values.append(updated_logs.get(p).workout)
+        #             answer = calculate_fn(counter.formula, parameters, values)
+        #         if counter.type==COUNTER_TYPES[2]:
+        #             next_day_logs[counter.variable_name].workout=answer
+        #         elif counter.type==COUNTER_TYPES[1]:
+        #             pass # پارامترهای ثابت، وابسته به بقیه نیستند. پس تغییری نمیکنند.
+        #         elif counter.type==COUNTER_TYPES[0]:
+        #             # پارامترهای کنتور، اگه سالم باشن باید تغییر کنند. اما اگه خراب باشن، به مقدار ورک اوتشون دست نمیزنیم و همون قبلی میمونن
+        #             if next_day_logs[counter.variable_name].is_ok:
+        #                 next_day_logs[counter.variable_name].workout=answer
+        #             else:
+        #                 pass
+        # for log in next_day_logs.values():
+        #     self.connection.change_log_by_computer_id(log)
+        # del updated_logs
+        # del next_day_logs
 
 
     ########################################### generic functions ###########################################
@@ -1332,8 +1354,8 @@ class DatePicker(MyWindows):
         self.year = StringVar(self.frame)
         self.month = StringVar(self.frame)
         self.day = StringVar(self.frame)
-        # self.btn_yesterday = Button(self.frame, text='روز قبل', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(-1))
-        # self.btn_tomorrow = Button(self.frame, text='روز بعد', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(1))
+        self.btn_yesterday = Button(self.frame, text='روز قبل', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(-1))
+        self.btn_tomorrow = Button(self.frame, text='روز بعد', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(1))
         self.combo_year = ttk.Combobox(self.frame, values=self.years_list, textvariable=self.year, width=7, state='readonly', font=FONT, justify='center')
         self.combo_month = ttk.Combobox(self.frame, values=self.months_list, textvariable=self.month, width=5, state='readonly', font=FONT, justify='center')
         self.combo_day = ttk.Combobox(self.frame, values=self.days_list, textvariable=self.day, width=5, state='readonly', font=FONT, justify='center')
@@ -1341,11 +1363,11 @@ class DatePicker(MyWindows):
         self.combo_month.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_day.bind("<<ComboboxSelected>>", self.check_date)
         self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL, pady=32, width=20)
-        # self.btn_yesterday.pack(cnf=CNF_PACK2)
+        self.btn_yesterday.pack(cnf=CNF_PACK2)
         self.combo_day.pack(cnf=CNF_PACK2)
         self.combo_month.pack(cnf=CNF_PACK2)
         self.combo_year.pack(cnf=CNF_PACK2)
-        # self.btn_tomorrow.pack(cnf=CNF_PACK2)
+        self.btn_tomorrow.pack(cnf=CNF_PACK2)
         self.label_date.pack(cnf=CNF_PACK2)
         self.refresh_date()
 
@@ -1647,6 +1669,8 @@ class CounterWidget(Counter, MyWindows):
         global all_variables_current_value_and_workout
         if event and event.keysym=='Return': # باگ داشت وقتی اینتر میزدیم آپدیت میشد. اما چون دکمه اینتر ول شده بود دوباره میومد این رو صدا میکرد و به هم میزد همون کنتور ویجت رو. به خاطر همین اینتر رو ازش حذف کردم که موقعی که انگشت رو از رو اینتر برداشتیم آپدیت نکنه.
             # حالا اگه رو دکمه کپی میزدیم هیچ ایونتی ارسال نمیشد و این ایف ارور میداد. پس گفتم اگه ایونتی وجود داشت و اینتر بود ریترن کن. در غیر این صورت کارت رو انجام بده.
+            return
+        if event and event.keysym=='period': # این حالت هم باگ داشت نمیشد داخل ورک اوت تو حالت خرابی نقطه گذاشت. روش های مختلف هر کودوم یه مدل اعصاب خرد کن بود و باگ جدید داشت. این مدل به نظرم کمترین باگ رو داشت اینجا گفتم ریترن کنه
             return
         if self.type==COUNTER_TYPES[2]:
             # این حالت قرار نیست هیچ وقت اتفاق بیفته. چون ما نمیتونیم آپدیتش کنیم. خود برنامه آپدیت میکنه

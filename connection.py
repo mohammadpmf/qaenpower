@@ -1,6 +1,7 @@
 import pymysql
 from models import CounterLog, Part, Place, Staff, Counter
 from functions import hash_password, get_jnow, datetime
+from ui_settings import COUNTER_TYPES
 
 WRONG_LIMIT=10
 
@@ -261,6 +262,37 @@ class Connection():
                 temp_dict[variable_name] = CounterLog(*temp)
         return temp_dict
     
+    def get_counters_next_log_by_date(self, date):
+        query = "SELECT `id`, `variable_name` FROM `qaenpower`.`counters`;"
+        self.cursor.execute(query)
+        temp_dict = {}
+        for item in self.cursor.fetchall():
+            id = item[0]
+            variable_name = item[1]
+            query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `counter_id`, `user_id`, `qaenpower`.`counters_log`.`id`, `qaenpower`.`users`.`name` as `users_name`, `qaenpower`.`users`.`surname` as `users_surname`, `qaenpower`.`counters`.`type` FROM `qaenpower`.`counters_log` JOIN `qaenpower`.`users` ON (`qaenpower`.`counters_log`.`user_id`=`qaenpower`.`users`.`id`) JOIN `qaenpower`.`counters` ON (`qaenpower`.`counters_log`.`counter_id`=`qaenpower`.`counters`.`id`) WHERE `qaenpower`.`counters_log`.`counter_id`=%s AND `date`>%s ORDER BY `date` ASC LIMIT 1"
+            values = (id, date)
+            self.cursor.execute(query, values)
+            temp = self.cursor.fetchone()
+            if temp == None:
+                temp_dict[variable_name] = None
+            else:
+                temp_dict[variable_name] = CounterLog(*temp)
+        return temp_dict
+    
+    def change_log_by_computer_id(self, log:CounterLog):
+        if log.type==COUNTER_TYPES[1]: # پارامترهای ثابت لازم نیست تغییر داده بشن
+            return ("ok", 0)
+        if log.type==COUNTER_TYPES[0] and log.is_ok==False: # پارامترهای از جنس کنتور که خراب بودن لازم نیست تغییر داده بشن. مقدار ورک اوتشون دستی وارد شده بود
+            return ("ok", 0)
+        # در غیر این صورت یا محاسباتی اند که باید تغییر داده بشن. یا کنتوری که سالم بوده و با توجه به تغییر
+        # دیروز، مقدار کارکردش تغییر کرده و رو امروز اثر میذاره
+        # برای این که اشتباهات نیفته گردن کاربر، یوزر آی دی ۰ رو دادم که یعنی کامپیوتر اتوماتیک تغییر داده
+        query = "UPDATE `qaenpower`.`counters_log` SET `workout` = %s, `date_time_modified` = %s, `user_id` = 0 WHERE (`id` = %s);"
+        values = (log.workout, datetime.now(), log.id)
+        self.cursor.execute(query, values)
+        self.connection.commit()
+        return ("ok", 0)
+
     def get_previous_value_of_counter_by_id_and_date(self, id, date):
         query = "SELECT `value` FROM `qaenpower`.`counters_log` WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 2"
         values = (id, date)
