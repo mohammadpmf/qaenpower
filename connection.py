@@ -223,9 +223,13 @@ class Connection():
         self.connection.commit()
         return ("ok", 0)
 
-    def update_counter_log(self, value, workout, is_broken, user_id, id):
+    def update_counter_log(self, value, workout, is_broken, date, counter_id, user_id):
+        query = "SELECT `id` FROM `qaenpower`.`counters_log` WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        values = (counter_id, date)
+        self.cursor.execute(query, values)
+        counter_log_id = self.cursor.fetchone()[0]
         query = "UPDATE `qaenpower`.`counters_log` SET `value` = %s, `workout` = %s, `is_broken` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
-        values = (value, workout, is_broken, datetime.now(), user_id, id)
+        values = (value, workout, is_broken, datetime.now(), user_id, counter_log_id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)

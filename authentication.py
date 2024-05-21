@@ -1245,22 +1245,20 @@ class StaffWindow(MyWindows):
         if not answer:
             return
         last_log_of_counters = self.connection.get_counters_log_by_date(temp_date)
-        print(last_log_of_counters)
-        # for counter_widget in all_counter_widgets:
-        #     counter_widget: CounterWidget
-        #     if counter_widget.part_title==part_name:
-        #         if counter_widget.type in COUNTER_TYPES[1:3]:
-        #             result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.workout, counter_widget.workout, 0, temp_date, counter_widget.id, self.user.id)
-        #         elif counter_widget.type==COUNTER_TYPES[0]:
-        #             is_broken = 1 if counter_widget.boolean_var_bad.get()==True else 0
-        #             result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.b, counter_widget.workout, is_broken, temp_date, counter_widget.id, self.user.id)
-        # if result_message == "ok":
-        #     self.btn_confirm_counter_log_insert.config(state='disabled')
-        #     self.btn_confirm_counter_log_update.config(state='normal')
-        #     message = f"اطلاعات بخش با {part_name} موفقیت در دیتابیس ذخیره شدند"
-        #     msb.showinfo('success', message)
-        # else:
-        #     msb.showerror("ارور", result_message)
+        # print(last_log_of_counters)
+        for counter_widget in all_counter_widgets:
+            counter_widget: CounterWidget
+            if counter_widget.part_title==part_name:
+                if counter_widget.type in COUNTER_TYPES[1:3]:
+                    result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.workout, counter_widget.workout, 0, temp_date, counter_widget.id, self.user.id)
+                elif counter_widget.type==COUNTER_TYPES[0]:
+                    is_broken = 1 if counter_widget.boolean_var_bad.get()==True else 0
+                    result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.b, counter_widget.workout, is_broken, temp_date, counter_widget.id, self.user.id)
+        if result_message == "ok":
+            message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ذخیره شدند"
+            msb.showinfo('success', message)
+        else:
+            msb.showerror("ارور", result_message)
 
     ########################################### generic functions ###########################################
     # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
