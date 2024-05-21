@@ -22,7 +22,7 @@ class Connection():
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `counter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) NOT NULL, `workout` DECIMAL(20,10) NOT NULL, `is_broken` TINYINT(1) NOT NULL DEFAULT 0, `date` DATE NOT NULL, `date_time_modified` DATETIME NOT NULL, `counter_id` INT UNSIGNED NOT NULL, `user_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `counter_id` FOREIGN KEY (`counter_id`) REFERENCES `qaenpower`.`counters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `qaenpower`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
+        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`counters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) NOT NULL, `workout` DECIMAL(20,10) NOT NULL, `is_ok` TINYINT(1) NOT NULL DEFAULT 1, `date` DATE NOT NULL, `date_time_modified` DATETIME NOT NULL, `counter_id` INT UNSIGNED NOT NULL, `user_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `counter_id` FOREIGN KEY (`counter_id`) REFERENCES `qaenpower`.`counters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `qaenpower`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
         self.cursor.execute(query)
 
     def create_user(self, name, surname, username, password):
@@ -216,27 +216,27 @@ class Connection():
         self.cursor.execute(query, values)
         return self.cursor.fetchone()
 
-    def create_counter_log(self, value, workout, is_broken, date, counter_id, user_id):
-        query = "INSERT INTO `qaenpower`.`counters_log` (`value`, `workout`, `is_broken`, `date`, `date_time_modified`, `counter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
-        values = (value, workout, is_broken, date, datetime.now(), counter_id, user_id)
+    def create_counter_log(self, value, workout, is_ok, date, counter_id, user_id):
+        query = "INSERT INTO `qaenpower`.`counters_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `counter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        values = (value, workout, is_ok, date, datetime.now(), counter_id, user_id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
-    def update_counter_log(self, value, workout, is_broken, date, counter_id, user_id):
+    def update_counter_log(self, value, workout, is_ok, date, counter_id, user_id):
         query = "SELECT `id` FROM `qaenpower`.`counters_log` WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (counter_id, date)
         self.cursor.execute(query, values)
         counter_log_id = self.cursor.fetchone()[0]
-        query = "UPDATE `qaenpower`.`counters_log` SET `value` = %s, `workout` = %s, `is_broken` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
-        values = (value, workout, is_broken, datetime.now(), user_id, counter_log_id)
+        query = "UPDATE `qaenpower`.`counters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
+        values = (value, workout, is_ok, datetime.now(), user_id, counter_log_id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def get_counter_log_by_counter_id_and_date(self, counter_id, date):
-        query = "SELECT `value`, `workout`, `is_broken`, `date`, `date_time_modified`, `counter_id`, `user_id`, `qaenpower`.`counters_log`.`id`, `qaenpower`.`users`.`name` as `users_name`, `qaenpower`.`users`.`surname` as `users_surname` FROM `qaenpower`.`counters_log` join `qaenpower`.`users` ON (`qaenpower`.`counters_log`.`user_id`=`qaenpower`.`users`.`id`)  WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
-        # query = "SELECT `value`, `workout`, `is_broken`, `date`, `date_time_modified`, `counter_id`, `user_id`, `id` FROM `qaenpower`.`counters_log` WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `counter_id`, `user_id`, `qaenpower`.`counters_log`.`id`, `qaenpower`.`users`.`name` as `users_name`, `qaenpower`.`users`.`surname` as `users_surname` FROM `qaenpower`.`counters_log` join `qaenpower`.`users` ON (`qaenpower`.`counters_log`.`user_id`=`qaenpower`.`users`.`id`)  WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        # query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `counter_id`, `user_id`, `id` FROM `qaenpower`.`counters_log` WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (counter_id, date)
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()
@@ -251,24 +251,14 @@ class Connection():
         for item in self.cursor.fetchall():
             id = item[0]
             variable_name = item[1]
-            query = "SELECT `qaenpower`.`counters_log`.`id`, `value`, `workout`, `is_broken`, `date`, `date_time_modified`, `user_id`, `qaenpower`.`users`.`name` as `users_name`, `qaenpower`.`users`.`surname` as `users_surname` FROM `qaenpower`.`counters_log` join `qaenpower`.`users` ON (`qaenpower`.`counters_log`.`user_id`=`qaenpower`.`users`.`id`) WHERE `qaenpower`.`counters_log`.`counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1"
+            query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `counter_id`, `user_id`, `qaenpower`.`counters_log`.`id`, `qaenpower`.`users`.`name` as `users_name`, `qaenpower`.`users`.`surname` as `users_surname` FROM `qaenpower`.`counters_log` join `qaenpower`.`users` ON (`qaenpower`.`counters_log`.`user_id`=`qaenpower`.`users`.`id`) WHERE `qaenpower`.`counters_log`.`counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1"
             values = (id, date)
             self.cursor.execute(query, values)
-            counter_log = self.cursor.fetchone()
-            if counter_log in [None, '', ()]:
+            temp = self.cursor.fetchone()
+            if temp == None:
                 temp_dict[variable_name] = None
             else:
-                temp_dict[variable_name] = {
-                    'id': counter_log[0],
-                    'value': counter_log[1],
-                    'workout': counter_log[2],
-                    'is_broken': counter_log[3],
-                    'date': counter_log[4],
-                    'date_time_modified': counter_log[5],
-                    'user_id': counter_log[6],
-                    'users_name': counter_log[7],
-                    'users_surname': counter_log[8],
-                }
+                temp_dict[variable_name] = CounterLog(*temp)
         return temp_dict
     
     def get_previous_value_of_counter_by_id_and_date(self, id, date):

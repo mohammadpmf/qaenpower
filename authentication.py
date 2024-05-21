@@ -1154,7 +1154,7 @@ class StaffWindow(MyWindows):
                     counter_widget.label_previous_counter.config(text=round3(previous_value))
                     counter_widget.entry_workout.config(state='normal')
                     counter_widget.entry_workout.delete(0, END)
-                    if counter_widget.counter_log and counter_widget.counter_log.is_broken==1: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایزبروکن رو در آورد.
+                    if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
                         counter_widget.boolean_var_bad.set(1)
                         counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
                     else:
@@ -1196,14 +1196,14 @@ class StaffWindow(MyWindows):
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
                 if counter_widget.type in COUNTER_TYPES[1:3]:
-                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, counter_widget.workout, 0, temp_date, counter_widget.id, self.user.id)
+                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, counter_widget.workout, 1, temp_date, counter_widget.id, self.user.id)
                 elif counter_widget.type==COUNTER_TYPES[0]:
-                    is_broken = 1 if counter_widget.boolean_var_bad.get()==True else 0
-                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.b, counter_widget.workout, is_broken, temp_date, counter_widget.id, self.user.id)
+                    is_ok = 1 if counter_widget.boolean_var_bad.get()==False else 0
+                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.b, counter_widget.workout, is_ok, temp_date, counter_widget.id, self.user.id)
         if result_message == "ok":
             self.btn_confirm_counter_log_insert.config(state='disabled')
             self.btn_confirm_counter_log_update.config(state='normal')
-            message = f"اطلاعات بخش با {part_name} موفقیت در دیتابیس ذخیره شدند"
+            message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس اضافه شدند"
             msb.showinfo('success', message)
         else:
             msb.showerror("ارور", result_message)
@@ -1258,21 +1258,35 @@ class StaffWindow(MyWindows):
         answer = msb.askyesno("هشدار", message)
         if not answer:
             return
-        last_log_of_counters = self.connection.get_counters_log_by_date(temp_date)
-        # print(last_log_of_counters)
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
                 if counter_widget.type in COUNTER_TYPES[1:3]:
-                    result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.workout, counter_widget.workout, 0, temp_date, counter_widget.id, self.user.id)
+                    result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.workout, counter_widget.workout, 1, temp_date, counter_widget.id, self.user.id)
                 elif counter_widget.type==COUNTER_TYPES[0]:
-                    is_broken = 1 if counter_widget.boolean_var_bad.get()==True else 0
-                    result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.b, counter_widget.workout, is_broken, temp_date, counter_widget.id, self.user.id)
+                    is_ok = 1 if counter_widget.boolean_var_bad.get()==False else 0
+                    result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.b, counter_widget.workout, is_ok, temp_date, counter_widget.id, self.user.id)
         if result_message == "ok":
-            message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ذخیره شدند"
+            message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ویرایش شدند"
             msb.showinfo('success', message)
+            self.update_next_logs_because_they_may_be_related_to_this_log()
         else:
             msb.showerror("ارور", result_message)
+
+    def update_next_logs_because_they_may_be_related_to_this_log(self):
+        temp_date = date_picker.get_date()
+        updated_values_and_workouts=self.connection.get_all_parameters_current_value_and_workout(temp_date)
+        for i in updated_values_and_workouts.items():
+            print(i)
+        last_log_of_counters = self.connection.get_counters_log_by_date(temp_date)
+        for i in last_log_of_counters.values():
+            i: CounterLog
+            print(i.is_ok)
+        # برای اینکه ایزوله باشه و کار بقیه برنامه رو خراب نکنه، تو یه متغیر جدید ذخیره کردم و همینجا
+        # فقط ازش استفاده میشه. این تابع که تموم شه دیگه کاری باهاش نداریم
+
+        del updated_values_and_workouts
+
 
     ########################################### generic functions ###########################################
     # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
@@ -1498,7 +1512,7 @@ class CounterWidget(Counter, MyWindows):
             self.label_previous_counter = Label(self.frame, cnf=CNF_LBL2, text=round3(self.a), *args, **kwargs)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
-            # self.boolean_var_bad.set(self.counter_log.is_broken) # اطلاعات رو از دیتابیس گرفته بودم. اما گفت پیش فرض همه سالم باشن. پس من تغییرش ندادم. کدش رو گذاشتم بمونه که اگه لازم شد دوباره ننویسم.
+            # self.boolean_var_bad.set(!self.counter_log.is_ok) # اطلاعات رو از دیتابیس گرفته بودم. اما گفت پیش فرض همه سالم باشن. پس من تغییرش ندادم. کدش رو گذاشتم بمونه که اگه لازم شد دوباره ننویسم.
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
