@@ -196,7 +196,7 @@ class Connection():
         values = (id, )
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()
-        if temp==None:
+        if temp == None:
             return temp
         return temp[0]
 
@@ -233,6 +233,15 @@ class Connection():
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
+
+    def get_counter_log_by_counter_id_and_date(self, counter_id, date):
+        query = "SELECT `value`, `workout`, `is_broken`, `date`, `date_time_modified`, `counter_id`, `user_id`, `id` FROM `qaenpower`.`counters_log` WHERE `counter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        values = (counter_id, date)
+        self.cursor.execute(query, values)
+        temp = self.cursor.fetchone()
+        if temp == None:
+            return temp
+        return CounterLog(*temp)
 
     def get_counters_log_by_date(self, date):
         query = "SELECT `id`, `variable_name` FROM `qaenpower`.`counters`;"

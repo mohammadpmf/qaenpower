@@ -2,7 +2,7 @@ from ui_settings import *
 from PIL import Image, ImageTk
 from connection import Connection
 from functions import calculate_fn, get_formula_parameters, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime, datetime
-from models import Part, Place, Staff, Counter
+from models import CounterLog, Part, Place, Staff, Counter
 from ui_settings import Tk
 from threading import Thread
 from time import sleep
@@ -1146,6 +1146,14 @@ class StaffWindow(MyWindows):
                 elif counter_widget.type==COUNTER_TYPES[0]:
                     previous_value = counter_widget.connection.get_previous_value_of_counter_by_id_and_date(counter_widget.id, date_picker.get_date())
                     counter_widget.label_previous_counter.config(text=round3(previous_value))
+                    counter_widget.entry_workout.config(state='normal')
+                    counter_widget.entry_workout.delete(0, END)
+                    if counter_widget.counter_log and counter_widget.counter_log.is_broken==1: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایزبروکن رو در آورد.
+                        counter_widget.boolean_var_bad.set(1)
+                        counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
+                    else:
+                        counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
+                    counter_widget.entry_workout.config(state='disabled')
                     counter_widget.update_workout()
         else:
             self.btn_confirm_counter_log_insert.config(state='normal')
@@ -1446,6 +1454,7 @@ class CounterWidget(Counter, MyWindows):
         super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
         global all_variables_current_value_and_workout, date_picker
+        self.counter_log = self.connection.get_counter_log_by_counter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم. اگه لازم شد استفاده کنم بعدا دارمش. نشد هم که بهتر 
         self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
         self.frame = LabelFrame(self.root, text=self.name, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
@@ -1480,6 +1489,7 @@ class CounterWidget(Counter, MyWindows):
             self.label_previous_counter = Label(self.frame, cnf=CNF_LBL2, text=round3(self.a), *args, **kwargs)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
+            # self.boolean_var_bad.set(self.counter_log.is_broken) # اطلاعات رو از دیتابیس گرفته بودم. اما گفت پیش فرض همه سالم باشن. پس من تغییرش ندادم. کدش رو گذاشتم بمونه که اگه لازم شد دوباره ننویسم.
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
