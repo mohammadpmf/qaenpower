@@ -155,8 +155,8 @@ class StaffWindow(MyWindows):
         self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX)
         self.btn_confirm_counter_log_update = Button(self.date_picker_frame, text="ویرایش", state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
         self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
-        self.btn_yesterday = Button(self.change_day_frame, text='روز قبل', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: date_picker.time_delta(-1))
-        self.btn_tomorrow = Button(self.change_day_frame, text='روز بعد', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: date_picker.time_delta(1))
+        self.btn_yesterday = Button(self.change_day_frame, text='روز قبل »', cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(-1))
+        self.btn_tomorrow = Button(self.change_day_frame, text='<< روز بعد', cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(1))
         self.btn_yesterday.pack(cnf=CNF_PACK2)
         self.btn_tomorrow.pack(cnf=CNF_PACK2)
         self.seed_tabs_of_parts()
@@ -1356,8 +1356,8 @@ class DatePicker(MyWindows):
         self.year = StringVar(self.frame)
         self.month = StringVar(self.frame)
         self.day = StringVar(self.frame)
-        self.btn_yesterday = Button(self.frame, text='روز قبل', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(-1))
-        self.btn_tomorrow = Button(self.frame, text='روز بعد', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(1))
+        # self.btn_yesterday = Button(self.frame, text='روز قبل', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(-1))
+        # self.btn_tomorrow = Button(self.frame, text='روز بعد', cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=lambda: self.time_delta(1))
         self.combo_year = ttk.Combobox(self.frame, values=self.years_list, textvariable=self.year, width=7, state='readonly', font=FONT, justify='center')
         self.combo_month = ttk.Combobox(self.frame, values=self.months_list, textvariable=self.month, width=5, state='readonly', font=FONT, justify='center')
         self.combo_day = ttk.Combobox(self.frame, values=self.days_list, textvariable=self.day, width=5, state='readonly', font=FONT, justify='center')
@@ -1365,12 +1365,12 @@ class DatePicker(MyWindows):
         self.combo_month.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_day.bind("<<ComboboxSelected>>", self.check_date)
         self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL, pady=32, width=20)
-        self.btn_yesterday.pack(cnf=CNF_PACK2)
+        # self.btn_yesterday.pack(cnf=CNF_PACK2)
         self.combo_day.pack(cnf=CNF_PACK2)
         self.combo_month.pack(cnf=CNF_PACK2)
         self.combo_year.pack(cnf=CNF_PACK2)
-        self.btn_tomorrow.pack(cnf=CNF_PACK2)
-        self.label_date.pack(cnf=CNF_PACK2)
+        # self.btn_tomorrow.pack(cnf=CNF_PACK2)
+        self.label_date.pack(cnf=CNF_PACK2, padx=86)
         self.refresh_date()
 
     def refresh_date(self, date=None):
@@ -1406,7 +1406,7 @@ class DatePicker(MyWindows):
         d = self.day.get()
         try:
             date = jdatetime.date(int(y), int(m), int(d))
-            temp = f"{'تاریخ':10} {WEEKDAYS.get(date.weekday())} {d} {MONTH_NAMES.get(int(m))} {y}"
+            temp = f"{WEEKDAYS.get(date.weekday())} {d} {MONTH_NAMES.get(int(m))} {y}"
             self.label_date.config(text=temp)
             self.confirm()
         except ValueError:
@@ -1445,7 +1445,7 @@ class PartWidget(MyWindows):
         super().__init__(connection, root)
         global all_counter_widgets
         self.places_with_counters=places_with_counters # یک لیستی از مکان ها با پارامترهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه پارامتر هست.
-        self.my_canvas = Canvas(self.frame, width=S_WIDTH*1.02, height=S_HEIGHT*0.8, bg=BG)
+        self.my_canvas = Canvas(self.frame, width=S_WIDTH*1.48, height=S_HEIGHT*1, bg=BG)
         self.ver_scrollbar = Scrollbar(self.frame, orient=VERTICAL, command=self.my_canvas.yview)
         self.hor_scrollbar = Scrollbar(self.frame, orient=HORIZONTAL, command=self.my_canvas.xview)
         self.my_canvas.configure(yscrollcommand=self.ver_scrollbar.set, xscrollcommand=self.hor_scrollbar.set)
@@ -1464,7 +1464,7 @@ class PartWidget(MyWindows):
         for i, counters in enumerate(self.places_with_counters):
             if counters: # یعنی اگر یک مکان پارامتر هایی داشت این کارها رو انجام بده اگه نداشت الکی ردیف براش درست نکنه
                 self.frame_row = Frame(self.places_window, bg=BG)
-                for index in range(994, 1000):
+                for index in range(992, 1000):
                     self.frame_row.columnconfigure(index=index, weight=1, minsize=190)
                 self.frame_row.columnconfigure(index=1000, weight=1, minsize=120)
                 self.frame_row.grid(sticky='e')
@@ -1501,7 +1501,7 @@ class CounterWidget(Counter, MyWindows):
         self.counter_log = self.connection.get_parameter_log_by_parameter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم. اگه لازم شد استفاده کنم بعدا دارمش. نشد هم که بهتر 
         self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
         self.frame = LabelFrame(self.root, text=self.name, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
-        # my_tool_tip(self.frame, text=self.counter_log.users_full_name)
+        my_tool_tip(self.frame, text=self.counter_log.users_full_name)
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
             parameters = get_formula_parameters(self.formula)
@@ -1513,9 +1513,11 @@ class CounterWidget(Counter, MyWindows):
                     values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
             self.answer = calculate_fn(self.formula, parameters, values)
         if self.type==PARAMETER_TYPES[2]:
-            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LBL2, width=17, height=2, *args, **kwargs)
+            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LBL2, pady=20, width=17, height=1, *args, **kwargs)
         elif self.type==PARAMETER_TYPES[1]:
-            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=25, *args, **kwargs)
+            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=22, *args, **kwargs)
+            self.btn_info = Label(self.frame, text='🛈', cnf=CNF_BTN, relief='flat', *args, **kwargs)
+            create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
@@ -1524,14 +1526,15 @@ class CounterWidget(Counter, MyWindows):
                 self.entry_workout.insert(0, DEFAULT_VALUES[1])
             elif self.default_value==DEFAULT_VALUES[2]:
                 self.entry_workout.delete(0, END)
+            self.btn_info.grid(row=2, column=2, cnf=CNF_GRID2)
         elif self.type==PARAMETER_TYPES[0]:
             self.img = Image.open('copy-icon.png')
             self.img = self.img.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
             self.img = ImageTk.PhotoImage(self.img)
             self.btn_copy = Label(self.frame, image=self.img, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
-            # self.btn_info = Label(self.frame, text='🛈', cnf=CNF_BTN, relief='flat', *args, **kwargs)
-            # create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)
+            self.btn_info = Label(self.frame, text='🛈', cnf=CNF_BTN, relief='flat', *args, **kwargs)
+            create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)
             self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH2+1, *args, **kwargs)
             self.label_previous_counter = Label(self.frame, cnf=CNF_LBL2, text=round3(self.a), *args, **kwargs)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
@@ -1551,10 +1554,10 @@ class CounterWidget(Counter, MyWindows):
             self.entry_workout.config(state='readonly')
             self.entry_current_counter.grid(row=2, column=2, cnf=CNF_GRID2)
             self.btn_copy.grid(row=2, column=3, cnf=CNF_GRID2)
-            # self.btn_info.grid(row=3, column=3, cnf=CNF_GRID2)
+            self.btn_info.grid(row=3, column=3, cnf=CNF_GRID2)
             self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID2)
-            self.label_previous_counter.grid(row=3, column=2, columnspan=2, cnf=CNF_GRID2)
-        self.entry_workout.grid(row=2, column=1, cnf=CNF_GRID2)
+            self.label_previous_counter.grid(row=3, column=2, cnf=CNF_GRID2)
+        self.entry_workout.grid(row=1, rowspan=2, column=1, cnf=CNF_GRID2)
         self.check_color()
         self.next() # پارامترهایی از جنس کنتور که فرمول محاسباتی از بقیه کنتورها داشتن، مقدار قبلی دیتابیس رو مینوشتن و باید روی فیلدهای وابسته به فرمولشون کلیک میکردیم و جابه جا میشدیم تا فوکس اوت کنه و مقدارشون بر اساس داده هایی باشه که در صفحه در حال نمایش هستند. این تابع رو به خاطر همین صدا کردم که خودش این کار رو بکنه. اگه به باگ خوردم بازم ازش کپی پیست کنم. تابع خیلی خوبی هست :D
  
@@ -1813,49 +1816,49 @@ class MyToggleButton(Checkbutton):
     def grid(self, *args, **kwargs):
         self.frame.grid(*args, **kwargs)
 
-# def my_tool_tip(frame: LabelFrame, text):
-#     temp = frame['text']
-#     def enter(event):
-#         frame.config(text=text)
-#     def leave(event):
-#         frame.config(text=temp)
-#     frame.bind('<Enter>', enter)
-#     frame.bind('<Leave>', leave)
-# ############################################### Stackoverflow ###############################################
-# class ToolTip(object):
-#     def __init__(self, widget):
-#         self.widget = widget
-#         self.tipwindow = None
-#         self.id = None
-#         self.x = self.y = 0
+def my_tool_tip(frame: LabelFrame, text):
+    temp = frame['text']
+    def enter(event):
+        frame.config(text=text)
+    def leave(event):
+        frame.config(text=temp)
+    frame.bind('<Enter>', enter)
+    frame.bind('<Leave>', leave)
+############################################### Stackoverflow ###############################################
+class ToolTip(object):
+    def __init__(self, widget):
+        self.widget = widget
+        self.tipwindow = None
+        self.id = None
+        self.x = self.y = 0
 
-#     def showtip(self, text):
-#         "Display text in tooltip window"
-#         self.text = text
-#         if self.tipwindow or not self.text:
-#             return
-#         x, y, cx, cy = self.widget.bbox("insert")
-#         x = x + self.widget.winfo_rootx() + 57
-#         y = y + cy + self.widget.winfo_rooty() +27
-#         self.tipwindow = tw = Toplevel(self.widget)
-#         tw.wm_overrideredirect(1)
-#         tw.wm_geometry("+%d+%d" % (x, y))
-#         label = Label(tw, text=self.text, justify='left',
-#                       background="#ffffe0", relief='solid', borderwidth=1,
-#                       font=("tahoma", "8", "normal"))
-#         label.pack(ipadx=1)
+    def showtip(self, text):
+        "Display text in tooltip window"
+        self.text = text
+        if self.tipwindow or not self.text:
+            return
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 57
+        y = y + cy + self.widget.winfo_rooty() +27
+        self.tipwindow = tw = Toplevel(self.widget)
+        tw.wm_overrideredirect(1)
+        tw.wm_geometry("+%d+%d" % (x, y))
+        label = Label(tw, text=self.text, justify='left',
+                      background="#ffffe0", relief='solid', borderwidth=1,
+                      font=("tahoma", "8", "normal"))
+        label.pack(ipadx=1)
 
-#     def hidetip(self):
-#         tw = self.tipwindow
-#         self.tipwindow = None
-#         if tw:
-#             tw.destroy()
+    def hidetip(self):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
 
-# def create_tool_tip(widget, text):
-#     toolTip = ToolTip(widget)
-#     def enter(event):
-#         toolTip.showtip(text)
-#     def leave(event):
-#         toolTip.hidetip()
-#     widget.bind('<Enter>', enter)
-#     widget.bind('<Leave>', leave)
+def create_tool_tip(widget, text):
+    toolTip = ToolTip(widget)
+    def enter(event):
+        toolTip.showtip(text)
+    def leave(event):
+        toolTip.hidetip()
+    widget.bind('<Enter>', enter)
+    widget.bind('<Leave>', leave)

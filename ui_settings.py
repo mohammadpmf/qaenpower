@@ -4,9 +4,9 @@ from tkinter import ttk
 from tkinter import messagebox as msb
 
 
-BG='#333333'
-BG_LIGHTER='#555555'
-FG='orange'
+BG='sky blue'
+BG_LIGHTER='sky blue'
+FG='black'
 FG2='green'
 DISABLED_FG = "#aaaaaa"
 DISABLED_BG = '#cccccc'

@@ -1,6 +1,7 @@
 from authentication import *
 
-connection = Connection()
+p = input("Enter password: ")
+connection = Connection(password=p)
 root = Tk()
 root.title('صفحه احراز هویت')
 root.config(bg=BG)

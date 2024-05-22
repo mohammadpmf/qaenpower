@@ -13,26 +13,26 @@ class Connection():
         self.password = password
         self.connection = pymysql.connect(host=self.host, user=self.username, passwd=self.password, charset='utf8')
         self.cursor = self.connection.cursor()
-        query = "CREATE SCHEMA IF NOT EXISTS `qaenpower`;"
+        query = "CREATE SCHEMA IF NOT EXISTS `amar`;"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`users` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `surname` VARCHAR(64) NOT NULL, `username` VARCHAR(64) NOT NULL, `password` VARCHAR(128) NOT NULL, `access_level` TINYINT(1) NOT NULL DEFAULT 2, `wrong_times` TINYINT(2) NOT NULL DEFAULT 0, `default_date` VARCHAR(64) NOT NULL DEFAULT 'روز قبل', PRIMARY KEY (`id`), UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);"
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`users` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `surname` VARCHAR(64) NOT NULL, `username` VARCHAR(64) NOT NULL, `password` VARCHAR(128) NOT NULL, `access_level` TINYINT(1) NOT NULL DEFAULT 2, `wrong_times` TINYINT(2) NOT NULL DEFAULT 0, `default_date` VARCHAR(64) NOT NULL DEFAULT 'روز قبل', PRIMARY KEY (`id`), UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`parts` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `title_UNIQUE` (`title` ASC) VISIBLE);"
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`parts` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `title_UNIQUE` (`title` ASC) VISIBLE);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `part` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), INDEX `part_idx` (`part` ASC) VISIBLE, UNIQUE INDEX `place_part` (`title` ASC, `part` ASC) INVISIBLE, CONSTRAINT `part` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `part` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), INDEX `part_idx` (`part` ASC) VISIBLE, UNIQUE INDEX `place_part` (`title` ASC, `part` ASC) INVISIBLE, CONSTRAINT `part` FOREIGN KEY (`part`) REFERENCES `amar`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`parameters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `parameter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `qaenpower`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `qaenpower`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`parameters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `part` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `parameter_place_part` (`name` ASC, `place` ASC, `part` ASC) VISIBLE, INDEX `part2_idx` (`part` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `part2` FOREIGN KEY (`part`) REFERENCES `amar`.`parts` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `amar`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
         self.cursor.execute(query)
-        query = "CREATE TABLE IF NOT EXISTS `qaenpower`.`parameters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) NOT NULL, `workout` DECIMAL(20,10) NOT NULL, `is_ok` TINYINT(1) NOT NULL DEFAULT 1, `date` DATE NOT NULL, `date_time_modified` DATETIME NOT NULL, `parameter_id` INT UNSIGNED NOT NULL, `user_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `parameter_id` FOREIGN KEY (`parameter_id`) REFERENCES `qaenpower`.`parameters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `qaenpower`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`parameters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) NOT NULL, `workout` DECIMAL(20,10) NOT NULL, `is_ok` TINYINT(1) NOT NULL DEFAULT 1, `date` DATE NOT NULL, `date_time_modified` DATETIME NOT NULL, `parameter_id` INT UNSIGNED NOT NULL, `user_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `parameter_id` FOREIGN KEY (`parameter_id`) REFERENCES `amar`.`parameters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `amar`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
         self.cursor.execute(query)
 
     def create_user(self, name, surname, username, password):
-        query = "INSERT INTO `qaenpower`.`users` (`name`, `surname`, `username`, `password`) VALUES (%s, %s, %s, %s);"
+        query = "INSERT INTO `amar`.`users` (`name`, `surname`, `username`, `password`) VALUES (%s, %s, %s, %s);"
         values = name, surname, username, password # چون میخوایم پسوورد رو همین الان عوض کنیم دیگه دفعه اول الکی هشش نمیکنیم.
         try:
             self.cursor.execute(query, values)
             self.connection.commit()
-            query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `qaenpower`.`users` where username=%s;"
+            query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `amar`.`users` where username=%s;"
             values = (username, )
             self.cursor.execute(query, values)
             result = self.cursor.fetchone()
@@ -55,14 +55,14 @@ class Connection():
     def update_users_password(self, password):
         salt = str(self.user.id)
         password = hash_password(password, salt)
-        query = "UPDATE `qaenpower`.`users` SET `password` = %s WHERE (`id` = %s);"
+        query = "UPDATE `amar`.`users` SET `password` = %s WHERE (`id` = %s);"
         values = (password, self.user.id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def login(self, username, password):
-        query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `qaenpower`.`users` where username=%s;"
+        query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `amar`.`users` where username=%s;"
         values = (username, )
         self.cursor.execute(query, values)
         result = self.cursor.fetchone()
@@ -72,26 +72,26 @@ class Connection():
         return self.check_is_password_right(password)
         
     def update_wrong_times(self):
-        query = "UPDATE `qaenpower`.`users` SET `wrong_times` = %s WHERE (`id` = %s);"
+        query = "UPDATE `amar`.`users` SET `wrong_times` = %s WHERE (`id` = %s);"
         values = (self.user.wrong_times, self.user.id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
     
     def update_default_date_of_user(self):
-        query = "UPDATE `qaenpower`.`users` SET `default_date` = %s WHERE (`id` = %s);"
+        query = "UPDATE `amar`.`users` SET `default_date` = %s WHERE (`id` = %s);"
         values = (self.user.default_date, self.user.id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def create_part(self, title):
-        query = "INSERT INTO `qaenpower`.`parts` (`title`, `order`) VALUES (%s, 0);"
+        query = "INSERT INTO `amar`.`parts` (`title`, `order`) VALUES (%s, 0);"
         values = (title, )
         try:
             self.cursor.execute(query, values)
             self.connection.commit()
-            query = "SELECT * FROM `qaenpower`.`parts` where title=%s;"
+            query = "SELECT * FROM `amar`.`parts` where title=%s;"
             self.cursor.execute(query, values)
             result = self.cursor.fetchone()
             if result in [None, '', ()]:
@@ -102,19 +102,19 @@ class Connection():
             return (f"بخش {title} قبلا ثبت شده است", error)
     
     def update_part_sort(self, id, order):
-        query = "UPDATE `qaenpower`.`parts` SET `order` = %s WHERE (`id` = %s);"
+        query = "UPDATE `amar`.`parts` SET `order` = %s WHERE (`id` = %s);"
         values = (order, id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def create_place(self, title, part_id):
-        query = "INSERT INTO `qaenpower`.`places` (`title`, `part`, `order`) VALUES (%s, %s, 0);"
+        query = "INSERT INTO `amar`.`places` (`title`, `part`, `order`) VALUES (%s, %s, 0);"
         values = title, part_id
         try:
             self.cursor.execute(query, values)
             self.connection.commit()
-            query = "SELECT * FROM `qaenpower`.`places` where title=%s AND part=%s;"
+            query = "SELECT * FROM `amar`.`places` where title=%s AND part=%s;"
             self.cursor.execute(query, values)
             result = self.cursor.fetchone()
             if result in [None, '', ()]:
@@ -126,20 +126,20 @@ class Connection():
             return (f"مکان {title} برای بخش {part_name} قبلا ثبت شده است", error)
     
     def update_place_sort(self, id, order):
-        query = "UPDATE `qaenpower`.`places` SET `order` = %s WHERE (`id` = %s);"
+        query = "UPDATE `amar`.`places` SET `order` = %s WHERE (`id` = %s);"
         values = (order, id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def get_part_by_id(self, id):
-        query = "SELECT * FROM `qaenpower`.`parts` WHERE id=%s;"
+        query = "SELECT * FROM `amar`.`parts` WHERE id=%s;"
         values = (id, )
         self.cursor.execute(query, values)
         return self.cursor.fetchone()
   
     def create_parameter(self, name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place):
-        query = "INSERT INTO `qaenpower`.`parameters` (`name`, `type`, `unit`, `default_value`, `variable_name`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `formula`, `part`, `place`, `order`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0);"
+        query = "INSERT INTO `amar`.`parameters` (`name`, `type`, `unit`, `default_value`, `variable_name`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `formula`, `part`, `place`, `order`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0);"
         part_id, part_title, part_sort = self.get_part_by_title(part)
         place_id, place_title, place_part_id, place_sort = self.get_place_by_title_and_part_id(place, part_id)
         values = name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part_id, place_id
@@ -155,7 +155,7 @@ class Connection():
                 return ("در این بخش و مکان، پارامتری با این نام قبلا ثبت شده است", 2)
 
     def update_parameter(self, name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place):
-        query = "UPDATE `qaenpower`.`parameters` SET `name` = %s, `type` = %s, `unit` = %s, `default_value` = %s, `variable_name` = %s, `warning_lower_bound` = %s, `warning_upper_bound` = %s, `alarm_lower_bound` = %s, `alarm_upper_bound` = %s, `formula` = %s, `part` = %s, `place` = %s WHERE (`variable_name` = %s);"
+        query = "UPDATE `amar`.`parameters` SET `name` = %s, `type` = %s, `unit` = %s, `default_value` = %s, `variable_name` = %s, `warning_lower_bound` = %s, `warning_upper_bound` = %s, `alarm_lower_bound` = %s, `alarm_upper_bound` = %s, `formula` = %s, `part` = %s, `place` = %s WHERE (`variable_name` = %s);"
         part_id, part_title, part_sort = self.get_part_by_title(part)
         place_id, place_title, place_part_id, place_sort = self.get_place_by_title_and_part_id(place, part_id)
         values = name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part_id, place_id, variable_name
@@ -165,18 +165,18 @@ class Connection():
 
 
     def get_part_by_title(self, title):
-        query = "SELECT * FROM `qaenpower`.`parts` WHERE title=%s;"
+        query = "SELECT * FROM `amar`.`parts` WHERE title=%s;"
         self.cursor.execute(query, title)
         return self.cursor.fetchone()
  
     def get_place_by_title_and_part_id(self, title, part_id):
-        query = "SELECT * FROM `qaenpower`.`places` WHERE title=%s AND part=%s;"
+        query = "SELECT * FROM `amar`.`places` WHERE title=%s AND part=%s;"
         values = title, part_id
         self.cursor.execute(query, values)
         return self.cursor.fetchone()
 
     def get_all_parts(self):
-        query = "SELECT `title`, `id` FROM `qaenpower`.`parts` ORDER BY `order`;"
+        query = "SELECT `title`, `id` FROM `amar`.`parts` ORDER BY `order`;"
         self.cursor.execute(query)
         all_parts = []
         for part in self.cursor.fetchall():
@@ -184,7 +184,7 @@ class Connection():
         return all_parts
 
     def get_all_places_by_part_id(self, part_id):
-        query = "SELECT `qaenpower`.`places`.`title`, `qaenpower`.`places`.`part` as `part_id`, `qaenpower`.`places`.`id`, `qaenpower`.`parts`.`title` as `part_title` FROM `qaenpower`.`places` join `qaenpower`.`parts` ON (`qaenpower`.`places`.`part`=`qaenpower`.`parts`.`id`) WHERE `qaenpower`.`places`.`part`=%s ORDER BY `qaenpower`.`places`.`order`;"
+        query = "SELECT `amar`.`places`.`title`, `amar`.`places`.`part` as `part_id`, `amar`.`places`.`id`, `amar`.`parts`.`title` as `part_title` FROM `amar`.`places` join `amar`.`parts` ON (`amar`.`places`.`part`=`amar`.`parts`.`id`) WHERE `amar`.`places`.`part`=%s ORDER BY `amar`.`places`.`order`;"
         values=(part_id, )
         self.cursor.execute(query, values)
         all_places = []
@@ -193,7 +193,7 @@ class Connection():
         return all_places
     
     def get_last_log_of_parameter_by_id(self, id):
-        query = "SELECT `date` FROM `qaenpower`.`parameters_log` WHERE `parameter_id`=%s ORDER BY `date` DESC LIMIT 1;"
+        query = "SELECT `date` FROM `amar`.`parameters_log` WHERE `parameter_id`=%s ORDER BY `date` DESC LIMIT 1;"
         values = (id, )
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()
@@ -202,7 +202,7 @@ class Connection():
         return temp[0]
 
     def get_all_parameters_of_this_part_and_place(self, part_id, place_id):
-        query = "SELECT `qaenpower`.`parameters`.`part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `qaenpower`.`parameters`.`id`, `qaenpower`.`places`.`title` as `place_title`, `qaenpower`.`parts`.`title` as `part_title` FROM `qaenpower`.`parameters` join `qaenpower`.`places` ON (`qaenpower`.`parameters`.`place`=`qaenpower`.`places`.`id`) join `qaenpower`.`parts` ON (`qaenpower`.`parameters`.`part`=`qaenpower`.`parts`.`id`) WHERE `qaenpower`.`parameters`.`part`=%s AND `place`=%s ORDER BY `qaenpower`.`parts`.`order` ASC, `qaenpower`.`places`.`order` ASC, `qaenpower`.`parameters`.`order` ASC;"
+        query = "SELECT `amar`.`parameters`.`part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `amar`.`parameters`.`id`, `amar`.`places`.`title` as `place_title`, `amar`.`parts`.`title` as `part_title` FROM `amar`.`parameters` join `amar`.`places` ON (`amar`.`parameters`.`place`=`amar`.`places`.`id`) join `amar`.`parts` ON (`amar`.`parameters`.`part`=`amar`.`parts`.`id`) WHERE `amar`.`parameters`.`part`=%s AND `place`=%s ORDER BY `amar`.`parts`.`order` ASC, `amar`.`places`.`order` ASC, `amar`.`parameters`.`order` ASC;"
         values = part_id, place_id
         self.cursor.execute(query, values)
         parameters = []
@@ -212,32 +212,32 @@ class Connection():
         return parameters
 
     def get_place_name_by_id_and_part_id(self, title, part_id):
-        query = "SELECT * FROM `qaenpower`.`places` WHERE title=%s AND part=%s;"
+        query = "SELECT * FROM `amar`.`places` WHERE title=%s AND part=%s;"
         values = title, part_id
         self.cursor.execute(query, values)
         return self.cursor.fetchone()
 
     def create_parameter_log(self, value, workout, is_ok, date, parameter_id, user_id):
-        query = "INSERT INTO `qaenpower`.`parameters_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        query = "INSERT INTO `amar`.`parameters_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
         values = (value, workout, is_ok, date, datetime.now(), parameter_id, user_id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def update_parameter_log(self, value, workout, is_ok, date, parameter_id, user_id):
-        query = "SELECT `id` FROM `qaenpower`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        query = "SELECT `id` FROM `amar`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (parameter_id, date)
         self.cursor.execute(query, values)
         parameter_log_id = self.cursor.fetchone()[0]
-        query = "UPDATE `qaenpower`.`parameters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
+        query = "UPDATE `amar`.`parameters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
         values = (value, workout, is_ok, datetime.now(), user_id, parameter_log_id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def get_parameter_log_by_parameter_id_and_date(self, parameter_id, date):
-        query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `qaenpower`.`parameters_log`.`id`, `qaenpower`.`users`.`name` as `users_name`, `qaenpower`.`users`.`surname` as `users_surname` FROM `qaenpower`.`parameters_log` join `qaenpower`.`users` ON (`qaenpower`.`parameters_log`.`user_id`=`qaenpower`.`users`.`id`)  WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
-        # query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `id` FROM `qaenpower`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `amar`.`parameters_log`.`id`, `amar`.`users`.`name` as `users_name`, `amar`.`users`.`surname` as `users_surname` FROM `amar`.`parameters_log` join `amar`.`users` ON (`amar`.`parameters_log`.`user_id`=`amar`.`users`.`id`)  WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        # query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `id` FROM `amar`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (parameter_id, date)
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()
@@ -246,13 +246,13 @@ class Connection():
         return CounterLog(*temp)
 
     def get_parameters_log_by_date(self, date):
-        query = "SELECT `id`, `variable_name` FROM `qaenpower`.`parameters`;"
+        query = "SELECT `id`, `variable_name` FROM `amar`.`parameters`;"
         self.cursor.execute(query)
         temp_dict = {}
         for item in self.cursor.fetchall():
             id = item[0]
             variable_name = item[1]
-            query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `qaenpower`.`parameters_log`.`id`, `qaenpower`.`users`.`name` as `users_name`, `qaenpower`.`users`.`surname` as `users_surname` FROM `qaenpower`.`parameters_log` join `qaenpower`.`users` ON (`qaenpower`.`parameters_log`.`user_id`=`qaenpower`.`users`.`id`) WHERE `qaenpower`.`parameters_log`.`parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1"
+            query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `amar`.`parameters_log`.`id`, `amar`.`users`.`name` as `users_name`, `amar`.`users`.`surname` as `users_surname` FROM `amar`.`parameters_log` join `amar`.`users` ON (`amar`.`parameters_log`.`user_id`=`amar`.`users`.`id`) WHERE `amar`.`parameters_log`.`parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1"
             values = (id, date)
             self.cursor.execute(query, values)
             temp = self.cursor.fetchone()
@@ -263,13 +263,13 @@ class Connection():
         return temp_dict
     
     def get_parameters_next_log_by_date(self, date):
-        query = "SELECT `id`, `variable_name` FROM `qaenpower`.`parameters`;"
+        query = "SELECT `id`, `variable_name` FROM `amar`.`parameters`;"
         self.cursor.execute(query)
         temp_dict = {}
         for item in self.cursor.fetchall():
             id = item[0]
             variable_name = item[1]
-            query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `qaenpower`.`parameters_log`.`id`, `qaenpower`.`users`.`name` as `users_name`, `qaenpower`.`users`.`surname` as `users_surname`, `qaenpower`.`parameters`.`type` FROM `qaenpower`.`parameters_log` JOIN `qaenpower`.`users` ON (`qaenpower`.`parameters_log`.`user_id`=`qaenpower`.`users`.`id`) JOIN `qaenpower`.`parameters` ON (`qaenpower`.`parameters_log`.`parameter_id`=`qaenpower`.`parameters`.`id`) WHERE `qaenpower`.`parameters_log`.`parameter_id`=%s AND `date`>%s ORDER BY `date` ASC LIMIT 1"
+            query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `amar`.`parameters_log`.`id`, `amar`.`users`.`name` as `users_name`, `amar`.`users`.`surname` as `users_surname`, `amar`.`parameters`.`type` FROM `amar`.`parameters_log` JOIN `amar`.`users` ON (`amar`.`parameters_log`.`user_id`=`amar`.`users`.`id`) JOIN `amar`.`parameters` ON (`amar`.`parameters_log`.`parameter_id`=`amar`.`parameters`.`id`) WHERE `amar`.`parameters_log`.`parameter_id`=%s AND `date`>%s ORDER BY `date` ASC LIMIT 1"
             values = (id, date)
             self.cursor.execute(query, values)
             temp = self.cursor.fetchone()
@@ -287,14 +287,14 @@ class Connection():
         # در غیر این صورت یا محاسباتی اند که باید تغییر داده بشن. یا کنتوری که سالم بوده و با توجه به تغییر
         # دیروز، مقدار کارکردش تغییر کرده و رو امروز اثر میذاره
         # برای این که اشتباهات نیفته گردن کاربر، یوزر آی دی ۰ رو دادم که یعنی کامپیوتر اتوماتیک تغییر داده
-        query = "UPDATE `qaenpower`.`parameters_log` SET `workout` = %s, `date_time_modified` = %s, `user_id` = 0 WHERE (`id` = %s);"
-        values = (log.workout, datetime.now(), log.id)
+        query = "UPDATE `amar`.`parameters_log` SET `workout` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
+        values = (log.workout, datetime.now(), log.user_id, log.id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def get_previous_value_of_parameter_by_id_and_date(self, id, date):
-        query = "SELECT `value` FROM `qaenpower`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 2"
+        query = "SELECT `value` FROM `amar`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 2"
         values = (id, date)
         self.cursor.execute(query, values)
         self.cursor.fetchone() # این مهم نیست. الکی میگیریم میندازیمش دور
@@ -305,7 +305,7 @@ class Connection():
         
 
     def get_all_parameters_variable_names(self):
-        query = "SELECT `variable_name` FROM `qaenpower`.`parameters` ORDER BY `order`;"
+        query = "SELECT `variable_name` FROM `amar`.`parameters` ORDER BY `order`;"
         self.cursor.execute(query)
         names = []
         for item in self.cursor.fetchall():
@@ -313,7 +313,7 @@ class Connection():
         return tuple(names)
     
     def get_parameter_by_variable_name(self, variable_name): 
-        query = "SELECT `part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `qaenpower`.`parameters` WHERE `variable_name`=%s;"
+        query = "SELECT `part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `amar`.`parameters` WHERE `variable_name`=%s;"
         values = (variable_name, )
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()
@@ -322,7 +322,7 @@ class Connection():
         return Counter(*temp)
     
     def get_parameter_by_id(self, id):
-        query = "SELECT `part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `qaenpower`.`parameters` WHERE `id`=%s;"
+        query = "SELECT `part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `amar`.`parameters` WHERE `id`=%s;"
         values = (id, )
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()
@@ -331,31 +331,31 @@ class Connection():
         return Counter(*temp)
 
     def get_current_value_of_parameter_by_variable_name(self, variable_name):
-        query = "SELECT `id` FROM `qaenpower`.`parameters` WHERE `variable_name`=%s;"
+        query = "SELECT `id` FROM `amar`.`parameters` WHERE `variable_name`=%s;"
         values = (variable_name, )
         self.cursor.execute(query, values)
         id = self.cursor.fetchone()[0]
-        query = "SELECT `value` FROM `qaenpower`.`parameters_log` WHERE `parameter`=%s ORDER BY `date` DESC LIMIT 1;"
+        query = "SELECT `value` FROM `amar`.`parameters_log` WHERE `parameter`=%s ORDER BY `date` DESC LIMIT 1;"
         values = (id, )
         self.cursor.execute(query, values)
         return self.cursor.fetchone()[0]
 
     def change_parts_order(self, id, order):
-        query = "UPDATE `qaenpower`.`parts` SET `order` = %s WHERE (`id` = %s);"
+        query = "UPDATE `amar`.`parts` SET `order` = %s WHERE (`id` = %s);"
         values=(order, id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def change_places_order(self, id, order):
-        query = "UPDATE `qaenpower`.`places` SET `order` = %s WHERE (`id` = %s);"
+        query = "UPDATE `amar`.`places` SET `order` = %s WHERE (`id` = %s);"
         values=(order, id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def change_parameters_order(self, id, order):
-        query = "UPDATE `qaenpower`.`parameters` SET `order` = %s WHERE (`id` = %s);"
+        query = "UPDATE `amar`.`parameters` SET `order` = %s WHERE (`id` = %s);"
         values=(order, id)
         self.cursor.execute(query, values)
         self.connection.commit()
@@ -376,7 +376,7 @@ class Connection():
             return (f"رمز عبور اشتباه است. دقت کنید که نمیتوانید بیش از {WRONG_LIMIT} بار پشت سر هم رمز عبور خود را اشتباه وارد کنید. تعداد فرصت های باقیمانده: {WRONG_LIMIT-self.user.wrong_times}", -2)
 
     def change_users_password(self, username, old_password, new_password):
-        query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `qaenpower`.`users` where username=%s;"
+        query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `amar`.`users` where username=%s;"
         values = (username, )
         self.cursor.execute(query, values)
         result = self.cursor.fetchone()
@@ -389,19 +389,19 @@ class Connection():
         return (result_message, _)
     
     def get_all_parameters_short_info(self):
-        # query = "SELECT * FROM `qaenpower`.`parameters` join `qaenpower`.`parts` join `qaenpower`.`places` WHERE `qaenpower`.`parameters`.`part`=`qaenpower`.`parts`.`id` AND `qaenpower`.`parameters`.`place`=`qaenpower`.`places`.`id` ORDER BY `qaenpower`.`parts`.`order`, `qaenpower`.`places`.`order`, `qaenpower`.`parameters`.`order`;"
-        query = "SELECT `qaenpower`.`parameters`.`id`, `qaenpower`.`parameters`.`name`, `qaenpower`.`places`.`title`, `qaenpower`.`parts`.`title` FROM `qaenpower`.`parameters` join `qaenpower`.`parts` join `qaenpower`.`places` WHERE `qaenpower`.`parameters`.`part`=`qaenpower`.`parts`.`id` AND `qaenpower`.`parameters`.`place`=`qaenpower`.`places`.`id` ORDER BY `qaenpower`.`parts`.`order`, `qaenpower`.`places`.`order`, `qaenpower`.`parameters`.`order`;"
+        # query = "SELECT * FROM `amar`.`parameters` join `amar`.`parts` join `amar`.`places` WHERE `amar`.`parameters`.`part`=`amar`.`parts`.`id` AND `amar`.`parameters`.`place`=`amar`.`places`.`id` ORDER BY `amar`.`parts`.`order`, `amar`.`places`.`order`, `amar`.`parameters`.`order`;"
+        query = "SELECT `amar`.`parameters`.`id`, `amar`.`parameters`.`name`, `amar`.`places`.`title`, `amar`.`parts`.`title` FROM `amar`.`parameters` join `amar`.`parts` join `amar`.`places` WHERE `amar`.`parameters`.`part`=`amar`.`parts`.`id` AND `amar`.`parameters`.`place`=`amar`.`places`.`id` ORDER BY `amar`.`parts`.`order`, `amar`.`places`.`order`, `amar`.`parameters`.`order`;"
         self.cursor.execute(query)
         return self.cursor.fetchall()
     
     def get_all_parameters_current_value(self, selected_date):
-        query = "SELECT `id`, `variable_name` FROM `qaenpower`.`parameters`;"
+        query = "SELECT `id`, `variable_name` FROM `amar`.`parameters`;"
         self.cursor.execute(query)
         temp_dict = {}
         for item in self.cursor.fetchall():
             id = item[0]
             variable_name = item[1]
-            query = "SELECT `value` FROM `qaenpower`.`parameters_log` WHERE `parameter`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+            query = "SELECT `value` FROM `amar`.`parameters_log` WHERE `parameter`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
             values = (id, selected_date)
             self.cursor.execute(query, values)
             temp_result = self.cursor.fetchone()
@@ -412,13 +412,13 @@ class Connection():
         return temp_dict
 
     def get_all_parameters_current_value_and_workout(self, selected_date):
-        query = "SELECT `id`, `variable_name` FROM `qaenpower`.`parameters`;"
+        query = "SELECT `id`, `variable_name` FROM `amar`.`parameters`;"
         self.cursor.execute(query)
         temp_dict = {}
         for item in self.cursor.fetchall():
             id = item[0]
             variable_name = item[1]
-            query = "SELECT `value`, `workout` FROM `qaenpower`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+            query = "SELECT `value`, `workout` FROM `amar`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
             values = (id, selected_date)
             self.cursor.execute(query, values)
             temp_result = self.cursor.fetchone()
