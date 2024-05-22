@@ -1207,7 +1207,6 @@ class StaffWindow(MyWindows):
         answer = msb.askyesno("هشدار", message)
         if not answer:
             return
-        print(temp_date)
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
@@ -1532,15 +1531,18 @@ class CounterWidget(Parameter, MyWindows):
         super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
         global all_variables_current_value_and_workout, date_picker
-        self.counter_log = self.connection.get_parameter_log_by_parameter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم. اگه لازم شد استفاده کنم بعدا دارمش. نشد هم که بهتر 
-        self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
+        self.img_copy = Image.open('copy.png')
+        self.img_copy = self.img_copy.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
+        self.img_copy = ImageTk.PhotoImage(self.img_copy)
         self.info_widget = Frame(self.root, bg=BG)
         self.info_widget.grid()
-        self.lbl_title = Label(self.info_widget, cnf=CNF_LABEL, text=self.name)
+        self.frame = LabelFrame(self.root, labelwidget=self.info_widget, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
+        self.lbl_title = Label(self.info_widget, cnf=CNF_LABEL, font=FONT2, text=self.name)
         self.lbl_info = Label(self.info_widget, cnf=CNF_LABEL2, padx=1, text='🛈')
         self.lbl_title.grid(row=1, column=1)
         self.lbl_info.grid(row=1, column=2)
-        self.frame = LabelFrame(self.root, labelwidget=self.info_widget, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
+        self.counter_log = self.connection.get_parameter_log_by_parameter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم. اگه لازم شد استفاده کنم بعدا دارمش. نشد هم که بهتر 
+        self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
             parameters = get_formula_parameters(self.formula)
@@ -1552,11 +1554,14 @@ class CounterWidget(Parameter, MyWindows):
                     values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
             self.answer = calculate_fn(self.formula, parameters, values)
         if self.type==PARAMETER_TYPES[2]:
-            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LABEL2, pady=16, width=17, height=1, *args, **kwargs)
+            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LABEL2, pady=4, width=17, height=1, *args, **kwargs)
         elif self.type==PARAMETER_TYPES[1]:
+            self.btn_copy = Label(self.frame, image=self.img_copy, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
+            self.btn_copy.bind('<Button-1>', self.copy_paste)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=22, *args, **kwargs)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
+            self.btn_copy.grid(row=1, column=2, cnf=CNF_GRID2)
             if self.default_value==DEFAULT_VALUES[0]:
                 self.entry_workout.insert(0, round3(self.a))
             elif self.default_value==DEFAULT_VALUES[1]:
@@ -1564,16 +1569,13 @@ class CounterWidget(Parameter, MyWindows):
             elif self.default_value==DEFAULT_VALUES[2]:
                 self.entry_workout.delete(0, END)
         elif self.type==PARAMETER_TYPES[0]:
-            self.img_copy = Image.open('copy.png')
-            self.img_copy = self.img_copy.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
-            self.img_copy = ImageTk.PhotoImage(self.img_copy)
             self.btn_copy = Label(self.frame, image=self.img_copy, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
             self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH2+1, *args, **kwargs)
             self.label_previous_counter = Label(self.frame, cnf=CNF_LABEL2, text=round3(self.a), *args, **kwargs)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
-            # self.boolean_var_bad.set(!self.counter_log.is_ok) # اطلاعات رو از دیتابیس گرفته بودم. اما گفت پیش فرض همه سالم باشن. پس من تغییرش ندادم. کدش رو گذاشتم بمونه که اگه لازم شد دوباره ننویسم.
+            # self.boolean_var_bad.set(not self.counter_log.is_ok) # اطلاعات رو از دیتابیس گرفته بودم. اما گفت پیش فرض همه سالم باشن. پس من تغییرش ندادم. کدش رو گذاشتم بمونه که اگه لازم شد دوباره ننویسم.
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
@@ -1586,11 +1588,11 @@ class CounterWidget(Parameter, MyWindows):
                 self.entry_current_counter.delete(0, END)
             self.entry_workout.insert(0, self.answer)
             self.entry_workout.config(state='readonly')
-            self.entry_current_counter.grid(row=2, column=2, cnf=CNF_GRID2)
-            self.btn_copy.grid(row=2, column=3, cnf=CNF_GRID2)
-            self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID2)
-            self.label_previous_counter.grid(row=3, column=2, cnf=CNF_GRID2)
-        self.entry_workout.grid(row=1, rowspan=2, column=1, cnf=CNF_GRID2)
+            self.btn_copy               .grid(row=1, column=3, cnf=CNF_GRID2)
+            self.entry_current_counter  .grid(row=1, column=2, cnf=CNF_GRID2)
+            self.checkbutton_bad        .grid(row=2, column=1, cnf=CNF_GRID2)
+            self.label_previous_counter .grid(row=2, column=2, cnf=CNF_GRID2)
+        self.entry_workout.grid(row=1, column=1, cnf=CNF_GRID2)
         self.check_color()
         self.next() # پارامترهایی از جنس کنتور که فرمول محاسباتی از بقیه کنتورها داشتن، مقدار قبلی دیتابیس رو مینوشتن و باید روی فیلدهای وابسته به فرمولشون کلیک میکردیم و جابه جا میشدیم تا فوکس اوت کنه و مقدارشون بر اساس داده هایی باشه که در صفحه در حال نمایش هستند. این تابع رو به خاطر همین صدا کردم که خودش این کار رو بکنه. اگه به باگ خوردم بازم ازش کپی پیست کنم. تابع خیلی خوبی هست :D
         try:
@@ -1761,10 +1763,17 @@ class CounterWidget(Parameter, MyWindows):
         # بشه و هم کنتورهایی که بهش وابسته هستند.
 
     def copy_paste(self, event=None):
-        if self.type==PARAMETER_TYPES[0]: # اگه انواع دیگه باشن، بولین ور براشون تعریف نشده و این تابع براشون ارور میده. پس شرط گذاشتم براش.
+        if self.type==PARAMETER_TYPES[2]:
+            pass # هیچ وقت اتفاق نمیفته
+        elif self.type==PARAMETER_TYPES[1]:
+            self.entry_workout.delete(0, END)
+            self.entry_workout.insert(0, self.a)
+        elif self.type==PARAMETER_TYPES[0]:
             self.entry_current_counter.delete(0, END)
             self.entry_current_counter.insert(0, self.label_previous_counter['text'])
-            self.update_workout()
+        # درسته که ثابت ها فرمول ندارن. اما چون ممکنه بقیه رو تغییر بدن، تابع آپدیت ورک اوت رو در هر حالت
+        # صدا میکنیم. چون توی اون بعد از تغییر خودشون، بقیه رو هم تغییر میدن.
+        self.update_workout()
     
     def check(self):
         if self.type==PARAMETER_TYPES[0]: # اگه انواع دیگه باشن، بولین ور براشون تعریف نشده و این تابع براشون ارور میده. پس شرط گذاشتم براش.

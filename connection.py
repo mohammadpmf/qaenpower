@@ -66,7 +66,6 @@ class Connection():
         values = (username, )
         self.cursor.execute(query, values)
         result = self.cursor.fetchone()
-        print(result)
         if result in [None, '', ()]:
             return ("نام کاربری یافت نشد", -1)
         self.user = Staff(*result)
@@ -229,7 +228,10 @@ class Connection():
         query = "SELECT `id` FROM `amar`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (parameter_id, date)
         self.cursor.execute(query, values)
-        parameter_log_id = self.cursor.fetchone()[0]
+        temp = self.cursor.fetchone() # پارامتری هایی که از قبل وجود دارند، لاگ هم دارند. اما ممکنه برای یک مکان پارامتر جدیدی اضافه بشه که لاگ قبلی نداره. در این صورت پس برای این پارامتر هیچ جوابی نمیده و این طوری به ارور میخوریم. پس در این حالت میگیم براش بسازه و آپدیت نکنه.
+        if temp in [None, '', ()]:
+            return self.create_parameter_log(value, workout, is_ok, date, parameter_id, user_id)
+        parameter_log_id=temp[0]
         query = "UPDATE `amar`.`parameters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
         values = (value, workout, is_ok, datetime.now(), user_id, parameter_log_id)
         self.cursor.execute(query, values)
