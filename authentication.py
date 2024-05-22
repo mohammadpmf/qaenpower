@@ -2,7 +2,7 @@ from ui_settings import *
 from PIL import Image, ImageTk
 from connection import Connection
 from functions import calculate_fn, get_formula_parameters, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime, datetime
-from models import CounterLog, Part, Place, Staff, Counter
+from models import Part, Place, Staff, Parameter
 from ui_settings import Tk
 from threading import Thread
 from time import sleep
@@ -86,7 +86,6 @@ class StaffWindow(MyWindows):
     def __init__(self, connection: Connection, root: Tk, user: Staff):
         super().__init__(connection, root)
         global date_picker, signal
-        self.is_staff_window_running = True # وقتی برمیگشتیم به صفحه ورود و دوباره وارد میشدیم، بعضی وقت ها ارور میداد و نفهمیدم دلیلش چی بود. اما به خاطر ترد قبلی بود که به خاطر وایل ترو زنده مونده بود. به خاطر همین این متغیر رو تعریف کردم که با اول کار میشه ترو و وقتی بک رو میزنیم مقدارش میشه فالس که خود به خود ترد کارش تموم بشه و نابود بشه. احتمالا چند باری که ارور نداد به خاطر گاربیج کالکتور بود که ترد بیخود رو حذف میکرد. اما خب همیشه این کار رو نمیکرد و این طوری چندین بار تست کردم ارور نداد. 
         signal = 0 # برای این که وقتی یه آپدیتی کردیم رو یه پارامتر، ظاهر برنامه رو رفرش کنیم و به تابع رفرش یو آی این کلاس دسترسی داشته باشیم.
         self.logged_parts_names = set() # یه لیست از پارت هایی که امروز لاگ رو ثبت کردند. البته اول لیست گرفته بودم. بعد گفتم مجموعه کنم بهتره. اگه ثبت کردند، اسمشون میره تو این مجموعه که دیگه نتونن ثبت کنن و فقط بتونن ویرایش کنن. اول کار هیچ کس ثبت نکرده، پس فقط یه مجموعه خالی داریم. هر بخشی که ثبت کرد وارد این مجموعه میشه و بعد از اون فقط میتونه ویرایش کنه.
         Thread(target=self.refresh_ui_from_anywhere, daemon=True).start()
@@ -94,9 +93,7 @@ class StaffWindow(MyWindows):
         self.main_window = Toplevel(self.frame)
         self.main_window.title(f'حساب کاربری {self.user}')
         self.main_window.config(bg=BG)
-        # self.main_window.resizable(False, False)
-        self.main_window.geometry('1380x900+400+0')
-        # self.main_window.geometry(f"+{S_WIDTH//4}+0")
+        self.main_window.state('zoomed')
         self.main_window.protocol("WM_DELETE_WINDOW", self.root.destroy)
         self.tab_control = ttk.Notebook(self.main_window) 
         self.tab_control.pack(anchor='n')
@@ -128,11 +125,9 @@ class StaffWindow(MyWindows):
         self.entry_set_default_date.insert(0, DEFAULT_DATE_VALUES[0])
         self.entry_set_default_date.config(state='readonly')
         self.btn_set_default_date = Button(self.frame_set_default_date, text='تایید', cnf=CNF_BTN, font=FONT3, command=self.confirm_default_date)
-        # self.btn_back_set_default_date = Button(self.frame_set_default_date, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
         self.label_set_default_date.grid(row=1, column=3, cnf=CNF_GRID)
         self.entry_set_default_date.grid(row=1, column=2, cnf=CNF_GRID)
         self.btn_set_default_date.grid(row=1, column=1, cnf=CNF_GRID)
-        # self.btn_back_set_default_date.grid(row=1, column=0, cnf=CNF_GRID)
 
         ###################################### frame_add_statistics ######################################
         self.frame_add_statistics = Frame(self.frame_add_statistics_tab, bg=BG)
@@ -178,7 +173,6 @@ class StaffWindow(MyWindows):
         self.bv_show_password_change_users_password = BooleanVar(self.frame_change_users_password)
         self.checkbox_show_password_change_users_password = Checkbutton(self.frame_change_users_password, text='نمایش رمز عبور', variable=self.bv_show_password_change_users_password, cnf=CNF_CHB, command=self.show_password_change_users_password)
         self.btn_change_users_password = Button(self.frame_change_users_password, text='تغییر رمز عبور', cnf=CNF_BTN, command=self.change_users_password)
-        self.btn_back_change_users_password = Button(self.frame_change_users_password, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
         self.label_username_change_users_password.grid(row=5, column=3, cnf=CNF_GRID)
         self.entry_username_change_users_password.grid(row=5, column=1, cnf=CNF_GRID)
         self.label_old_password_change_users_password.grid(row=6, column=3, cnf=CNF_GRID)
@@ -189,7 +183,6 @@ class StaffWindow(MyWindows):
         self.entry_password2_change_users_password.grid(row=9, column=1, cnf=CNF_GRID)
         self.checkbox_show_password_change_users_password.grid(row=11, column=3, cnf=CNF_GRID)
         self.btn_change_users_password.grid(row=13, column=3, cnf=CNF_GRID)
-        self.btn_back_change_users_password.grid(row=13, column=1, cnf=CNF_GRID)
         self.entry_old_password_change_users_password.bind('<Return>', lambda e: self.entry_password1_change_users_password.focus_set())
         self.entry_password1_change_users_password.bind('<Return>', lambda e: self.entry_password2_change_users_password.focus_set())
         self.entry_password2_change_users_password.bind('<Return>', self.change_users_password)
@@ -212,7 +205,6 @@ class StaffWindow(MyWindows):
             self.bv_show_password = BooleanVar(self.frame_user)
             self.checkbox_show_password = Checkbutton(self.frame_user, text='نمایش رمز عبور', variable=self.bv_show_password, cnf=CNF_CHB, command=self.show_password)
             self.btn_register = Button(self.frame_user, text='ایجاد حساب کاربری', cnf=CNF_BTN, command=self.create_account)
-            self.btn_back = Button(self.frame_user, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
             self.label_name.grid(row=1, column=3, cnf=CNF_GRID)
             self.entry_name.grid(row=1, column=1, cnf=CNF_GRID)
             self.label_surname.grid(row=3, column=3, cnf=CNF_GRID)
@@ -225,7 +217,6 @@ class StaffWindow(MyWindows):
             self.entry_password2.grid(row=9, column=1, cnf=CNF_GRID)
             self.checkbox_show_password.grid(row=11, column=3, cnf=CNF_GRID)
             self.btn_register.grid(row=13, column=3, cnf=CNF_GRID)
-            self.btn_back.grid(row=13, column=1, cnf=CNF_GRID)
             self.entry_name.bind('<Return>', lambda e: self.entry_surname.focus_set())
             self.entry_surname.bind('<Return>', lambda e: self.entry_username.focus_set())
             self.entry_username.bind('<Return>', lambda e: self.entry_password1.focus_set())
@@ -269,7 +260,6 @@ class StaffWindow(MyWindows):
             self.entry_counter_formula_parameters = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
             self.btn_counter_register = Button(self.frame_counter, text='ایجاد پارامتر', cnf=CNF_BTN, command=self.create_parameter)
             self.btn_counter_update = Button(self.frame_counter, text='ویرایش پارامتر', cnf=CNF_BTN, command=self.update_parameter)
-            self.btn_counter_back = Button(self.frame_counter, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
             self.label_counter_part.grid(row=1, column=7, cnf=CNF_GRID)
             self.entry_counter_part.grid(row=1, column=5, cnf=CNF_GRID)
             self.label_counter_place.grid(row=1, column=3, cnf=CNF_GRID)
@@ -298,7 +288,6 @@ class StaffWindow(MyWindows):
             self.entry_counter_formula_parameters.grid(row=15, column=1, cnf=CNF_GRID)
             self.btn_counter_register.grid(row=17, column=7, cnf=CNF_GRID)
             self.btn_counter_update.grid(row=17, column=5, cnf=CNF_GRID)
-            self.btn_counter_back.grid(row=17, column=3, cnf=CNF_GRID)
             self.entry_counter_part.bind('<Return>', lambda e: self.entry_counter_place.focus_set())
             self.entry_counter_place.bind('<Return>', lambda e: self.entry_counter_name.focus_set())
             self.entry_counter_name.bind('<Return>', lambda e: self.entry_counter_type.focus_set())
@@ -321,11 +310,9 @@ class StaffWindow(MyWindows):
             self.entry_part_name = Entry(self.frame_part, cnf=CNF_ENTRY_COUNTER, justify='right')
             self.entry_part_name.bind("<Return>", self.create_part)
             self.btn_part_register = Button(self.frame_part, text='ایجاد بخش', cnf=CNF_BTN, command=self.create_part)
-            self.btn_part_back = Button(self.frame_part, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
             self.label_part_name.grid(row=1, column=7, cnf=CNF_GRID)
             self.entry_part_name.grid(row=1, column=5, cnf=CNF_GRID)
             self.btn_part_register.grid(row=17, column=7, cnf=CNF_GRID)
-            self.btn_part_back.grid(row=17, column=5, cnf=CNF_GRID)
             self.treev_part = ttk.Treeview(self.frame_part, height=6, selectmode ='browse', show='headings')
             self.treev_part.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
             self.verscrlbar_part = ttk.Scrollbar(self.frame_part, orient ="vertical", command = self.treev_part.yview)
@@ -355,13 +342,11 @@ class StaffWindow(MyWindows):
             self.entry_place_name = Entry(self.frame_place, cnf=CNF_ENTRY_COUNTER, justify='right', state='readonly')
             self.entry_place_name.bind("<Return>", self.create_place)
             self.btn_place_register = Button(self.frame_place, text='ایجاد مکان جدید', cnf=CNF_BTN, command=self.create_place)
-            self.btn_place_back = Button(self.frame_place, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
             self.label_place_part_name.grid(row=1, column=7, cnf=CNF_GRID)
             self.entry_place_part_name.grid(row=1, column=5, cnf=CNF_GRID)
             self.label_place_name.grid(row=3, column=7, cnf=CNF_GRID)
             self.entry_place_name.grid(row=3, column=5, cnf=CNF_GRID)
             self.btn_place_register.grid(row=17, column=7, cnf=CNF_GRID)
-            self.btn_place_back.grid(row=17, column=5, cnf=CNF_GRID)
             self.treev_place = ttk.Treeview(self.frame_place, height=6, selectmode ='browse', show='headings')
             self.treev_place.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
             self.verscrlbar_place = ttk.Scrollbar(self.frame_place, orient ="vertical", command = self.treev_place.yview)
@@ -384,8 +369,6 @@ class StaffWindow(MyWindows):
             self.frame_all_counters = Frame(self.frame_all_counters_tab, bg=BG)
             self.frame_all_counters.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
             # self.frame_all_counters.place(relx=0.2, rely=0.02, relwidth=1, relheight=1)
-            self.btn_all_counters_back = Button(self.frame_all_counters, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
-            self.btn_all_counters_back.grid(row=17, column=5, cnf=CNF_GRID)
             self.treev_all_counters = ttk.Treeview(self.frame_all_counters, height=8, selectmode ='browse', show='headings')
             self.treev_all_counters.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
             self.treev_all_counters.bind("<Double-1>", self.change_counter_info)
@@ -1171,7 +1154,7 @@ class StaffWindow(MyWindows):
         temp_date = date_picker.get_date()
         for counters in self.all_counters_2d:
             for counter in counters:
-                counter: Counter
+                counter: Parameter
                 last_log = self.connection.get_last_log_of_parameter_by_id(counter.id)
                 if last_log!=None and temp_date<=last_log:
                     self.logged_parts_names.add(counter.part_title)
@@ -1281,43 +1264,40 @@ class StaffWindow(MyWindows):
         # فقط ازش استفاده میشه. این تابع که تموم شه دیگه کاری باهاش نداریم
         updated_logs = self.connection.get_parameters_log_by_date(temp_date)
         next_day_logs = self.connection.get_parameters_next_log_by_date(temp_date)
-        for counters in self.all_counters_2d:
-            for counter in counters:
-                counter: Counter
-                if counter.formula != "":
-                    parameters = get_formula_parameters(counter.formula)
-                    values = []
-                    for p in parameters:
-                        if p=='b':
-                            values.append(next_day_logs.get(counter.variable_name).value)
-                        elif p=='a':
-                            values.append(updated_logs.get(counter.variable_name).value)
-                        else:
-                            values.append(updated_logs.get(p).workout)
-                    answer = calculate_fn(counter.formula, parameters, values)
-                if counter.type==PARAMETER_TYPES[2]:
-                    next_day_logs[counter.variable_name].workout=answer
-                elif counter.type==PARAMETER_TYPES[1]:
-                    pass # پارامترهای ثابت، وابسته به بقیه نیستند. پس تغییری نمیکنند.
-                elif counter.type==PARAMETER_TYPES[0]:
-                    # پارامترهای کنتور، اگه سالم باشن باید تغییر کنند. اما اگه خراب باشن، به مقدار ورک اوتشون دست نمیزنیم و همون قبلی میمونن
-                    if next_day_logs[counter.variable_name].is_ok:
+        try:
+            for counters in self.all_counters_2d:
+                for counter in counters:
+                    counter: Parameter
+                    if counter.formula != "":
+                        parameters = get_formula_parameters(counter.formula)
+                        values = []
+                        for p in parameters:
+                            if p=='b':
+                                values.append(next_day_logs.get(counter.variable_name).value)
+                            elif p=='a':
+                                values.append(updated_logs.get(counter.variable_name).value)
+                            else:
+                                values.append(updated_logs.get(p).workout)
+                        answer = calculate_fn(counter.formula, parameters, values)
+                    if counter.type==PARAMETER_TYPES[2]:
                         next_day_logs[counter.variable_name].workout=answer
-                    else:
-                        pass
-        for log in next_day_logs.values():
-            self.connection.change_log_by_computer_id(log)
+                    elif counter.type==PARAMETER_TYPES[1]:
+                        pass # پارامترهای ثابت، وابسته به بقیه نیستند. پس تغییری نمیکنند.
+                    elif counter.type==PARAMETER_TYPES[0]:
+                        # پارامترهای کنتور، اگه سالم باشن باید تغییر کنند. اما اگه خراب باشن، به مقدار ورک اوتشون دست نمیزنیم و همون قبلی میمونن
+                        if next_day_logs[counter.variable_name].is_ok:
+                            next_day_logs[counter.variable_name].workout=answer
+                        else:
+                            pass
+            for log in next_day_logs.values():
+                self.connection.change_log_by_computer_id(log)
+        except:
+            pass
         del updated_logs
         del next_day_logs
 
 
     ########################################### generic functions ###########################################
-    # تابعی جهت برگشتن به صفحه احراز هویت از برنامه
-    def back(self, event=None):
-        self.is_staff_window_running=False
-        self.main_window.destroy()
-        self.root.deiconify()
-
     def refresh_ui(self):
         if self.connection.user.access_level==1:
             self.refresh_parts_tree_view()
@@ -1332,7 +1312,7 @@ class StaffWindow(MyWindows):
     def refresh_ui_from_anywhere(self):
         global signal
         sleep(0.4)
-        while self.is_staff_window_running:
+        while True:
             sleep(0.01)
             if signal:
                 signal=0
@@ -1493,7 +1473,7 @@ class PartWidget(MyWindows):
                     all_counter_widgets.append(c)
                     c.grid(row=i, column=1000-1-j, sticky='news', padx=4, pady=2)
 
-class CounterWidget(Counter, MyWindows):
+class CounterWidget(Parameter, MyWindows):
     def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, part_title=None, *args, **kwargs):
         super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
@@ -1501,7 +1481,7 @@ class CounterWidget(Counter, MyWindows):
         self.counter_log = self.connection.get_parameter_log_by_parameter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم. اگه لازم شد استفاده کنم بعدا دارمش. نشد هم که بهتر 
         self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
         self.frame = LabelFrame(self.root, text=self.name, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
-        my_tool_tip(self.frame, text=self.counter_log.users_full_name)
+        # my_tool_tip(self.frame, text=self.counter_log.users_full_name)
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
             parameters = get_formula_parameters(self.formula)
@@ -1517,7 +1497,7 @@ class CounterWidget(Counter, MyWindows):
         elif self.type==PARAMETER_TYPES[1]:
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=22, *args, **kwargs)
             self.btn_info = Label(self.frame, text='🛈', cnf=CNF_BTN, relief='flat', *args, **kwargs)
-            create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)
+            # create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
@@ -1534,7 +1514,7 @@ class CounterWidget(Counter, MyWindows):
             self.btn_copy = Label(self.frame, image=self.img, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
             self.btn_info = Label(self.frame, text='🛈', cnf=CNF_BTN, relief='flat', *args, **kwargs)
-            create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)
+            # create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)
             self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH2+1, *args, **kwargs)
             self.label_previous_counter = Label(self.frame, cnf=CNF_LBL2, text=round3(self.a), *args, **kwargs)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
