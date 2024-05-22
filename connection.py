@@ -1,5 +1,5 @@
 import pymysql
-from models import CounterLog, Part, Place, Staff, Counter
+from models import ParameterLog, Part, Place, Staff, Parameter
 from functions import hash_password, get_jnow, datetime
 from ui_settings import PARAMETER_TYPES
 
@@ -66,11 +66,12 @@ class Connection():
         values = (username, )
         self.cursor.execute(query, values)
         result = self.cursor.fetchone()
+        print(result)
         if result in [None, '', ()]:
             return ("نام کاربری یافت نشد", -1)
         self.user = Staff(*result)
         return self.check_is_password_right(password)
-        
+
     def update_wrong_times(self):
         query = "UPDATE `amar`.`users` SET `wrong_times` = %s WHERE (`id` = %s);"
         values = (self.user.wrong_times, self.user.id)
@@ -207,7 +208,7 @@ class Connection():
         self.cursor.execute(query, values)
         parameters = []
         for parameter in self.cursor.fetchall():
-            t = Counter(*parameter)
+            t = Parameter(*parameter)
             parameters.append(t)
         return parameters
 
@@ -243,7 +244,7 @@ class Connection():
         temp = self.cursor.fetchone()
         if temp == None:
             return temp
-        return CounterLog(*temp)
+        return ParameterLog(*temp)
 
     def get_parameters_log_by_date(self, date):
         query = "SELECT `id`, `variable_name` FROM `amar`.`parameters`;"
@@ -259,7 +260,7 @@ class Connection():
             if temp == None:
                 temp_dict[variable_name] = None
             else:
-                temp_dict[variable_name] = CounterLog(*temp)
+                temp_dict[variable_name] = ParameterLog(*temp)
         return temp_dict
     
     def get_parameters_next_log_by_date(self, date):
@@ -276,10 +277,10 @@ class Connection():
             if temp == None:
                 temp_dict[variable_name] = None
             else:
-                temp_dict[variable_name] = CounterLog(*temp)
+                temp_dict[variable_name] = ParameterLog(*temp)
         return temp_dict
     
-    def change_log_by_computer_id(self, log:CounterLog):
+    def change_log_by_computer_id(self, log:ParameterLog):
         if log.type==PARAMETER_TYPES[1]: # پارامترهای ثابت لازم نیست تغییر داده بشن
             return ("ok", 0)
         if log.type==PARAMETER_TYPES[0] and log.is_ok==False: # پارامترهای از جنس کنتور که خراب بودن لازم نیست تغییر داده بشن. مقدار ورک اوتشون دستی وارد شده بود
@@ -319,7 +320,7 @@ class Connection():
         temp = self.cursor.fetchone()
         if temp == None:
             return temp
-        return Counter(*temp)
+        return Parameter(*temp)
     
     def get_parameter_by_id(self, id):
         query = "SELECT `part`, `place`, `name`, `variable_name`, `formula`, `type`, `default_value`, `unit`, `warning_lower_bound`, `warning_upper_bound`, `alarm_lower_bound`, `alarm_upper_bound`, `id` FROM `amar`.`parameters` WHERE `id`=%s;"
@@ -328,7 +329,7 @@ class Connection():
         temp = self.cursor.fetchone()
         if temp == None:
             return temp
-        return Counter(*temp)
+        return Parameter(*temp)
 
     def get_current_value_of_parameter_by_variable_name(self, variable_name):
         query = "SELECT `id` FROM `amar`.`parameters` WHERE `variable_name`=%s;"
@@ -362,7 +363,7 @@ class Connection():
         return ("ok", 0)
 
     def check_is_password_right(self, password):
-        if self.user.wrong_times>=10:
+        if self.user.wrong_times>=WRONG_LIMIT:
             return ("نام کاربری شما مسدود شده است. به مدیر دیتابیس مراجعه نمایید", -3)
         salt = str(self.user.id)
         password = hash_password(password, salt)

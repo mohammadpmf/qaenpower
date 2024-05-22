@@ -1,4 +1,4 @@
-from tkinter import Tk, Label, Entry, Button, BooleanVar, Checkbutton, Toplevel, Frame, StringVar, LabelFrame, Canvas, Scrollbar, Scale
+from tkinter import Tk, Label, Entry, Button, BooleanVar, Checkbutton, Toplevel, Frame, StringVar, LabelFrame, Canvas, Scrollbar
 from tkinter import TOP, RIGHT, LEFT, END, VERTICAL, HORIZONTAL
 from tkinter import ttk
 from tkinter import messagebox as msb
@@ -15,6 +15,8 @@ ALARM_COLOR = '#aa0000'
 S_WIDTH = 1280
 S_HEIGHT = 720
 COPY_ICON_SIZE = 25
+DATE_PICKER_ICON_SIZE = CHANGE_DAY_ICON_SIZE = 64
+SAVE_ICON_SIZE = UPDATE_ICON_SIZE = 64
 PADX = 10
 PADY = 5
 WORDS_WIDTH=15

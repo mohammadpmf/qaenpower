@@ -8,6 +8,7 @@ from threading import Thread
 from time import sleep
 from decimal import Decimal
 
+
 class MyWindows():
     def __init__(self, connection: Connection, root: Tk):
         self.connection = connection
@@ -20,7 +21,9 @@ class MyWindows():
     def pack(self, *args, **kwargs):
         self.frame.pack(*args, **kwargs)
 
-    # چون CounterWidget‌ ارث بری دوگانه از کنتور و این داره و کنتور ها متغیر place دارن. مشکل پیش میومد. اسم تابع place این رو عوض کردم که با اون به مشکل نخوره.
+    # چون پارامتر ویجت ارث بری دوگانه از پارامتر و مای ویندوز داره و پارامتر ها خودشون متغیری به
+    # اسم پلیس برای مکان دارن، با این تابع پلیس به مشکل میخورد. به خاطر همین اسمش رو عوض کردم و 
+    # گذاشتم پلیس ویجت که اگه یه روزی بخوام استفاده کنم داشته باشم تابعش رو.
     def place_widget(self, *args, **kwargs):
         self.frame.place(*args, **kwargs)
 
@@ -33,8 +36,8 @@ class LoginForm(MyWindows):
         self.entry_username.focus_set()
         self.label_password = Label(self.frame, text="رمز عبور", cnf=CNF_LABEL)
         self.entry_password = Entry(self.frame, cnf=CNF_ENTRY, show='*')
-        self.entry_username.insert(0, 'admin')
-        self.entry_password.insert(0, 'admin')
+        self.entry_username.insert(0, 'admin') # در پایان حذف شود
+        self.entry_password.insert(0, 'admin') # در پایان حذف شود
         self.bv_show_password = BooleanVar(self.frame)
         self.checkbox_show_password = Checkbutton(self.frame, text='نمایش رمز عبور', variable=self.bv_show_password, cnf=CNF_CHB, command=self.show_password)
         self.btn_login = Button(self.frame, text='ورود به حساب کاربری', cnf=CNF_BTN, command=self.login)
@@ -68,7 +71,6 @@ class LoginForm(MyWindows):
             return
         result_message, self.user = self.connection.login(username, password)
         if result_message == "ok":
-            self.entry_password.delete(0, END)
             self.root.withdraw()
             StaffWindow(self.connection, self.root, self.user).grid()
         else:
@@ -87,7 +89,7 @@ class StaffWindow(MyWindows):
         super().__init__(connection, root)
         global date_picker, signal
         signal = 0 # برای این که وقتی یه آپدیتی کردیم رو یه پارامتر، ظاهر برنامه رو رفرش کنیم و به تابع رفرش یو آی این کلاس دسترسی داشته باشیم.
-        self.logged_parts_names = set() # یه لیست از پارت هایی که امروز لاگ رو ثبت کردند. البته اول لیست گرفته بودم. بعد گفتم مجموعه کنم بهتره. اگه ثبت کردند، اسمشون میره تو این مجموعه که دیگه نتونن ثبت کنن و فقط بتونن ویرایش کنن. اول کار هیچ کس ثبت نکرده، پس فقط یه مجموعه خالی داریم. هر بخشی که ثبت کرد وارد این مجموعه میشه و بعد از اون فقط میتونه ویرایش کنه.
+        self.logged_parts_names = set() # یه لیست از پارت هایی که در تاریخ فعلی لاگ رو ثبت کردند. البته اول لیست گرفته بودم. بعد گفتم مجموعه کنم بهتره. اگه ثبت کردند، اسمشون میره تو این مجموعه که دیگه نتونن ثبت کنن و فقط بتونن ویرایش کنن. اول کار هیچ کس ثبت نکرده، پس فقط یه مجموعه خالی داریم. هر بخشی که ثبت کرد وارد این مجموعه میشه و بعد از اون فقط میتونه ویرایش کنه.
         Thread(target=self.refresh_ui_from_anywhere, daemon=True).start()
         self.user = user
         self.main_window = Toplevel(self.frame)
@@ -120,7 +122,7 @@ class StaffWindow(MyWindows):
         self.frame_set_default_date = Frame(self.frame_set_default_date_tab, bg=BG)
         self.frame_set_default_date.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
         # self.frame_set_default_date.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
-        self.label_set_default_date = Label(self.frame_set_default_date, text='تاریخ پیش فرض', cnf=CNF_LABEL)
+        self.label_set_default_date = LabelFrame(self.frame_set_default_date, text='تاریخ پیش فرض', cnf=CNF_LABEL)
         self.entry_set_default_date = ttk.Combobox(self.frame_set_default_date, values=DEFAULT_DATE_VALUES, font=FONT, width=WORDS_WIDTH, justify='center')
         self.entry_set_default_date.insert(0, DEFAULT_DATE_VALUES[0])
         self.entry_set_default_date.config(state='readonly')
@@ -130,6 +132,18 @@ class StaffWindow(MyWindows):
         self.btn_set_default_date.grid(row=1, column=1, cnf=CNF_GRID)
 
         ###################################### frame_add_statistics ######################################
+        self.img_save           = Image.open('save.png')
+        self.img_update         = Image.open('update.png')
+        self.img_previous_day   = Image.open('right.png')
+        self.img_next_day       = Image.open('left.png')
+        self.img_save           = self.img_save         .resize((SAVE_ICON_SIZE, SAVE_ICON_SIZE))
+        self.img_update         = self.img_update       .resize((UPDATE_ICON_SIZE, UPDATE_ICON_SIZE))
+        self.img_previous_day   = self.img_previous_day .resize((CHANGE_DAY_ICON_SIZE, CHANGE_DAY_ICON_SIZE))
+        self.img_next_day       = self.img_next_day     .resize((CHANGE_DAY_ICON_SIZE, CHANGE_DAY_ICON_SIZE))
+        self.img_save           = ImageTk.PhotoImage(self.img_save)
+        self.img_update         = ImageTk.PhotoImage(self.img_update)
+        self.img_previous_day   = ImageTk.PhotoImage(self.img_previous_day)
+        self.img_next_day       = ImageTk.PhotoImage(self.img_next_day)
         self.frame_add_statistics = Frame(self.frame_add_statistics_tab, bg=BG)
         self.frame_add_statistics.pack(side=RIGHT, anchor='ne')
         self.date_picker_frame = Frame(self.frame_add_statistics, bg=BG)
@@ -146,12 +160,16 @@ class StaffWindow(MyWindows):
         self.tab_control_frame.bind('<ButtonRelease-1>', self.enable_or_disable_confirm_button)
         date_picker = DatePicker(self.connection, self.date_picker_frame)
         date_picker.pack(side=RIGHT, expand=True, fill='both')
-        self.btn_confirm_counter_log_insert = Button(self.date_picker_frame, text="ذخیره", state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_insert)
+        self.date_picker_frame_left = Frame(self.date_picker_frame, bg=BG)
+        self.date_picker_frame_left.pack(side=LEFT, expand=True, fill='both')
+        self.btn_confirm_counter_log_insert = Button(self.date_picker_frame_left, image=self.img_save, state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_insert)
         self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX)
-        self.btn_confirm_counter_log_update = Button(self.date_picker_frame, text="ویرایش", state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
+        self.btn_confirm_counter_log_update = Button(self.date_picker_frame_left, image=self.img_update, state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
         self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
-        self.btn_yesterday = Button(self.change_day_frame, text='روز قبل »', cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(-1))
-        self.btn_tomorrow = Button(self.change_day_frame, text='<< روز بعد', cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(1))
+        self.btn_yesterday = Button(self.change_day_frame, image=self.img_previous_day, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(-1))
+        # self.btn_yesterday = Button(self.change_day_frame, text='روز قبل ►', anchor='center', cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(-1))
+        self.btn_tomorrow = Button(self.change_day_frame, image=self.img_next_day, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(1))
+        # self.btn_tomorrow = Button(self.change_day_frame, text='◄ روز بعد', anchor='center', cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(1))
         self.btn_yesterday.pack(cnf=CNF_PACK2)
         self.btn_tomorrow.pack(cnf=CNF_PACK2)
         self.seed_tabs_of_parts()
@@ -1115,19 +1133,19 @@ class StaffWindow(MyWindows):
                 return
 
     def disable_confirm_button(self, event=None):
-        self.btn_confirm_counter_log_insert.config(state='disabled')
-        self.btn_confirm_counter_log_update.config(state='disabled')
+        self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
+        self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
         
     def enable_or_disable_confirm_button(self, event=None):
         global all_counter_widgets
         # با این که تابع جدا برای دیسیبل کردن نوشتم. ولی حالات زیادی برای باگ خوردن داشت.
         # باز هم گفتم برای باگ نخوردن، اینجا هم یه بار دیسیبل کنم و بعد با شرط اونی که اوکی هست
         # رو اینیبل کنم.
-        self.btn_confirm_counter_log_insert.config(state='disabled')
-        self.btn_confirm_counter_log_update.config(state='disabled')
+        self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
+        self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         if part_name in self.logged_parts_names:
-            self.btn_confirm_counter_log_update.config(state='normal')
+            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             for counter_widget in all_counter_widgets:
                 counter_widget: CounterWidget
                 if counter_widget.type in PARAMETER_TYPES[1:3]:
@@ -1146,7 +1164,7 @@ class StaffWindow(MyWindows):
                     counter_widget.entry_workout.config(state='disabled')
                     counter_widget.update_workout()
         else:
-            self.btn_confirm_counter_log_insert.config(state='normal')
+            self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
 
     def set_logged_parts_names(self):
         global date_picker
@@ -1333,6 +1351,10 @@ class DatePicker(MyWindows):
     years_list = [i for i in range(1400, 1410)]
     def __init__(self, connection: Connection, root: Tk):
         super().__init__(connection, root)
+        self.img_calendar = Image.open('calendar.png')
+        self.img_calendar = self.img_calendar.resize((DATE_PICKER_ICON_SIZE, DATE_PICKER_ICON_SIZE))
+        self.img_calendar = ImageTk.PhotoImage(self.img_calendar)
+        self.btn_show_date_picker = Button(self.frame, image=self.img_calendar, cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=self.show_or_hide_date_picker)
         self.year = StringVar(self.frame)
         self.month = StringVar(self.frame)
         self.day = StringVar(self.frame)
@@ -1345,13 +1367,25 @@ class DatePicker(MyWindows):
         self.combo_month.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_day.bind("<<ComboboxSelected>>", self.check_date)
         self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL, pady=32, width=20)
+        self.btn_show_date_picker.pack(cnf=CNF_PACK2)
         # self.btn_yesterday.pack(cnf=CNF_PACK2)
-        self.combo_day.pack(cnf=CNF_PACK2)
-        self.combo_month.pack(cnf=CNF_PACK2)
-        self.combo_year.pack(cnf=CNF_PACK2)
         # self.btn_tomorrow.pack(cnf=CNF_PACK2)
-        self.label_date.pack(cnf=CNF_PACK2, padx=86)
+        self.label_date.pack(cnf=CNF_PACK2, padx=PADX*4, side=LEFT)
         self.refresh_date()
+
+    def show_or_hide_date_picker(self):
+        if self.btn_show_date_picker['relief']=='raised':
+            self.label_date.pack(expand=True)
+            self.btn_show_date_picker.config(relief='sunken')
+            self.combo_day.pack(cnf=CNF_PACK2)
+            self.combo_month.pack(cnf=CNF_PACK2)
+            self.combo_year.pack(cnf=CNF_PACK2)
+        else:
+            self.btn_show_date_picker.config(relief='raised')
+            self.label_date.pack(expand=False)
+            self.combo_day.pack_forget()
+            self.combo_month.pack_forget()
+            self.combo_year.pack_forget()
 
     def refresh_date(self, date=None):
         global selected_date, all_variables_current_value_and_workout
@@ -1508,10 +1542,10 @@ class CounterWidget(Parameter, MyWindows):
                 self.entry_workout.delete(0, END)
             self.btn_info.grid(row=2, column=2, cnf=CNF_GRID2)
         elif self.type==PARAMETER_TYPES[0]:
-            self.img = Image.open('copy-icon.png')
-            self.img = self.img.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
-            self.img = ImageTk.PhotoImage(self.img)
-            self.btn_copy = Label(self.frame, image=self.img, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
+            self.img_copy = Image.open('copy.png')
+            self.img_copy = self.img_copy.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
+            self.img_copy = ImageTk.PhotoImage(self.img_copy)
+            self.btn_copy = Label(self.frame, image=self.img_copy, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
             self.btn_info = Label(self.frame, text='🛈', cnf=CNF_BTN, relief='flat', *args, **kwargs)
             # create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)

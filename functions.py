@@ -2,7 +2,6 @@ import hashlib
 from datetime import datetime
 import jdatetime
 from Equation import Expression
-import re
 
 
 def hash_password(password: str, salt="mohammad pourmohammadi fallah"):
