@@ -243,8 +243,8 @@ class StaffWindow(MyWindows):
             self.label_counter_name = Label(self.frame_counter, text="نام پارامتر", cnf=CNF_LABEL)
             self.entry_counter_name = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER, justify='right')
             self.label_counter_type = Label(self.frame_counter, text="نوع پارامتر", cnf=CNF_LABEL)
-            self.entry_counter_type = ttk.Combobox(self.frame_counter, values=COUNTER_TYPES, font=FONT, width=WORDS_WIDTH, justify='center')
-            self.entry_counter_type.insert(0, COUNTER_TYPES[0])
+            self.entry_counter_type = ttk.Combobox(self.frame_counter, values=PARAMETER_TYPES, font=FONT, width=WORDS_WIDTH, justify='center')
+            self.entry_counter_type.insert(0, PARAMETER_TYPES[0])
             self.entry_counter_type.config(state='readonly')
             self.entry_counter_type.bind("<<ComboboxSelected>>", self.check_counter_type)
             self.label_counter_unit = Label(self.frame_counter, text="واحد اندازه گیری", cnf=CNF_LABEL)
@@ -267,8 +267,8 @@ class StaffWindow(MyWindows):
             self.entry_counter_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
             self.label_counter_formula_parameters = Label(self.frame_counter, text="متغیرهای فرمول", cnf=CNF_LABEL)
             self.entry_counter_formula_parameters = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-            self.btn_counter_register = Button(self.frame_counter, text='ایجاد پارامتر', cnf=CNF_BTN, command=self.create_counter)
-            self.btn_counter_update = Button(self.frame_counter, text='ویرایش پارامتر', cnf=CNF_BTN, command=self.update_counter)
+            self.btn_counter_register = Button(self.frame_counter, text='ایجاد پارامتر', cnf=CNF_BTN, command=self.create_parameter)
+            self.btn_counter_update = Button(self.frame_counter, text='ویرایش پارامتر', cnf=CNF_BTN, command=self.update_parameter)
             self.btn_counter_back = Button(self.frame_counter, text='بازگشت به صفحه ورود', cnf=CNF_BTN, command=self.back)
             self.label_counter_part.grid(row=1, column=7, cnf=CNF_GRID)
             self.entry_counter_part.grid(row=1, column=5, cnf=CNF_GRID)
@@ -311,7 +311,7 @@ class StaffWindow(MyWindows):
             self.entry_counter_alarm_lower_bound.bind('<Return>', lambda e: self.entry_counter_alarm_upper_bound.focus_set())
             self.entry_counter_alarm_upper_bound.bind('<Return>', lambda e: self.entry_counter_formula.focus_set())
             self.entry_counter_formula.bind('<Return>', lambda e: self.entry_counter_formula_parameters.focus_set())
-            self.entry_counter_formula_parameters.bind('<Return>', self.create_counter)
+            self.entry_counter_formula_parameters.bind('<Return>', self.create_parameter)
 
             ############################################# frame_part #############################################
             self.frame_part = Frame(self.frame_add_part_tab, bg=BG)
@@ -519,13 +519,13 @@ class StaffWindow(MyWindows):
         counter_type = self.entry_counter_type.get()
         self.entry_counter_default_value.config(state='normal')
         self.entry_counter_default_value.delete(0, END)
-        if counter_type in COUNTER_TYPES[0:2]: # یعنی یا کنتور معمولی باشه یا ثابت
+        if counter_type in PARAMETER_TYPES[0:2]: # یعنی یا کنتور معمولی باشه یا ثابت
             self.entry_counter_default_value.insert(0, DEFAULT_VALUES[0])
             self.entry_counter_default_value.config(values=DEFAULT_VALUES)
-        elif counter_type==COUNTER_TYPES[2]: # یعنی از نوع محاسباتی باشه
+        elif counter_type==PARAMETER_TYPES[2]: # یعنی از نوع محاسباتی باشه
             self.entry_counter_default_value.config(values=[])
         self.entry_counter_default_value.config(state='readonly')
-        if counter_type==COUNTER_TYPES[1]: # fixed:
+        if counter_type==PARAMETER_TYPES[1]: # fixed:
             self.entry_counter_formula.delete(0, END)
             self.entry_counter_formula.config(state='readonly')
             self.entry_counter_formula_parameters.delete(0, END)
@@ -535,7 +535,7 @@ class StaffWindow(MyWindows):
             self.entry_counter_formula_parameters.config(state='normal')
 
     # تابعی جهت ایجاد پارامتر
-    def create_counter(self, event=None):
+    def create_parameter(self, event=None):
         global all_variables_current_value_and_workout
         is_everything_ok = True # برای ایجاد پارامتر اول فرض میکنیم همه چی اوکی هست. اگه مشکلی پیش اومد فالسش میکنیم.
         part = self.entry_counter_part.get()
@@ -565,8 +565,8 @@ class StaffWindow(MyWindows):
             return
         if unit == "":
             unit=None
-        counters_variable_names = self.connection.get_all_counters_variable_names()
-        problem = what_is_variable_name_problem(variable_name, counters_variable_names)
+        parameters_variable_names = self.connection.get_all_parameters_variable_names()
+        problem = what_is_variable_name_problem(variable_name, parameters_variable_names)
         if problem:
             msb.showwarning("هشدار", problem)
             self.entry_counter_variable_name.focus_set()
@@ -608,7 +608,7 @@ class StaffWindow(MyWindows):
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
         if formula != "":
-            result = what_is_formula_problem(formula, formula_parameters, variable_name, counters_variable_names)
+            result = what_is_formula_problem(formula, formula_parameters, variable_name, parameters_variable_names)
             if isinstance(result, str): # یعنی اگه یه استرینگ داده بود، مشکلی هست. پس ارور رو نشون بده.
                 msb.showwarning("هشدار", result)
                 self.entry_counter_formula.focus_set()
@@ -621,18 +621,18 @@ class StaffWindow(MyWindows):
                 self.root.bell()
                 is_everything_ok = msb.askyesno("تایید", message)
                 if is_everything_ok:
-                    result = what_is_formula_problem(formula, ' '.join(result), variable_name, counters_variable_names)
+                    result = what_is_formula_problem(formula, ' '.join(result), variable_name, parameters_variable_names)
                     if isinstance(result, list):
                         is_everything_ok=True
                     else:
                         is_everything_ok=False
                         msb.showwarning('هشدار', result)
-        if formula == "" and type in [COUNTER_TYPES[0], COUNTER_TYPES[2]]:
+        if formula == "" and type in [PARAMETER_TYPES[0], PARAMETER_TYPES[2]]:
             msb.showwarning("هشدار", "برای پارامترهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد")
             self.entry_counter_formula.focus_set()
             return
         if is_everything_ok:
-            result_message, _ = self.connection.create_counter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
+            result_message, _ = self.connection.create_parameter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
         else:
             return
         if result_message=='ok':
@@ -652,7 +652,7 @@ class StaffWindow(MyWindows):
             print(_)
 
     # تابعی جهت ویرایش پارامتر
-    def update_counter(self):
+    def update_parameter(self):
         is_everything_ok = True # برای تغییر پارامتر اول فرض میکنیم همه چی اوکی هست. اگه مشکلی پیش اومد فالسش میکنیم.
         part = self.entry_counter_part.get()
         place = self.entry_counter_place.get()
@@ -681,8 +681,8 @@ class StaffWindow(MyWindows):
             return
         if unit == "":
             unit=None
-        this_counter = self.connection.get_counter_by_variable_name(variable_name)
-        if this_counter == None:
+        this_parameter = self.connection.get_parameter_by_variable_name(variable_name)
+        if this_parameter == None:
             msb.showerror("خطا", "پارامتر با نام متغیر نوشته شده وجود ندارد")
             self.entry_counter_variable_name.focus_set()
             return
@@ -723,8 +723,8 @@ class StaffWindow(MyWindows):
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
         if formula != "":
-            counters_variable_names = self.connection.get_all_counters_variable_names()
-            result = what_is_formula_problem(formula, formula_parameters, variable_name, counters_variable_names)
+            parameters_variable_names = self.connection.get_all_parameters_variable_names()
+            result = what_is_formula_problem(formula, formula_parameters, variable_name, parameters_variable_names)
             if isinstance(result, str): # یعنی اگه یه استرینگ داده بود، مشکلی هست. پس ارور رو نشون بده.
                 msb.showwarning("هشدار", result)
                 self.entry_counter_formula.focus_set()
@@ -737,18 +737,18 @@ class StaffWindow(MyWindows):
                 self.root.bell()
                 is_everything_ok = msb.askyesno("تایید", message)
                 if is_everything_ok:
-                    result = what_is_formula_problem(formula, ' '.join(result), variable_name, counters_variable_names)
+                    result = what_is_formula_problem(formula, ' '.join(result), variable_name, parameters_variable_names)
                     if isinstance(result, list):
                         is_everything_ok=True
                     else:
                         is_everything_ok=False
                         msb.showwarning('هشدار', result)
-        if formula == "" and type in [COUNTER_TYPES[0], COUNTER_TYPES[2]]:
+        if formula == "" and type in [PARAMETER_TYPES[0], PARAMETER_TYPES[2]]:
             msb.showwarning("هشدار", "برای پارامترهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد")
             self.entry_counter_formula.focus_set()
             return
         if is_everything_ok:
-            result_message, _ = self.connection.update_counter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
+            result_message, _ = self.connection.update_parameter(name, type, unit, default_value, variable_name, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, formula, part, place)
         else:
             return
         if result_message=='ok':
@@ -766,7 +766,7 @@ class StaffWindow(MyWindows):
             msb.showwarning("هشدار", "برای انتخاب یک پارامتر باید روی پارامتر مربوطه دابل کلیک کنید")
             return
         id = self.treev_all_counters.item(item, "text")
-        temp_counter = self.connection.get_counter_by_id(id)
+        temp_counter = self.connection.get_parameter_by_id(id)
         temp_name, temp_place, temp_part = self.treev_all_counters.item(item, "values")[0:3]
         self.tab_control.select(self.frame_add_counter_tab)
         self.entry_counter_part.config(state='normal')
@@ -1052,7 +1052,7 @@ class StaffWindow(MyWindows):
             item = self.treev_all_counters.item(item)
             id=int(item['text'])
             order=int(item['values'][-1])
-            result_message, _ = self.connection.change_counters_order(id, order)
+            result_message, _ = self.connection.change_parameters_order(id, order)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"ترتیب کنتور ها با موفقیت تغییر یافت")
             self.refresh_ui()
@@ -1062,7 +1062,7 @@ class StaffWindow(MyWindows):
 
     def refresh_all_counters_treeview(self):
         self.treev_all_counters.delete(*self.treev_all_counters.get_children())
-        counters = self.connection.get_all_counters_short_info()
+        counters = self.connection.get_all_parameters_short_info()
         for i, counter in enumerate(counters):
             self.treev_all_counters.insert("", i, text=counter[0], values=(*(counter[1:]), i+1))
 
@@ -1088,7 +1088,7 @@ class StaffWindow(MyWindows):
         self.all_counters_2d = [] # لیست دو بعدی از تمام کنتور ها برای ارسال به پارت ویجت که تمام کنتورهای یک بخش رو بسازه. دو بعدی هست. دقت کنم که بعضی از لیست هاش هم خالی هستند. چون بخشی هست که ممکنه کنتوری نداشته باشه.
         for places in all_places: # آل پلیسس یه لیست از مکان های هر بخش هست. پس روش دوباره حلقه میزنیم
             for place in places:
-                self.all_counters_2d.append(self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id))
+                self.all_counters_2d.append(self.connection.get_all_parameters_of_this_part_and_place(part_id=place.part_id, place_id=place.id))
         # print(self.all_counters_2d)
         # for counters in self.all_counters_2d:
         #     print(counters)
@@ -1101,30 +1101,30 @@ class StaffWindow(MyWindows):
             self.tab_control_frame.add(tabs_list[i], text =f'{part.title}')
             places_with_counters = []
             for place in all_places[i]:
-                counters = self.connection.get_all_counters_of_this_part_and_place(part_id=place.part_id, place_id=place.id)
+                counters = self.connection.get_all_parameters_of_this_part_and_place(part_id=place.part_id, place_id=place.id)
                 places_with_counters.append(counters)
             parts_tab.append(PartWidget(self.connection, tabs_list[i], places_with_counters))
             parts_tab[i].pack()
         self.tab_control_frame.pack(expand=1, fill="both")
         for i, counter_widget in enumerate(all_counter_widgets):
             counter_widget: CounterWidget
-            if counter_widget.type==COUNTER_TYPES[2]:
+            if counter_widget.type==PARAMETER_TYPES[2]:
                 pass # چون اصلا نمیشه روش اینتر زد.
             else:
                 counter_widget.entry_workout.bind('<Return>', lambda e, i=i: self.goto_next_counter_widget(i)) # چون هر دو نوع ثابت و کنتور، این ویجت رو دارند و انتری هست.
-                if counter_widget.type==COUNTER_TYPES[0]: # نوع کنتور، یه انتری دیگه هم داره. پس اون رو هم بایند میکنیم.
+                if counter_widget.type==PARAMETER_TYPES[0]: # نوع کنتور، یه انتری دیگه هم داره. پس اون رو هم بایند میکنیم.
                     counter_widget.entry_current_counter.bind('<Return>', lambda e, i=i: self.goto_next_counter_widget(i))
 
     def goto_next_counter_widget(self, index):
         global all_counter_widgets
         length = len(all_counter_widgets)
         for i in range(index+1, length):
-            if all_counter_widgets[i].type==COUNTER_TYPES[2]:
+            if all_counter_widgets[i].type==PARAMETER_TYPES[2]:
                 continue
-            elif all_counter_widgets[i].type==COUNTER_TYPES[1]:
+            elif all_counter_widgets[i].type==PARAMETER_TYPES[1]:
                 all_counter_widgets[i].entry_workout.focus_set()
                 return
-            elif all_counter_widgets[i].type==COUNTER_TYPES[0]:
+            elif all_counter_widgets[i].type==PARAMETER_TYPES[0]:
                 if all_counter_widgets[i].boolean_var_bad.get():
                     all_counter_widgets[i].entry_workout.focus_set()
                 else:
@@ -1147,15 +1147,16 @@ class StaffWindow(MyWindows):
             self.btn_confirm_counter_log_update.config(state='normal')
             for counter_widget in all_counter_widgets:
                 counter_widget: CounterWidget
-                if counter_widget.type in COUNTER_TYPES[1:3]:
+                if counter_widget.type in PARAMETER_TYPES[1:3]:
                     continue
-                elif counter_widget.type==COUNTER_TYPES[0]:
-                    previous_value = counter_widget.connection.get_previous_value_of_counter_by_id_and_date(counter_widget.id, date_picker.get_date())
+                elif counter_widget.type==PARAMETER_TYPES[0]:
+                    previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
                     counter_widget.label_previous_counter.config(text=round3(previous_value))
                     counter_widget.entry_workout.config(state='normal')
                     counter_widget.entry_workout.delete(0, END)
                     if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
                         counter_widget.boolean_var_bad.set(1)
+                        counter_widget.check()
                         counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
                     else:
                         counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
@@ -1171,7 +1172,7 @@ class StaffWindow(MyWindows):
         for counters in self.all_counters_2d:
             for counter in counters:
                 counter: Counter
-                last_log = self.connection.get_last_log_of_counter_by_id(counter.id)
+                last_log = self.connection.get_last_log_of_parameter_by_id(counter.id)
                 if last_log!=None and temp_date<=last_log:
                     self.logged_parts_names.add(counter.part_title)
 
@@ -1195,11 +1196,11 @@ class StaffWindow(MyWindows):
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
-                if counter_widget.type in COUNTER_TYPES[1:3]:
-                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.workout, counter_widget.workout, 1, temp_date, counter_widget.id, self.user.id)
-                elif counter_widget.type==COUNTER_TYPES[0]:
+                if counter_widget.type in PARAMETER_TYPES[1:3]:
+                    result_message, ـ = counter_widget.connection.create_parameter_log(counter_widget.workout, counter_widget.workout, 1, temp_date, counter_widget.id, self.user.id)
+                elif counter_widget.type==PARAMETER_TYPES[0]:
                     is_ok = 1 if counter_widget.boolean_var_bad.get()==False else 0
-                    result_message, ـ = counter_widget.connection.create_counter_log(counter_widget.b, counter_widget.workout, is_ok, temp_date, counter_widget.id, self.user.id)
+                    result_message, ـ = counter_widget.connection.create_parameter_log(counter_widget.b, counter_widget.workout, is_ok, temp_date, counter_widget.id, self.user.id)
         if result_message == "ok":
             self.btn_confirm_counter_log_insert.config(state='disabled')
             self.btn_confirm_counter_log_update.config(state='normal')
@@ -1216,15 +1217,15 @@ class StaffWindow(MyWindows):
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
                 try:
-                    if counter_widget.type==COUNTER_TYPES[2]:
+                    if counter_widget.type==PARAMETER_TYPES[2]:
                         temp=float(counter_widget.entry_workout['text'])
                         if temp<0:
                             negative_numbers+=1
-                    elif counter_widget.type==COUNTER_TYPES[1]:
+                    elif counter_widget.type==PARAMETER_TYPES[1]:
                         temp=float(counter_widget.entry_workout.get().strip())
                         if temp<0:
                             negative_numbers+=1
-                    elif counter_widget.type==COUNTER_TYPES[0]:
+                    elif counter_widget.type==PARAMETER_TYPES[0]:
                         temp=float(counter_widget.entry_workout.get().strip())
                         if temp<0:
                             negative_numbers+=1
@@ -1261,11 +1262,11 @@ class StaffWindow(MyWindows):
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
-                if counter_widget.type in COUNTER_TYPES[1:3]:
-                    result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.workout, counter_widget.workout, 1, temp_date, counter_widget.id, self.user.id)
-                elif counter_widget.type==COUNTER_TYPES[0]:
+                if counter_widget.type in PARAMETER_TYPES[1:3]:
+                    result_message, ـ = counter_widget.connection.update_parameter_log(counter_widget.workout, counter_widget.workout, 1, temp_date, counter_widget.id, self.user.id)
+                elif counter_widget.type==PARAMETER_TYPES[0]:
                     is_ok = 1 if counter_widget.boolean_var_bad.get()==False else 0
-                    result_message, ـ = counter_widget.connection.update_counter_log(counter_widget.b, counter_widget.workout, is_ok, temp_date, counter_widget.id, self.user.id)
+                    result_message, ـ = counter_widget.connection.update_parameter_log(counter_widget.b, counter_widget.workout, is_ok, temp_date, counter_widget.id, self.user.id)
         if result_message == "ok":
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ویرایش شدند"
             msb.showinfo('success', message)
@@ -1275,39 +1276,39 @@ class StaffWindow(MyWindows):
 
     def update_next_logs_because_they_may_be_related_to_this_logs(self):
         global all_variables_current_value_and_workout, all_counter_widgets
-        # temp_date = date_picker.get_date()
-        # # برای اینکه ایزوله باشه و کار بقیه برنامه رو خراب نکنه، تو یه متغیر جدید ذخیره کردم و همینجا
-        # # فقط ازش استفاده میشه. این تابع که تموم شه دیگه کاری باهاش نداریم
-        # updated_logs = self.connection.get_counters_log_by_date(temp_date)
-        # next_day_logs = self.connection.get_counters_next_log_by_date(temp_date)
-        # for counters in self.all_counters_2d:
-        #     for counter in counters:
-        #         counter: Counter
-        #         if counter.formula != "":
-        #             parameters = get_formula_parameters(counter.formula)
-        #             values = []
-        #             for p in parameters:
-        #                 if p=='b':
-        #                     values.append(next_day_logs.get(counter.variable_name).value)
-        #                 elif p=='a':
-        #                     values.append(updated_logs.get(counter.variable_name).value)
-        #                 else:
-        #                     values.append(updated_logs.get(p).workout)
-        #             answer = calculate_fn(counter.formula, parameters, values)
-        #         if counter.type==COUNTER_TYPES[2]:
-        #             next_day_logs[counter.variable_name].workout=answer
-        #         elif counter.type==COUNTER_TYPES[1]:
-        #             pass # پارامترهای ثابت، وابسته به بقیه نیستند. پس تغییری نمیکنند.
-        #         elif counter.type==COUNTER_TYPES[0]:
-        #             # پارامترهای کنتور، اگه سالم باشن باید تغییر کنند. اما اگه خراب باشن، به مقدار ورک اوتشون دست نمیزنیم و همون قبلی میمونن
-        #             if next_day_logs[counter.variable_name].is_ok:
-        #                 next_day_logs[counter.variable_name].workout=answer
-        #             else:
-        #                 pass
-        # for log in next_day_logs.values():
-        #     self.connection.change_log_by_computer_id(log)
-        # del updated_logs
-        # del next_day_logs
+        temp_date = date_picker.get_date()
+        # برای اینکه ایزوله باشه و کار بقیه برنامه رو خراب نکنه، تو یه متغیر جدید ذخیره کردم و همینجا
+        # فقط ازش استفاده میشه. این تابع که تموم شه دیگه کاری باهاش نداریم
+        updated_logs = self.connection.get_parameters_log_by_date(temp_date)
+        next_day_logs = self.connection.get_parameters_next_log_by_date(temp_date)
+        for counters in self.all_counters_2d:
+            for counter in counters:
+                counter: Counter
+                if counter.formula != "":
+                    parameters = get_formula_parameters(counter.formula)
+                    values = []
+                    for p in parameters:
+                        if p=='b':
+                            values.append(next_day_logs.get(counter.variable_name).value)
+                        elif p=='a':
+                            values.append(updated_logs.get(counter.variable_name).value)
+                        else:
+                            values.append(updated_logs.get(p).workout)
+                    answer = calculate_fn(counter.formula, parameters, values)
+                if counter.type==PARAMETER_TYPES[2]:
+                    next_day_logs[counter.variable_name].workout=answer
+                elif counter.type==PARAMETER_TYPES[1]:
+                    pass # پارامترهای ثابت، وابسته به بقیه نیستند. پس تغییری نمیکنند.
+                elif counter.type==PARAMETER_TYPES[0]:
+                    # پارامترهای کنتور، اگه سالم باشن باید تغییر کنند. اما اگه خراب باشن، به مقدار ورک اوتشون دست نمیزنیم و همون قبلی میمونن
+                    if next_day_logs[counter.variable_name].is_ok:
+                        next_day_logs[counter.variable_name].workout=answer
+                    else:
+                        pass
+        for log in next_day_logs.values():
+            self.connection.change_log_by_computer_id(log)
+        del updated_logs
+        del next_day_logs
 
 
     ########################################### generic functions ###########################################
@@ -1326,7 +1327,8 @@ class StaffWindow(MyWindows):
             self.refresh_all_counters_treeview()
         self.seed_tabs_of_parts()
         self.enable_or_disable_confirm_button()
-    
+
+
     def refresh_ui_from_anywhere(self):
         global signal
         sleep(0.4)
@@ -1496,7 +1498,7 @@ class CounterWidget(Counter, MyWindows):
         super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
         global all_variables_current_value_and_workout, date_picker
-        self.counter_log = self.connection.get_counter_log_by_counter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم. اگه لازم شد استفاده کنم بعدا دارمش. نشد هم که بهتر 
+        self.counter_log = self.connection.get_parameter_log_by_parameter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم. اگه لازم شد استفاده کنم بعدا دارمش. نشد هم که بهتر 
         self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
         self.frame = LabelFrame(self.root, text=self.name, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
         # my_tool_tip(self.frame, text=self.counter_log.users_full_name)
@@ -1510,9 +1512,9 @@ class CounterWidget(Counter, MyWindows):
                 else:
                     values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
             self.answer = calculate_fn(self.formula, parameters, values)
-        if self.type==COUNTER_TYPES[2]:
+        if self.type==PARAMETER_TYPES[2]:
             self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LBL2, width=17, height=2, *args, **kwargs)
-        elif self.type==COUNTER_TYPES[1]:
+        elif self.type==PARAMETER_TYPES[1]:
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=25, *args, **kwargs)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
@@ -1522,7 +1524,7 @@ class CounterWidget(Counter, MyWindows):
                 self.entry_workout.insert(0, DEFAULT_VALUES[1])
             elif self.default_value==DEFAULT_VALUES[2]:
                 self.entry_workout.delete(0, END)
-        elif self.type==COUNTER_TYPES[0]:
+        elif self.type==PARAMETER_TYPES[0]:
             self.img = Image.open('copy-icon.png')
             self.img = self.img.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
             self.img = ImageTk.PhotoImage(self.img)
@@ -1566,11 +1568,11 @@ class CounterWidget(Counter, MyWindows):
         # باز هم ارور میداد. فکر کنم به خاطر تب هایی
         # هست که از بین رفتن. اما چون داخل ترای نوشتم برنامه درست کار میکنه. فعلا گفتم روش وقت نذارم.
         try:
-            if self.type == COUNTER_TYPES[2]:
+            if self.type == PARAMETER_TYPES[2]:
                 self.workout = float(self.entry_workout['text'])
             else:
                 self.workout = float(self.entry_workout.get())
-            if self.type == COUNTER_TYPES[0] and self.boolean_var_bad.get()==False:
+            if self.type == PARAMETER_TYPES[0] and self.boolean_var_bad.get()==False:
                 float(self.entry_current_counter.get()) # کاری باهاش ندارم. فقط الکی گرفتم که اگه مقدار فلوت نداشت ارور بده و باعث شه قرمز شه. دقت کنم که اولش هم چک کردم که مدلش کنتور باشه که بولین ور رو داشته باشه. اگه مدل کنتور نباشه که خب ورک اوت رو برای همه دارم چک میکنم در ادامه. 
             if isinstance(a_l, Decimal) and self.workout<a_l:
                 bg = ALARM_COLOR
@@ -1587,7 +1589,7 @@ class CounterWidget(Counter, MyWindows):
         except TypeError:
             bg=ALARM_COLOR
         finally:
-            if self.type==COUNTER_TYPES[0]:
+            if self.type==PARAMETER_TYPES[0]:
                 if self.boolean_var_bad.get():
                     self.entry_workout.config(state='normal', bg=bg)
                 else:
@@ -1597,9 +1599,9 @@ class CounterWidget(Counter, MyWindows):
           
     def next(self, event=None):
         global all_variables_current_value_and_workout
-        if self.type==COUNTER_TYPES[2]: # نمیتونه باشه. نوشتم که بدونم بررسی شده. رو محاسباتی ها نمیشه اینتر زد.
+        if self.type==PARAMETER_TYPES[2]: # نمیتونه باشه. نوشتم که بدونم بررسی شده. رو محاسباتی ها نمیشه اینتر زد.
             pass
-        elif self.type==COUNTER_TYPES[1]:
+        elif self.type==PARAMETER_TYPES[1]:
             try:
                 self.workout = self.entry_workout.get().strip()
                 self.workout = float(self.workout)
@@ -1613,7 +1615,7 @@ class CounterWidget(Counter, MyWindows):
                 return
             finally:
                 self.check_color()
-        elif self.type==COUNTER_TYPES[0]:
+        elif self.type==PARAMETER_TYPES[0]:
             self.a = self.label_previous_counter['text']
             self.b = self.entry_current_counter.get().strip()
             self.workout = self.entry_workout.get().strip()
@@ -1648,14 +1650,14 @@ class CounterWidget(Counter, MyWindows):
                     else:
                         values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
                 counter_widget.answer = calculate_fn(counter_widget.formula, parameters, values)
-            if counter_widget.type==COUNTER_TYPES[2]:
+            if counter_widget.type==PARAMETER_TYPES[2]:
                 counter_widget.entry_workout.config(text=counter_widget.answer)
-            elif counter_widget.type==COUNTER_TYPES[1]:
+            elif counter_widget.type==PARAMETER_TYPES[1]:
                 pass
                 # لازم نیست کاری بکنیم. چون پارامترهای ثابت با تغییر بقیه تغییر نمیکنند.
                 # اگر خودشون تغییر بکنند که همون لحظه با کی ریلیز بایندش کردیم و تغییر میکنه
                 # اما تغییر بقیه باعث تغییر پارامتر ثابت نمیشه. پس الکی بررسیش نمیکنیم.
-            elif counter_widget.type==COUNTER_TYPES[0]:
+            elif counter_widget.type==PARAMETER_TYPES[0]:
                 counter_widget.entry_workout.config(state='normal')
                 counter_widget.entry_workout.delete(0, END)
                 if counter_widget.boolean_var_bad.get()==False:
@@ -1672,11 +1674,11 @@ class CounterWidget(Counter, MyWindows):
             return
         if event and event.keysym=='period': # این حالت هم باگ داشت نمیشد داخل ورک اوت تو حالت خرابی نقطه گذاشت. روش های مختلف هر کودوم یه مدل اعصاب خرد کن بود و باگ جدید داشت. این مدل به نظرم کمترین باگ رو داشت اینجا گفتم ریترن کنه
             return
-        if self.type==COUNTER_TYPES[2]:
+        if self.type==PARAMETER_TYPES[2]:
             # این حالت قرار نیست هیچ وقت اتفاق بیفته. چون ما نمیتونیم آپدیتش کنیم. خود برنامه آپدیت میکنه
             # نوشتم که فقط بدونم اینجا بررسی شده
             return
-        elif self.type==COUNTER_TYPES[1]:
+        elif self.type==PARAMETER_TYPES[1]:
             # تو کنتورهای ثابت میشه مقدار نوشت. ممکنه مقدار اشتباه و یا کم و زیاد نوشته بشه. پس ممکنه ارور بده و باید بررسی بشه. رنگ هم باید بررسی بشه و در صورت لزوم تغییر کنه.
             try:
                 self.workout=float(self.entry_workout.get().strip())
@@ -1687,7 +1689,7 @@ class CounterWidget(Counter, MyWindows):
                 return
             finally:
                 self.check_color()
-        elif self.type==COUNTER_TYPES[0]:
+        elif self.type==PARAMETER_TYPES[0]:
             if self.boolean_var_bad.get():
                 self.check_color()
             else:
@@ -1719,21 +1721,97 @@ class CounterWidget(Counter, MyWindows):
         # بشه و هم کنتورهایی که بهش وابسته هستند.
 
     def copy_paste(self, event=None):
-        if self.type==COUNTER_TYPES[0]: # اگه انواع دیگه باشن، بولین ور براشون تعریف نشده و این تابع براشون ارور میده. پس شرط گذاشتم براش.
+        if self.type==PARAMETER_TYPES[0]: # اگه انواع دیگه باشن، بولین ور براشون تعریف نشده و این تابع براشون ارور میده. پس شرط گذاشتم براش.
             self.entry_current_counter.delete(0, END)
             self.entry_current_counter.insert(0, self.label_previous_counter['text'])
             self.update_workout()
     
     def check(self):
-        if self.type==COUNTER_TYPES[0]: # اگه انواع دیگه باشن، بولین ور براشون تعریف نشده و این تابع براشون ارور میده. پس شرط گذاشتم براش.
+        if self.type==PARAMETER_TYPES[0]: # اگه انواع دیگه باشن، بولین ور براشون تعریف نشده و این تابع براشون ارور میده. پس شرط گذاشتم براش.
             if self.boolean_var_bad.get():
+                self.checkbutton_bad.config(fg='red')
                 self.entry_workout.config(state='normal')
                 self.entry_workout.focus_set()
             else:
+                self.checkbutton_bad.config(fg=FG)
                 self.entry_workout.config(state='readonly')
                 self.entry_current_counter.focus_set()
             self.update_workout()
 
+
+class MyToggleButton(Checkbutton):
+    def __init__(self, root, variable: BooleanVar, default='off', *args, bg_frame_on='#333333', bg_frame_off='#333333', bg_lable_on='green', bg_lable_off='red', bg_button_on='green', bg_button_off='red', fg_button_on="white", fg_button_off='black', font=('', 18), text_off='off', text_on='on', sleep=0.005, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.root=root
+        self.variable=variable
+        if default=='on':
+            self.default='on'
+            self.variable.set(True)
+        else:
+            self.default='off'
+            self.variable.set(False)
+        self.bg_frame_on=bg_frame_on
+        self.bg_frame_off=bg_frame_off
+        self.bg_lable_on=bg_lable_on
+        self.bg_lable_off=bg_lable_off
+        self.bg_button_on=bg_button_on
+        self.bg_button_off=bg_button_off
+        self.fg_button_on=fg_button_on
+        self.fg_button_off=fg_button_off
+        self.font=font
+        self.text_off=text_off
+        self.text_on=text_on
+        self.sleep=sleep
+        self.frame = Frame(self.root, bg=self.bg_frame_off, width=100, height=30)
+        self.label=Label(self.frame, bg=self.bg_lable_off)
+        self.button = Button(self.frame, font=self.font, text=self.text_off, bg=bg_button_off, disabledforeground=self.fg_button_off, relief='sunken', bd=6, command=self.toggle)
+        self.label.place(relx=0.01, relwidth=0.98, rely=0.05, relheight=0.9)
+        self.button.place(relx=0.51, relwidth=0.47, rely=0.07, relheight=0.86)
+        if self.variable.get():
+            self.frame.config(bg=self.bg_frame_on)
+            self.label.config(bg=self.bg_lable_on)
+            self.button.config(bg=self.bg_button_on, text=self.text_on, fg=self.fg_button_on, disabledforeground=self.fg_button_on, relief='raised')
+            self.button.place(relx=0.02)
+
+    def toggle(self, event=None):
+        if self.variable.get():
+            self.frame.config(bg=self.bg_frame_off)
+            self.label.config(bg=self.bg_lable_off)
+            self.button.config(bg=self.bg_button_off, fg=self.fg_button_off, disabledforeground=self.fg_button_off, relief='sunken', text=self.text_off)
+            Thread(target=self.move).start()
+        else:
+            self.frame.config(bg=self.bg_frame_on)
+            self.label.config(bg=self.bg_lable_on)
+            self.button.config(bg=self.bg_button_on, fg=self.fg_button_on, disabledforeground=self.fg_button_on, relief='raised', text=self.text_on)
+            Thread(target=self.move).start()
+        self.variable.set(not self.variable.get())
+            
+    def move(self):
+        self.button.config(state='disabled')
+        if self.variable.get():
+            x=0.51
+            while x>=0.01:
+                self.button.place(relx=x)
+                x-=0.01
+                sleep(self.sleep)
+                self.frame.update()
+        else:
+            x=0.02
+            while x<=0.52:
+                self.button.place(relx=x)
+                x+=0.01
+                sleep(self.sleep)
+                self.frame.update()
+        self.button.config(state='normal')
+            
+    def place(self, *args, **kwargs):
+        self.frame.place(*args, **kwargs)
+
+    def pack(self, *args, **kwargs):
+        self.frame.pack(*args, **kwargs)
+
+    def grid(self, *args, **kwargs):
+        self.frame.grid(*args, **kwargs)
 
 # def my_tool_tip(frame: LabelFrame, text):
 #     temp = frame['text']

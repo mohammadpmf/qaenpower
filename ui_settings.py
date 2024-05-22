@@ -1,4 +1,4 @@
-from tkinter import Tk, Label, Entry, Button, BooleanVar, Checkbutton, Toplevel, Frame, StringVar, LabelFrame, Canvas, Scrollbar
+from tkinter import Tk, Label, Entry, Button, BooleanVar, Checkbutton, Toplevel, Frame, StringVar, LabelFrame, Canvas, Scrollbar, Scale
 from tkinter import TOP, RIGHT, LEFT, END, VERTICAL, HORIZONTAL
 from tkinter import ttk
 from tkinter import messagebox as msb
@@ -25,7 +25,7 @@ PARAMETER_WIDGET_WIDTH = WORDS_WIDTH2*2
 FONT = ('B Nazanin', 24)
 FONT2 = ('B Nazanin', 18)
 FONT3 = ('B Nazanin', 12)
-COUNTER_TYPES = ['کنتور', 'ثابت', 'محاسباتی']
+PARAMETER_TYPES = ['کنتور', 'ثابت', 'محاسباتی']
 DEFAULT_VALUES = ['مقدار کنتور روز قبل', '0', 'خالی']
 DEFAULT_DATE_VALUES = ['روز قبل', 'روز جاری', 'روز بعد']
 
