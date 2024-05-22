@@ -1,6 +1,3 @@
-from functions import get_jnow
-
-
 class Staff():
     def __init__(self, name, surname, username, password, access_level, wrong_times, default_date, id):
         self.name=name
@@ -36,7 +33,7 @@ class Place():
         return f"{self.title}"
 
 
-class Counter():
+class Parameter():
     def __init__(self, part, place, name, variable_name, formula, type, default_value, unit,
                  warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound,
                  id, place_title=None, part_title=None):
@@ -60,14 +57,14 @@ class Counter():
         return f"{self.name}"
 
 
-class CounterLog():
-    def __init__(self, value, workout, is_ok, date, date_time_modified, counter_id, user_id, id, users_name, users_surname, type=None):
+class ParameterLog():
+    def __init__(self, value, workout, is_ok, date, date_time_modified, parameter_id, user_id, id, users_name, users_surname, type=None):
         self.value=value
         self.workout=workout
         self.is_ok=is_ok
         self.date=date
         self.date_time_modified=date_time_modified
-        self.counter_id=counter_id
+        self.parameter_id=parameter_id
         self.user_id=user_id
         self.id=id
         self.users_full_name = f"{users_name} {users_surname}"
