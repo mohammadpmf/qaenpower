@@ -27,6 +27,7 @@ PARAMETER_WIDGET_WIDTH = WORDS_WIDTH2*2
 FONT = ('B Nazanin', 24)
 FONT2 = ('B Nazanin', 18)
 FONT3 = ('B Nazanin', 12)
+FONT4 = ('B Nazanin', 8)
 PARAMETER_TYPES = ['کنتور', 'ثابت', 'محاسباتی']
 DEFAULT_VALUES = ['مقدار کنتور روز قبل', '0', 'خالی']
 DEFAULT_DATE_VALUES = ['روز قبل', 'روز جاری', 'روز بعد']
@@ -34,6 +35,8 @@ DEFAULT_DATE_VALUES = ['روز قبل', 'روز جاری', 'روز بعد']
 CNF_LBL_FRM = {
     'bg': BG,
     'font': FONT3,
+    'padx': PADX,
+    'pady': PADY,
 }
 CNF_FRM = {
     'bg': BG,
@@ -51,8 +54,8 @@ CNF_BTN2.update({
     'font': FONT3,
 })
 CNF_LABEL=CNF_BTN.copy()
-CNF_LBL2=CNF_LABEL.copy()
-CNF_LBL2.update({
+CNF_LABEL2=CNF_LABEL.copy()
+CNF_LABEL2.update({
     'font': FONT3,
     'disabledforeground': DISABLED_FG,
     'justify': 'c',

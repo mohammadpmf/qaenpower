@@ -119,14 +119,14 @@ class StaffWindow(MyWindows):
         self.tab_control.select(self.frame_add_statistics_tab)
 
         ###################################### frame_set_default_date ######################################
-        self.frame_set_default_date = Frame(self.frame_set_default_date_tab, bg=BG)
+        self.frame_set_default_date = LabelFrame(self.frame_set_default_date_tab, cnf=CNF_LBL_FRM)
         self.frame_set_default_date.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
         # self.frame_set_default_date.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
         self.label_set_default_date = LabelFrame(self.frame_set_default_date, text='تاریخ پیش فرض', cnf=CNF_LABEL)
         self.entry_set_default_date = ttk.Combobox(self.frame_set_default_date, values=DEFAULT_DATE_VALUES, font=FONT, width=WORDS_WIDTH, justify='center')
         self.entry_set_default_date.insert(0, DEFAULT_DATE_VALUES[0])
         self.entry_set_default_date.config(state='readonly')
-        self.btn_set_default_date = Button(self.frame_set_default_date, text='تایید', cnf=CNF_BTN, font=FONT3, command=self.confirm_default_date)
+        self.btn_set_default_date = Button(self.frame_set_default_date, text='تایید', cnf=CNF_BTN, font=FONT2, command=self.confirm_default_date)
         self.label_set_default_date.grid(row=1, column=3, cnf=CNF_GRID)
         self.entry_set_default_date.grid(row=1, column=2, cnf=CNF_GRID)
         self.btn_set_default_date.grid(row=1, column=1, cnf=CNF_GRID)
@@ -144,7 +144,7 @@ class StaffWindow(MyWindows):
         self.img_update         = ImageTk.PhotoImage(self.img_update)
         self.img_previous_day   = ImageTk.PhotoImage(self.img_previous_day)
         self.img_next_day       = ImageTk.PhotoImage(self.img_next_day)
-        self.frame_add_statistics = Frame(self.frame_add_statistics_tab, bg=BG)
+        self.frame_add_statistics = Frame(self.frame_add_statistics_tab, cnf=CNF_FRM)
         self.frame_add_statistics.pack(side=RIGHT, anchor='ne')
         self.date_picker_frame = Frame(self.frame_add_statistics, bg=BG)
         self.date_picker_frame.pack(side=TOP, expand=True, fill='x')
@@ -175,7 +175,7 @@ class StaffWindow(MyWindows):
         self.seed_tabs_of_parts()
 
         ###################################### frame_change_users_password ######################################
-        self.frame_change_users_password = Frame(self.frame_change_password_tab, bg=BG)
+        self.frame_change_users_password = LabelFrame(self.frame_change_password_tab, cnf=CNF_LBL_FRM)
         self.frame_change_users_password.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
         # self.frame_change_users_password.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
         self.label_username_change_users_password = Label(self.frame_change_users_password, text="نام کاربری", cnf=CNF_LABEL)
@@ -207,7 +207,7 @@ class StaffWindow(MyWindows):
 
         if self.connection.user.access_level==1:
             ############################################## frame_user ##############################################
-            self.frame_user = Frame(self.frame_add_user_tab, bg=BG)
+            self.frame_user = LabelFrame(self.frame_add_user_tab, cnf=CNF_LBL_FRM)
             self.frame_user.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
             # self.frame_user.place(relx=0.36, rely=0.04, relwidth=1, relheight=1)
             self.label_name = Label(self.frame_user, text="نام", cnf=CNF_LABEL)
@@ -242,7 +242,7 @@ class StaffWindow(MyWindows):
             self.entry_password2.bind('<Return>', self.create_account)
 
             ############################################# frame_counter #############################################
-            self.frame_counter = Frame(self.frame_add_counter_tab, bg=BG)
+            self.frame_counter = LabelFrame(self.frame_add_counter_tab, cnf=CNF_LBL_FRM)
             self.frame_counter.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
             self.label_counter_part = Label(self.frame_counter, text="بخش پارامتر", cnf=CNF_LABEL)
             self.entry_counter_part = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
@@ -274,8 +274,8 @@ class StaffWindow(MyWindows):
             self.entry_counter_alarm_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
             self.label_counter_formula = Label(self.frame_counter, text="فرمول", cnf=CNF_LABEL)
             self.entry_counter_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-            self.label_counter_formula_parameters = Label(self.frame_counter, text="متغیرهای فرمول", cnf=CNF_LABEL)
-            self.entry_counter_formula_parameters = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+            # self.label_counter_formula_parameters = Label(self.frame_counter, text="متغیرهای فرمول", cnf=CNF_LABEL)
+            # self.entry_counter_formula_parameters = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
             self.btn_counter_register = Button(self.frame_counter, text='ایجاد پارامتر', cnf=CNF_BTN, command=self.create_parameter)
             self.btn_counter_update = Button(self.frame_counter, text='ویرایش پارامتر', cnf=CNF_BTN, command=self.update_parameter)
             self.label_counter_part.grid(row=1, column=7, cnf=CNF_GRID)
@@ -302,8 +302,8 @@ class StaffWindow(MyWindows):
             self.entry_counter_alarm_upper_bound.grid(row=13, column=1, cnf=CNF_GRID)
             self.label_counter_formula.grid(row=15, column=7, cnf=CNF_GRID)
             self.entry_counter_formula.grid(row=15, column=5, cnf=CNF_GRID)
-            self.label_counter_formula_parameters.grid(row=15, column=3, cnf=CNF_GRID)
-            self.entry_counter_formula_parameters.grid(row=15, column=1, cnf=CNF_GRID)
+            # self.label_counter_formula_parameters.grid(row=15, column=3, cnf=CNF_GRID)
+            # self.entry_counter_formula_parameters.grid(row=15, column=1, cnf=CNF_GRID)
             self.btn_counter_register.grid(row=17, column=7, cnf=CNF_GRID)
             self.btn_counter_update.grid(row=17, column=5, cnf=CNF_GRID)
             self.entry_counter_part.bind('<Return>', lambda e: self.entry_counter_place.focus_set())
@@ -317,11 +317,12 @@ class StaffWindow(MyWindows):
             self.entry_counter_warning_upper_bound.bind('<Return>', lambda e: self.entry_counter_alarm_lower_bound.focus_set())
             self.entry_counter_alarm_lower_bound.bind('<Return>', lambda e: self.entry_counter_alarm_upper_bound.focus_set())
             self.entry_counter_alarm_upper_bound.bind('<Return>', lambda e: self.entry_counter_formula.focus_set())
-            self.entry_counter_formula.bind('<Return>', lambda e: self.entry_counter_formula_parameters.focus_set())
-            self.entry_counter_formula_parameters.bind('<Return>', self.create_parameter)
+            self.entry_counter_formula.bind('<Return>', self.create_parameter)
+            # self.entry_counter_formula.bind('<Return>', lambda e: self.entry_counter_formula_parameters.focus_set())
+            # self.entry_counter_formula_parameters.bind('<Return>', self.create_parameter)
 
             ############################################# frame_part #############################################
-            self.frame_part = Frame(self.frame_add_part_tab, bg=BG)
+            self.frame_part = LabelFrame(self.frame_add_part_tab, cnf=CNF_LBL_FRM)
             self.frame_part.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
             # self.frame_part.place(relx=0.22, rely=0.08, relwidth=1, relheight=1)
             self.label_part_name = Label(self.frame_part, text="نام بخش", cnf=CNF_LABEL)
@@ -350,7 +351,7 @@ class StaffWindow(MyWindows):
             self.btn_down_tree_part.grid(row=21, column=0, cnf=CNF_GRID, sticky='n')
 
             ############################################# frame_place #############################################
-            self.frame_place = Frame(self.frame_add_place_tab, bg=BG)
+            self.frame_place = LabelFrame(self.frame_add_place_tab, cnf=CNF_LBL_FRM)
             self.frame_place.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
             # self.frame_place.place(relx=0.2, rely=0.02, relwidth=1, relheight=1)
             self.label_place_part_name = Label(self.frame_place, text="نام بخش", cnf=CNF_LABEL)
@@ -384,7 +385,7 @@ class StaffWindow(MyWindows):
             self.refresh_parts_values_in_comboboxes()
 
             ######################################### frame_all_counters ##########################################
-            self.frame_all_counters = Frame(self.frame_all_counters_tab, bg=BG)
+            self.frame_all_counters = LabelFrame(self.frame_all_counters_tab, cnf=CNF_LBL_FRM)
             self.frame_all_counters.pack(side=RIGHT, anchor='ne', padx=PADX, pady=PADY)
             # self.frame_all_counters.place(relx=0.2, rely=0.02, relwidth=1, relheight=1)
             self.treev_all_counters = ttk.Treeview(self.frame_all_counters, height=8, selectmode ='browse', show='headings')
@@ -529,11 +530,11 @@ class StaffWindow(MyWindows):
         if counter_type==PARAMETER_TYPES[1]: # fixed:
             self.entry_counter_formula.delete(0, END)
             self.entry_counter_formula.config(state='readonly')
-            self.entry_counter_formula_parameters.delete(0, END)
-            self.entry_counter_formula_parameters.config(state='readonly')
+            # self.entry_counter_formula_parameters.delete(0, END)
+            # self.entry_counter_formula_parameters.config(state='readonly')
         else:
             self.entry_counter_formula.config(state='normal')
-            self.entry_counter_formula_parameters.config(state='normal')
+            # self.entry_counter_formula_parameters.config(state='normal')
 
     # تابعی جهت ایجاد پارامتر
     def create_parameter(self, event=None):
@@ -551,7 +552,8 @@ class StaffWindow(MyWindows):
         alarm_lower_bound = self.entry_counter_alarm_lower_bound.get().strip()
         alarm_upper_bound = self.entry_counter_alarm_upper_bound.get().strip()
         formula = self.entry_counter_formula.get().strip()
-        formula_parameters = self.entry_counter_formula_parameters.get().strip()
+        formula_parameters = []
+        # formula_parameters = self.entry_counter_formula_parameters.get().strip()
         if part == "":
             msb.showwarning("هشدار", "پارامتر مربوط به کدام بخش است؟")
             self.entry_counter_part.focus_set()
@@ -622,7 +624,7 @@ class StaffWindow(MyWindows):
                 self.root.bell()
                 is_everything_ok = msb.askyesno("تایید", message)
                 if is_everything_ok:
-                    result = what_is_formula_problem(formula, ' '.join(result), variable_name, parameters_variable_names)
+                    result = what_is_formula_problem(formula, result, variable_name, parameters_variable_names)
                     if isinstance(result, list):
                         is_everything_ok=True
                     else:
@@ -667,7 +669,8 @@ class StaffWindow(MyWindows):
         alarm_lower_bound = self.entry_counter_alarm_lower_bound.get().strip()
         alarm_upper_bound = self.entry_counter_alarm_upper_bound.get().strip()
         formula = self.entry_counter_formula.get().strip()
-        formula_parameters = self.entry_counter_formula_parameters.get().strip()
+        formula_parameters = []
+        # formula_parameters = self.entry_counter_formula_parameters.get().strip()
         if part == "":
             msb.showwarning("هشدار", "پارامتر مربوط به کدام بخش است؟")
             self.entry_counter_part.focus_set()
@@ -738,7 +741,7 @@ class StaffWindow(MyWindows):
                 self.root.bell()
                 is_everything_ok = msb.askyesno("تایید", message)
                 if is_everything_ok:
-                    result = what_is_formula_problem(formula, ' '.join(result), variable_name, parameters_variable_names)
+                    result = what_is_formula_problem(formula, result, variable_name, parameters_variable_names)
                     if isinstance(result, list):
                         is_everything_ok=True
                     else:
@@ -775,7 +778,7 @@ class StaffWindow(MyWindows):
         self.entry_counter_type.config(state='normal')
         self.entry_counter_default_value.config(state='normal')
         self.entry_counter_formula.config(state='normal')
-        self.entry_counter_formula_parameters.config(state='normal')
+        # self.entry_counter_formula_parameters.config(state='normal')
         self.entry_counter_part.delete(0, END)
         self.entry_counter_place.delete(0, END)
         self.entry_counter_name.delete(0, END)
@@ -788,7 +791,7 @@ class StaffWindow(MyWindows):
         self.entry_counter_alarm_lower_bound.delete(0, END)
         self.entry_counter_alarm_upper_bound.delete(0, END)
         self.entry_counter_formula.delete(0, END)
-        self.entry_counter_formula_parameters.delete(0, END)
+        # self.entry_counter_formula_parameters.delete(0, END)
         self.entry_counter_part.insert(0, temp_part)
         self.entry_counter_place.insert(0, temp_place)
         self.entry_counter_name.insert(0, temp_name)
@@ -811,6 +814,16 @@ class StaffWindow(MyWindows):
         self.entry_counter_type.config(state='readonly')
         self.entry_counter_default_value.config(state='readonly')
         self.check_counter_type()
+        # تا اینجا اوکی هست. یه باگی داشت که وقتی رو تری ویو دابل کلیک میکردیم اینور نمیشد مکان
+        # کنتور رو انتخاب کرد. باید حتما رو بخش کلیک میکردیم تا مکان هاش بیان. برای رفع این
+        # باگ این کار های پایین رو انجام دادم.
+        places = self.connection.get_all_places_by_part_id(temp_counter.part)
+        new_values = []
+        for p in places:
+            p:Place
+            new_values.append(p.title)
+        self.entry_counter_place.config(values=new_values)
+        
 
     ########################################## create part functions ###########################################
     # تابعی جهت ساخت بخش
@@ -1137,12 +1150,13 @@ class StaffWindow(MyWindows):
         self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
         
     def enable_or_disable_confirm_button(self, event=None):
-        global all_counter_widgets
+        global all_counter_widgets, last_selected_child_tab_number_to_retrieve
         # با این که تابع جدا برای دیسیبل کردن نوشتم. ولی حالات زیادی برای باگ خوردن داشت.
         # باز هم گفتم برای باگ نخوردن، اینجا هم یه بار دیسیبل کنم و بعد با شرط اونی که اوکی هست
         # رو اینیبل کنم.
         self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
         self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
+        last_selected_child_tab_number_to_retrieve = self.tab_control_frame.index(self.tab_control_frame.select())
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         if part_name in self.logged_parts_names:
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
@@ -1328,14 +1342,20 @@ class StaffWindow(MyWindows):
 
 
     def refresh_ui_from_anywhere(self):
-        global signal
+        global signal, last_selected_child_tab_number_to_retrieve
         sleep(0.4)
         while True:
             sleep(0.01)
             if signal:
                 signal=0
+                try:
+                    temp=last_selected_child_tab_number_to_retrieve
+                except:
+                    temp=0
                 self.refresh_ui()
                 self.tab_control.select(self.frame_add_statistics_tab)
+                self.tab_control_frame.select(temp)
+                self.enable_or_disable_confirm_button()
     
     def confirm_default_date(self):
         self.user.default_date=self.entry_set_default_date.get().strip()
@@ -1478,7 +1498,7 @@ class PartWidget(MyWindows):
         for i, counters in enumerate(self.places_with_counters):
             if counters: # یعنی اگر یک مکان پارامتر هایی داشت این کارها رو انجام بده اگه نداشت الکی ردیف براش درست نکنه
                 self.frame_row = Frame(self.places_window, bg=BG)
-                for index in range(992, 1000):
+                for index in range(991, 1000):
                     self.frame_row.columnconfigure(index=index, weight=1, minsize=190)
                 self.frame_row.columnconfigure(index=1000, weight=1, minsize=120)
                 self.frame_row.grid(sticky='e')
@@ -1514,8 +1534,13 @@ class CounterWidget(Parameter, MyWindows):
         global all_variables_current_value_and_workout, date_picker
         self.counter_log = self.connection.get_parameter_log_by_parameter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم. اگه لازم شد استفاده کنم بعدا دارمش. نشد هم که بهتر 
         self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
-        self.frame = LabelFrame(self.root, text=self.name, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
-        # my_tool_tip(self.frame, text=self.counter_log.users_full_name)
+        self.info_widget = Frame(self.root, bg=BG)
+        self.info_widget.grid()
+        self.lbl_title = Label(self.info_widget, cnf=CNF_LABEL, text=self.name)
+        self.lbl_info = Label(self.info_widget, cnf=CNF_LABEL2, padx=1, text='🛈')
+        self.lbl_title.grid(row=1, column=1)
+        self.lbl_info.grid(row=1, column=2)
+        self.frame = LabelFrame(self.root, labelwidget=self.info_widget, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
             parameters = get_formula_parameters(self.formula)
@@ -1527,11 +1552,9 @@ class CounterWidget(Parameter, MyWindows):
                     values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
             self.answer = calculate_fn(self.formula, parameters, values)
         if self.type==PARAMETER_TYPES[2]:
-            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LBL2, pady=20, width=17, height=1, *args, **kwargs)
+            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LABEL2, pady=16, width=17, height=1, *args, **kwargs)
         elif self.type==PARAMETER_TYPES[1]:
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=22, *args, **kwargs)
-            self.btn_info = Label(self.frame, text='🛈', cnf=CNF_BTN, relief='flat', *args, **kwargs)
-            # create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             if self.default_value==DEFAULT_VALUES[0]:
@@ -1540,17 +1563,14 @@ class CounterWidget(Parameter, MyWindows):
                 self.entry_workout.insert(0, DEFAULT_VALUES[1])
             elif self.default_value==DEFAULT_VALUES[2]:
                 self.entry_workout.delete(0, END)
-            self.btn_info.grid(row=2, column=2, cnf=CNF_GRID2)
         elif self.type==PARAMETER_TYPES[0]:
             self.img_copy = Image.open('copy.png')
             self.img_copy = self.img_copy.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
             self.img_copy = ImageTk.PhotoImage(self.img_copy)
             self.btn_copy = Label(self.frame, image=self.img_copy, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
-            self.btn_info = Label(self.frame, text='🛈', cnf=CNF_BTN, relief='flat', *args, **kwargs)
-            # create_tool_tip(self.btn_info, text=self.counter_log.users_full_name)
             self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH2+1, *args, **kwargs)
-            self.label_previous_counter = Label(self.frame, cnf=CNF_LBL2, text=round3(self.a), *args, **kwargs)
+            self.label_previous_counter = Label(self.frame, cnf=CNF_LABEL2, text=round3(self.a), *args, **kwargs)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
             # self.boolean_var_bad.set(!self.counter_log.is_ok) # اطلاعات رو از دیتابیس گرفته بودم. اما گفت پیش فرض همه سالم باشن. پس من تغییرش ندادم. کدش رو گذاشتم بمونه که اگه لازم شد دوباره ننویسم.
@@ -1568,12 +1588,15 @@ class CounterWidget(Parameter, MyWindows):
             self.entry_workout.config(state='readonly')
             self.entry_current_counter.grid(row=2, column=2, cnf=CNF_GRID2)
             self.btn_copy.grid(row=2, column=3, cnf=CNF_GRID2)
-            self.btn_info.grid(row=3, column=3, cnf=CNF_GRID2)
             self.checkbutton_bad.grid(row=3, column=1, cnf=CNF_GRID2)
             self.label_previous_counter.grid(row=3, column=2, cnf=CNF_GRID2)
         self.entry_workout.grid(row=1, rowspan=2, column=1, cnf=CNF_GRID2)
         self.check_color()
         self.next() # پارامترهایی از جنس کنتور که فرمول محاسباتی از بقیه کنتورها داشتن، مقدار قبلی دیتابیس رو مینوشتن و باید روی فیلدهای وابسته به فرمولشون کلیک میکردیم و جابه جا میشدیم تا فوکس اوت کنه و مقدارشون بر اساس داده هایی باشه که در صفحه در حال نمایش هستند. این تابع رو به خاطر همین صدا کردم که خودش این کار رو بکنه. اگه به باگ خوردم بازم ازش کپی پیست کنم. تابع خیلی خوبی هست :D
+        try:
+            create_tool_tip(self.lbl_info, text=self.counter_log.users_full_name)
+        except:
+            pass
  
     def check_color(self, event=None):
         w_l = self.warning_lower_bound
@@ -1852,8 +1875,8 @@ class ToolTip(object):
         if self.tipwindow or not self.text:
             return
         x, y, cx, cy = self.widget.bbox("insert")
-        x = x + self.widget.winfo_rootx() + 57
-        y = y + cy + self.widget.winfo_rooty() +27
+        x = x + self.widget.winfo_rootx() + 30
+        y = y + cy + self.widget.winfo_rooty() +20
         self.tipwindow = tw = Toplevel(self.widget)
         tw.wm_overrideredirect(1)
         tw.wm_geometry("+%d+%d" % (x, y))

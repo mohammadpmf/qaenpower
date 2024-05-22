@@ -66,8 +66,8 @@ def what_is_variable_name_problem(name: str, counters_variable_names: tuple):
 # تابعی جهت بررسی این که فرمول نوشته شده درست است یا نه.
 # در مرحله دوم که پارامترها رو خودم به دست میارم، دوباره برای همین تابع ارسال میکنم که بررسی کنه داخل دیتابیس هم باشن.
 # در واقع دیگه لازم نیست دستی وارد بشه تو قسمت اول. اما به جای تابع جداگانه کلک زدم ۲ بار همین تابع رو صدا کردم.
-def what_is_formula_problem(formula: str, formula_parameters:str, variable_name: str, counters_variable_names: tuple):
-    parameters = formula_parameters.split()
+def what_is_formula_problem(formula: str, formula_parameters:list, variable_name: str, counters_variable_names: tuple):
+    parameters = formula_parameters
     if variable_name in parameters:
         return "از نام متغیر پارامتر نمی توان در فرمول خودش استفاده کرد"
     bad_params = [] # پارامترهایی که قبلا در دیتابیس ثبت نشده اند. اما کاربر به اشتباه به ما داده است.
