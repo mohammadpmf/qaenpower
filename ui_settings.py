@@ -167,3 +167,5 @@ def create_my_theme():
     style.map("Treeview",foreground=[('selected', BG)])
     style.map("TNotebook",background=[('selected', BG)])
     style.map("TNotebook",expand=[('selected', [1, 1, 1, 0])])
+    style.map("TNotebook.Tab",background=[('selected', FG)])
+    style.map("TNotebook.Tab",foreground=[('selected', BG)])

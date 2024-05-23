@@ -96,6 +96,7 @@ class StaffWindow(MyWindows):
         self.main_window.title(f'حساب کاربری {self.user}')
         self.main_window.config(bg=BG)
         self.main_window.state('zoomed')
+        # self.main_window.geometry(f'{int(S_WIDTH*1.52)}x700+0+0')
         self.main_window.protocol("WM_DELETE_WINDOW", self.root.destroy)
         self.tab_control = ttk.Notebook(self.main_window) 
         self.tab_control.pack(anchor='n')
@@ -555,15 +556,15 @@ class StaffWindow(MyWindows):
         formula_parameters = []
         # formula_parameters = self.entry_counter_formula_parameters.get().strip()
         if part == "":
-            msb.showwarning("هشدار", "پارامتر مربوط به کدام بخش است؟")
+            msb.showerror("خطا", "پارامتر مربوط به کدام بخش است؟")
             self.entry_counter_part.focus_set()
             return
         if place == "":
-            msb.showwarning("هشدار", "پارامتر مربوط به کدام مکان است؟")
+            msb.showerror("خطا", "پارامتر مربوط به کدام مکان است؟")
             self.entry_counter_place.focus_set()
             return
         if name == "":
-            msb.showwarning("هشدار", "نام پارامتر را وارد کنید")
+            msb.showerror("خطا", "نام پارامتر را وارد کنید")
             self.entry_counter_name.focus_set()
             return
         if unit == "":
@@ -571,7 +572,7 @@ class StaffWindow(MyWindows):
         parameters_variable_names = self.connection.get_all_parameters_variable_names()
         problem = what_is_variable_name_problem(variable_name, parameters_variable_names)
         if problem:
-            msb.showwarning("هشدار", problem)
+            msb.showerror("خطا", problem)
             self.entry_counter_variable_name.focus_set()
             return
         if warning_lower_bound == "":
@@ -580,7 +581,7 @@ class StaffWindow(MyWindows):
             try:
                 warning_lower_bound = float(warning_lower_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد پایین هشدار را به صورت عددی وارد کنید")
+                msb.showerror("خطا", "لطفا حد پایین هشدار را به صورت عددی وارد کنید")
                 self.entry_counter_warning_lower_bound.focus_set()
                 return
         if warning_upper_bound == "":
@@ -589,7 +590,7 @@ class StaffWindow(MyWindows):
             try:
                 warning_upper_bound = float(warning_upper_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد بالای هشدار را به صورت عددی وارد کنید")
+                msb.showerror("خطا", "لطفا حد بالای هشدار را به صورت عددی وارد کنید")
                 self.entry_counter_warning_upper_bound.focus_set()
                 return
         if alarm_lower_bound == "":
@@ -598,7 +599,7 @@ class StaffWindow(MyWindows):
             try:
                 alarm_lower_bound = float(alarm_lower_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد پایین آلارم را به صورت عددی وارد کنید")
+                msb.showerror("خطا", "لطفا حد پایین آلارم را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_lower_bound.focus_set()
                 return
         if alarm_upper_bound == "":
@@ -607,13 +608,13 @@ class StaffWindow(MyWindows):
             try:
                 alarm_upper_bound = float(alarm_upper_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد بالای آلارم را به صورت عددی وارد کنید")
+                msb.showerror("خطا", "لطفا حد بالای آلارم را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
         if formula != "":
             result = what_is_formula_problem(formula, formula_parameters, variable_name, parameters_variable_names)
             if isinstance(result, str): # یعنی اگه یه استرینگ داده بود، مشکلی هست. پس ارور رو نشون بده.
-                msb.showwarning("هشدار", result)
+                msb.showerror("خطا", result)
                 self.entry_counter_formula.focus_set()
                 return
             elif isinstance(result, list):
@@ -629,9 +630,9 @@ class StaffWindow(MyWindows):
                         is_everything_ok=True
                     else:
                         is_everything_ok=False
-                        msb.showwarning('هشدار', result)
+                        msb.showerror('خطا', result)
         if formula == "" and type in [PARAMETER_TYPES[0], PARAMETER_TYPES[2]]:
-            msb.showwarning("هشدار", "برای پارامترهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد")
+            msb.showerror("خطا", "برای پارامترهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد")
             self.entry_counter_formula.focus_set()
             return
         if is_everything_ok:
@@ -672,15 +673,15 @@ class StaffWindow(MyWindows):
         formula_parameters = []
         # formula_parameters = self.entry_counter_formula_parameters.get().strip()
         if part == "":
-            msb.showwarning("هشدار", "پارامتر مربوط به کدام بخش است؟")
+            msb.showerror("خطا", "پارامتر مربوط به کدام بخش است؟")
             self.entry_counter_part.focus_set()
             return
         if place == "":
-            msb.showwarning("هشدار", "پارامتر مربوط به کدام مکان است؟")
+            msb.showerror("خطا", "پارامتر مربوط به کدام مکان است؟")
             self.entry_counter_place.focus_set()
             return
         if name == "":
-            msb.showwarning("هشدار", "نام پارامتر را وارد کنید")
+            msb.showerror("خطا", "نام پارامتر را وارد کنید")
             self.entry_counter_name.focus_set()
             return
         if unit == "":
@@ -696,7 +697,7 @@ class StaffWindow(MyWindows):
             try:
                 warning_lower_bound = float(warning_lower_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد پایین هشدار را به صورت عددی وارد کنید")
+                msb.showerror("خطا", "لطفا حد پایین هشدار را به صورت عددی وارد کنید")
                 self.entry_counter_warning_lower_bound.focus_set()
                 return
         if warning_upper_bound == "":
@@ -705,7 +706,7 @@ class StaffWindow(MyWindows):
             try:
                 warning_upper_bound = float(warning_upper_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد بالای هشدار را به صورت عددی وارد کنید")
+                msb.showerror("خطا", "لطفا حد بالای هشدار را به صورت عددی وارد کنید")
                 self.entry_counter_warning_upper_bound.focus_set()
                 return
         if alarm_lower_bound == "":
@@ -714,7 +715,7 @@ class StaffWindow(MyWindows):
             try:
                 alarm_lower_bound = float(alarm_lower_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد پایین آلارم را به صورت عددی وارد کنید")
+                msb.showerror("خطا", "لطفا حد پایین آلارم را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_lower_bound.focus_set()
                 return
         if alarm_upper_bound == "":
@@ -723,14 +724,14 @@ class StaffWindow(MyWindows):
             try:
                 alarm_upper_bound = float(alarm_upper_bound)
             except:
-                msb.showwarning("هشدار", "لطفا حد بالای آلارم را به صورت عددی وارد کنید")
+                msb.showerror("خطا", "لطفا حد بالای آلارم را به صورت عددی وارد کنید")
                 self.entry_counter_alarm_upper_bound.focus_set()
                 return
         if formula != "":
             parameters_variable_names = self.connection.get_all_parameters_variable_names()
             result = what_is_formula_problem(formula, formula_parameters, variable_name, parameters_variable_names)
             if isinstance(result, str): # یعنی اگه یه استرینگ داده بود، مشکلی هست. پس ارور رو نشون بده.
-                msb.showwarning("هشدار", result)
+                msb.showerror("خطا", result)
                 self.entry_counter_formula.focus_set()
                 return
             elif isinstance(result, list):
@@ -746,9 +747,9 @@ class StaffWindow(MyWindows):
                         is_everything_ok=True
                     else:
                         is_everything_ok=False
-                        msb.showwarning('هشدار', result)
+                        msb.showerror('خطا', result)
         if formula == "" and type in [PARAMETER_TYPES[0], PARAMETER_TYPES[2]]:
-            msb.showwarning("هشدار", "برای پارامترهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد")
+            msb.showerror("خطا", "برای پارامترهای محاسباتی و کنتور، فرمول نمیتواند خالی باشد")
             self.entry_counter_formula.focus_set()
             return
         if is_everything_ok:
@@ -830,7 +831,7 @@ class StaffWindow(MyWindows):
     def create_part(self, event=None):
         title = self.entry_part_name.get().strip()
         if title=="":
-            msb.showwarning("هشدار", "نام بخش نمیتواند خالی باشد.")
+            msb.showerror("خطا", "نام بخش نمیتواند خالی باشد.")
             return
         result_message, _ = self.connection.create_part(title)
         if result_message=='ok':
@@ -918,7 +919,7 @@ class StaffWindow(MyWindows):
                 msb.showerror("خطا", result_message)
                 print(_)
         except UnboundLocalError:
-            msb.showerror("هشدار", f"ابتدا باید ترتیب بخش ها را مشخص کنید و سپس روی دکمه تایید بزنید.")
+            msb.showerror("خطا", f"ابتدا باید ترتیب بخش ها را مشخص کنید و سپس روی دکمه تایید بزنید.")
 
     ########################################## create place functions ##########################################
     # تابعی برای این که بعد از انتخاب کمبو باکس بخش، مقادیر کمبوباکس مکان هاش آپدیت بشن و نمایش داده بشن.
@@ -938,7 +939,7 @@ class StaffWindow(MyWindows):
         title = self.entry_place_name.get().strip()
         part = self.entry_place_part_name.get()
         if title=="" or part=="":
-            msb.showwarning("هشدار", "نام مکان یا بخش نمیتواند خالی باشد.")
+            msb.showerror("خطا", "نام مکان یا بخش نمیتواند خالی باشد.")
             return
         part_id, part_title, part_sort = self.connection.get_part_by_title(part)
         result_message, _ = self.connection.create_place(title, part_id)
@@ -1016,7 +1017,7 @@ class StaffWindow(MyWindows):
                 msb.showerror("خطا", result_message)
                 print(_)
         except UnboundLocalError:
-            msb.showerror("هشدار", f"ابتدا باید یک بخش را انتخاب کنید و مکان های آن را مرتب کنید. سپس روی دکمه تایید بزنید.")
+            msb.showerror("خطا", f"ابتدا باید یک بخش را انتخاب کنید و مکان های آن را مرتب کنید. سپس روی دکمه تایید بزنید.")
 
 
     ########################################## all counter functions ##########################################
@@ -1194,7 +1195,7 @@ class StaffWindow(MyWindows):
     def confirm_log_insert(self, event=None):
         temp_date = date_picker.get_date()
         if temp_date == None:
-            msb.showerror("هشدار", "لطفا تاریخ را به درستی انتخاب کنید")
+            msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
             return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         result = self.precheck_before_confirm(part_name)
@@ -1260,7 +1261,7 @@ class StaffWindow(MyWindows):
     def confirm_log_update(self):
         temp_date = date_picker.get_date()
         if temp_date == None:
-            msb.showerror("هشدار", "لطفا تاریخ را به درستی انتخاب کنید")
+            msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
             return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         result = self.precheck_before_confirm(part_name)
@@ -1342,7 +1343,7 @@ class StaffWindow(MyWindows):
 
     def refresh_ui_from_anywhere(self):
         global signal, last_selected_child_tab_number_to_retrieve
-        sleep(0.4)
+        sleep(1.2)
         while True:
             sleep(0.01)
             if signal:
@@ -1350,7 +1351,7 @@ class StaffWindow(MyWindows):
                 try:
                     temp=last_selected_child_tab_number_to_retrieve
                 except:
-                    temp=0
+                    temp=self.tab_control_frame.index('end')-1
                 self.refresh_ui()
                 self.tab_control.select(self.frame_add_statistics_tab)
                 self.tab_control_frame.select(temp)

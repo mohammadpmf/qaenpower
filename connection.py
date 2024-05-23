@@ -1,6 +1,6 @@
 import pymysql
 from models import ParameterLog, Part, Place, Staff, Parameter
-from functions import hash_password, get_jnow, datetime
+from functions import hash_password, datetime
 from ui_settings import PARAMETER_TYPES
 
 WRONG_LIMIT=10
