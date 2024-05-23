@@ -3,7 +3,6 @@ from PIL import Image, ImageTk
 from connection import Connection
 from functions import calculate_fn, get_formula_parameters, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime, datetime
 from models import Part, Place, Staff, Parameter
-from ui_settings import Tk
 from threading import Thread
 from time import sleep
 from decimal import Decimal
@@ -14,6 +13,8 @@ class MyWindows():
         self.connection = connection
         self.root = root
         self.frame = Frame(self.root, bg=BG)
+        self.S_WIDTH = self.root.winfo_screenwidth()
+        self.S_HEIGHT= self.root.winfo_screenheight()
 
     def grid(self, *args, **kwargs):
         self.frame.grid(*args, **kwargs)
@@ -96,7 +97,6 @@ class StaffWindow(MyWindows):
         self.main_window.title(f'حساب کاربری {self.user}')
         self.main_window.config(bg=BG)
         self.main_window.state('zoomed')
-        # self.main_window.geometry(f'{int(S_WIDTH*1.52)}x700+0+0')
         self.main_window.protocol("WM_DELETE_WINDOW", self.root.destroy)
         self.tab_control = ttk.Notebook(self.main_window) 
         self.tab_control.pack(anchor='n')
@@ -1489,17 +1489,17 @@ class PartWidget(MyWindows):
         super().__init__(connection, root)
         global all_counter_widgets
         self.places_with_counters=places_with_counters # یک لیستی از مکان ها با پارامترهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه پارامتر هست.
-        self.my_canvas = Canvas(self.frame, width=S_WIDTH*1.48, height=S_HEIGHT*1, bg=BG)
+        self.my_canvas = Canvas(self.frame, width=int(self.S_WIDTH*0.985), height=int(self.S_HEIGHT*0.65), bg=BG)
         self.ver_scrollbar = Scrollbar(self.frame, orient=VERTICAL, command=self.my_canvas.yview)
         self.hor_scrollbar = Scrollbar(self.frame, orient=HORIZONTAL, command=self.my_canvas.xview)
         self.my_canvas.configure(yscrollcommand=self.ver_scrollbar.set, xscrollcommand=self.hor_scrollbar.set)
         self.my_canvas.grid(row=1, column=1, sticky='news')
         # self.bg_pic = Image.open(r'icons/bg_pic.png')
         # self.bg_pic.putalpha(127)
-        # self.bg_pic = self.bg_pic.resize((S_WIDTH, S_HEIGHT))
+        # self.bg_pic = self.bg_pic.resize((self.S_WIDTH, self.S_HEIGHT))
         # self.bg_pic = ImageTk.PhotoImage(self.bg_pic)
         # self.label_background = Label(self.my_canvas, image=self.bg_pic)
-        # self.label_background.place(x=0, y=0, width=S_WIDTH, height=S_HEIGHT)
+        # self.label_background.place(x=0, y=0, width=self.S_WIDTH, height=self.S_HEIGHT)
         self.ver_scrollbar.grid(row=1, column=3, sticky='ns')
         self.hor_scrollbar.grid(row=2, column=1, columnspan=3, sticky='ew')
         self.my_canvas.bind('<Configure>', lambda e: self.my_canvas.configure(scrollregion=self.my_canvas.bbox("all")))
@@ -1669,10 +1669,10 @@ class CounterWidget(Parameter, MyWindows):
             finally:
                 self.check_color()
         elif self.type==PARAMETER_TYPES[0]:
-            self.a = self.label_previous_counter['text']
-            self.b = self.entry_current_counter.get().strip()
-            self.workout = self.entry_workout.get().strip()
             try:
+                self.a = self.label_previous_counter['text']
+                self.b = self.entry_current_counter.get().strip()
+                self.workout = self.entry_workout.get().strip()
                 self.a = float(self.a)
                 self.b = float(self.b)
                 self.workout = float(self.workout)

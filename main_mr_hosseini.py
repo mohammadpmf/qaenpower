@@ -1,4 +1,5 @@
 from authentication import *
+import pymysql
 
 
 def check_mysql_password(event=None):
@@ -11,18 +12,20 @@ def check_mysql_password(event=None):
         del p
         temp_window.destroy()
         root.deiconify()
-    except:
-        msb.showerror('خطا', 'رمز اشتباه است')
+    except pymysql.err.OperationalError as error:
+        msb.showerror('خطا', 'برقرار نشد mysql ارتباط با')
 
 
 root = Tk()
-root.title('صفحه احراز هویت')
 S_WIDTH = root.winfo_screenwidth()
 S_HEIGHT = root.winfo_screenheight()
+root.title('صفحه احراز هویت')
 root.resizable(False, False)
-root.geometry(f"+{S_WIDTH//3}+{S_HEIGHT//4}")
+root.geometry(f"+{S_WIDTH//3}+{S_HEIGHT//3}")
 root.withdraw()
 temp_window = Toplevel(root)
+temp_window.resizable(False, False)
+temp_window.protocol('WM_DELETE_WINDOW', root.destroy)
 temp_window.geometry(f"+{S_WIDTH//3}+{S_HEIGHT//3}")
 temp_window.config(bg=BG)
 Label(temp_window, cnf=CNF_LABEL, text=': را وارد کنید mysql پسورد').grid(row=1, column=2)
