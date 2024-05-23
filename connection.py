@@ -25,11 +25,25 @@ class Connection():
         self.cursor.execute(query)
         query = "CREATE TABLE IF NOT EXISTS `amar`.`parameters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) NOT NULL, `workout` DECIMAL(20,10) NOT NULL, `is_ok` TINYINT(1) NOT NULL DEFAULT 1, `date` DATE NOT NULL, `date_time_modified` DATETIME NOT NULL, `parameter_id` INT UNSIGNED NOT NULL, `user_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `parameter_id` FOREIGN KEY (`parameter_id`) REFERENCES `amar`.`parameters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `amar`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
         self.cursor.execute(query)
+        try:
+            query = "INSERT INTO `amar`.`users` (`id`, `name`, `surname`, `username`, `password`, `access_level`) VALUES (0, 'مدیر', 'اصلی', 'admin', '559b56b2daa9bd5b0b659d534a3876bdf91fc9e108c60935534afd412551e740dcdf56130a077f8674b4d203eb28284a', 1);"
+            self.cursor.execute(query)
+        except:
+            pass
 
     def create_user(self, name, surname, username, password):
-        query = "INSERT INTO `amar`.`users` (`name`, `surname`, `username`, `password`) VALUES (%s, %s, %s, %s);"
-        values = name, surname, username, password # چون میخوایم پسوورد رو همین الان عوض کنیم دیگه دفعه اول الکی هشش نمیکنیم.
         try:
+            query = "SELECT `id` FROM `amar`.`users` ORDER BY `id` DESC LIMIT 1;"
+            self.cursor.execute(query)
+            temp = self.cursor.fetchone()
+            if temp in [None, '', ()]:
+                auto_increament=1
+            else:
+                auto_increament = temp[0]+1
+            salt = str(auto_increament)
+            password = hash_password(password, salt)
+            query = "INSERT INTO `amar`.`users` (`id`, `name`, `surname`, `username`, `password`) VALUES (%s, %s, %s, %s, %s);"
+            values = auto_increament, name, surname, username, password
             self.cursor.execute(query, values)
             self.connection.commit()
             query = "SELECT `name`, `surname`, `username`, `password`, `access_level`, `wrong_times`, `default_date`, `id` FROM `amar`.`users` where username=%s;"
@@ -39,7 +53,7 @@ class Connection():
             if result in [None, '', ()]:
                 return ("نام کاربری یافت نشد", -1)
             self.user = Staff(*result)
-            return self.update_users_password(password)
+            return ('ok', 0)
         except pymysql.err.IntegrityError as error:
             return (f"نام کاربری {username} قبلا ثبت شده است", error)
         except pymysql.err.DataError as error:
