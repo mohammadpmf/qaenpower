@@ -133,10 +133,10 @@ class StaffWindow(MyWindows):
         self.btn_set_default_date.grid(row=1, column=1, cnf=CNF_GRID)
 
         ###################################### frame_add_statistics ######################################
-        self.img_save           = Image.open('save.png')
-        self.img_update         = Image.open('update.png')
-        self.img_previous_day   = Image.open('right.png')
-        self.img_next_day       = Image.open('left.png')
+        self.img_save           = Image.open(r'icons/save.png')
+        self.img_update         = Image.open(r'icons/update.png')
+        self.img_previous_day   = Image.open(r'icons/right.png')
+        self.img_next_day       = Image.open(r'icons/left.png')
         self.img_save           = self.img_save         .resize((SAVE_ICON_SIZE, SAVE_ICON_SIZE))
         self.img_update         = self.img_update       .resize((UPDATE_ICON_SIZE, UPDATE_ICON_SIZE))
         self.img_previous_day   = self.img_previous_day .resize((CHANGE_DAY_ICON_SIZE, CHANGE_DAY_ICON_SIZE))
@@ -1193,13 +1193,16 @@ class StaffWindow(MyWindows):
                     self.logged_parts_names.add(counter.part_title)
 
     def confirm_log_insert(self, event=None):
+        self.disable_confirm_button()
         temp_date = date_picker.get_date()
         if temp_date == None:
             msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
+            self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
             return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         result = self.precheck_before_confirm(part_name)
         if result==None:
+            self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
             return
         message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
         message += "با انتخاب دکمه تایید، تمامی اطلاعات این بخش در دیتابیس ذخیره میشوند\n"
@@ -1207,6 +1210,7 @@ class StaffWindow(MyWindows):
         self.root.bell()
         answer = msb.askyesno("هشدار", message)
         if not answer:
+            self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
             return
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
@@ -1217,11 +1221,12 @@ class StaffWindow(MyWindows):
                     is_ok = 1 if counter_widget.boolean_var_bad.get()==False else 0
                     result_message, ـ = counter_widget.connection.create_parameter_log(counter_widget.b, counter_widget.workout, is_ok, temp_date, counter_widget.id, self.user.id)
         if result_message == "ok":
-            self.btn_confirm_counter_log_insert.config(state='disabled')
-            self.btn_confirm_counter_log_update.config(state='normal')
+            self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
+            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس اضافه شدند"
             msb.showinfo('success', message)
         else:
+            self.enable_or_disable_confirm_button()
             msb.showerror("ارور", result_message)
 
     # تابی برای بررسی این که اعداد با ظاهر فعلی در صفحه در دیتابیس ذخیره شوند یا نه
@@ -1259,13 +1264,16 @@ class StaffWindow(MyWindows):
         return "ok"
 
     def confirm_log_update(self):
+        self.disable_confirm_button()
         temp_date = date_picker.get_date()
         if temp_date == None:
             msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
+            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         result = self.precheck_before_confirm(part_name)
         if result==None:
+            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             return
         message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
         message += "با انتخاب دکمه تایید، تمامی اطلاعات این بخش در دیتابیس ویرایش میشوند\n"
@@ -1273,6 +1281,7 @@ class StaffWindow(MyWindows):
         self.root.bell()
         answer = msb.askyesno("هشدار", message)
         if not answer:
+            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             return
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
@@ -1285,6 +1294,7 @@ class StaffWindow(MyWindows):
         if result_message == "ok":
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ویرایش شدند"
             msb.showinfo('success', message)
+            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.update_next_logs_because_they_may_be_related_to_this_logs()
         else:
             msb.showerror("ارور", result_message)
@@ -1371,7 +1381,7 @@ class DatePicker(MyWindows):
     years_list = [i for i in range(1400, 1410)]
     def __init__(self, connection: Connection, root: Tk):
         super().__init__(connection, root)
-        self.img_calendar = Image.open('calendar.png')
+        self.img_calendar = Image.open(r'icons/calendar.png')
         self.img_calendar = self.img_calendar.resize((DATE_PICKER_ICON_SIZE, DATE_PICKER_ICON_SIZE))
         self.img_calendar = ImageTk.PhotoImage(self.img_calendar)
         self.btn_show_date_picker = Button(self.frame, image=self.img_calendar, cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=self.show_or_hide_date_picker)
@@ -1484,7 +1494,7 @@ class PartWidget(MyWindows):
         self.hor_scrollbar = Scrollbar(self.frame, orient=HORIZONTAL, command=self.my_canvas.xview)
         self.my_canvas.configure(yscrollcommand=self.ver_scrollbar.set, xscrollcommand=self.hor_scrollbar.set)
         self.my_canvas.grid(row=1, column=1, sticky='news')
-        # self.bg_pic = Image.open('bg_pic.png')
+        # self.bg_pic = Image.open(r'icons/bg_pic.png')
         # self.bg_pic.putalpha(127)
         # self.bg_pic = self.bg_pic.resize((S_WIDTH, S_HEIGHT))
         # self.bg_pic = ImageTk.PhotoImage(self.bg_pic)
@@ -1532,7 +1542,7 @@ class CounterWidget(Parameter, MyWindows):
         super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
         global all_variables_current_value_and_workout, date_picker
-        self.img_copy = Image.open('copy.png')
+        self.img_copy = Image.open(r'icons/copy.png')
         self.img_copy = self.img_copy.resize((COPY_ICON_SIZE, COPY_ICON_SIZE))
         self.img_copy = ImageTk.PhotoImage(self.img_copy)
         self.info_widget = Frame(self.root, bg=BG)
