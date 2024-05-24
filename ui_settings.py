@@ -1,5 +1,5 @@
 from tkinter import Tk, Label, Entry, Button, BooleanVar, Checkbutton, Toplevel, Frame, StringVar, LabelFrame, Canvas, Scrollbar
-from tkinter import TOP, RIGHT, LEFT, END, VERTICAL, HORIZONTAL
+from tkinter import TOP, RIGHT, BOTTOM, LEFT, END, VERTICAL, HORIZONTAL
 from tkinter import ttk
 from tkinter import messagebox as msb
 
@@ -8,13 +8,15 @@ BG='sky blue'
 BG_LIGHTER='sky blue'
 FG='black'
 FG2='green'
-DISABLED_FG = "#aaaaaa"
+# DISABLED_FG = "gray"
+# DISABLED_FG = "dark cyan"
+DISABLED_FG = "#1b1b1b"
 DISABLED_BG = '#cccccc'
 WARNING_COLOR = '#d6d051'
 ALARM_COLOR = '#aa0000'
 COPY_ICON_SIZE = 25
 DATE_PICKER_ICON_SIZE = CHANGE_DAY_ICON_SIZE = 64
-SAVE_ICON_SIZE = UPDATE_ICON_SIZE = 64
+SAVE_ICON_SIZE = UPDATE_ICON_SIZE = REFRESH_ICON_SIZE = 64
 PADX = 10
 PADY = 5
 WORDS_WIDTH=15
@@ -70,6 +72,7 @@ CNF_ENTRY = {
     'insertbackground': FG,
     'readonlybackground': DISABLED_BG,
     'disabledbackground': DISABLED_BG,
+    'disabledforeground': DISABLED_FG,
 }
 CNF_ENTRY2 = CNF_ENTRY.copy()
 CNF_ENTRY2.update({
