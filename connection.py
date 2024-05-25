@@ -131,6 +131,16 @@ class Connection():
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
+    
+    def delete_part(self, id):
+        query = "DELETE FROM `amar`.`parts` WHERE (`id` = %s);"
+        values = (id, )
+        try:
+            self.cursor.execute(query, values)
+            self.connection.commit()
+            return ("ok", 0)
+        except pymysql.err.IntegrityError as error:
+            return (f"مکان هایی برای این بخش ثبت شده اند. جهت حذف این بخش، ابتدا باید مکان های این بخش را حذف کنید", error)
 
     def create_place(self, title, part_id):
         query = "INSERT INTO `amar`.`places` (`title`, `part`, `order`) VALUES (%s, %s, 0);"
@@ -159,7 +169,17 @@ class Connection():
         except pymysql.err.IntegrityError as error:
             part_id, part_name, part_sort = self.get_part_by_id(part_id)
             return (f"مکان {new_name} برای بخش {part_name} قبلا ثبت شده است", error)
-        
+
+    def delete_place(self, id):
+        query = "DELETE FROM `amar`.`places` WHERE (`id` = %s);"
+        values = (id, )
+        try:
+            self.cursor.execute(query, values)
+            self.connection.commit()
+            return ("ok", 0)
+        except pymysql.err.IntegrityError as error:
+            return (f"پارامترهایی برای این مکان ثبت شده اند. جهت حذف این مکان، ابتدا باید تمام پارامترهای این این مکان را حذف کنید", error)
+
     def update_place_sort(self, id, order):
         query = "UPDATE `amar`.`places` SET `order` = %s WHERE (`id` = %s);"
         values = (order, id)
@@ -198,6 +218,15 @@ class Connection():
         self.connection.commit()
         return ("ok", 0)
 
+    def delete_parameter(self, id):
+        query = "DELETE FROM `amar`.`parameters` WHERE (`id` = %s);"
+        values = (id, )
+        try:
+            self.cursor.execute(query, values)
+            self.connection.commit()
+            return ("ok", 0)
+        except pymysql.err.IntegrityError as error:
+            return (f"لاگ هایی برای این پارامتر ثبت شده اند. از طریق این برنامه نمیتوانید این پارامتر را حذف کنید. چون در ساختار دیتابیس مشکل ایجاد میکند. مدیر دیتابیس ابتدا باید لاگ های مربوط به این پارامتر را دستی حذف کند و سپس این پارامتر قابل حذف کردن است", error)
 
     def get_part_by_title(self, title):
         query = "SELECT * FROM `amar`.`parts` WHERE title=%s;"
@@ -471,7 +500,14 @@ class Connection():
                     'workout': temp_result[1],
                 }
         return temp_dict
-
+    
+    def get_all_parameters_formula(self):
+        query = "SELECT `formula` FROM `amar`.`parameters`;"
+        self.cursor.execute(query)
+        formulas = []
+        for formula in self.cursor.fetchall():
+            formulas.append(formula[0])
+        return formulas
 
 if __name__ == "__main__":
     c = Connection()

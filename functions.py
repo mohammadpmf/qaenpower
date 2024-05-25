@@ -63,6 +63,16 @@ def what_is_variable_name_problem(name: str, counters_variable_names: tuple):
         return "نام متغیر تکراری است و برای یکی از پارامترهای قبلی تعریف شده است."
     return None
 
+# تابعی که میشماره هر پارامتر چند جای دیگه تو فرمول ها استفاده شده که اگه حداقل یه بار استفاده شده بود، اجازه پاک کردن بهش ندیم
+def how_many_times_parameters_variable_name_used_in_other_formulas(variable_name: str, formulas: list):
+    count = 0
+    for formula in formulas:
+        parameters = []
+        fn = Expression(formula, parameters)
+        if variable_name in parameters:
+            count+=1
+    return count
+
 # تابعی جهت بررسی این که فرمول نوشته شده درست است یا نه.
 # در مرحله دوم که پارامترها رو خودم به دست میارم، دوباره برای همین تابع ارسال میکنم که بررسی کنه داخل دیتابیس هم باشن.
 # در واقع دیگه لازم نیست دستی وارد بشه تو قسمت اول. اما به جای تابع جداگانه کلک زدم ۲ بار همین تابع رو صدا کردم.

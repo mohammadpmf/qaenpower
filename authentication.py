@@ -1,7 +1,7 @@
 from ui_settings import *
 from PIL import Image, ImageTk
 from connection import Connection
-from functions import calculate_fn, get_formula_parameters, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime, datetime
+from functions import calculate_fn, get_formula_parameters, how_many_times_parameters_variable_name_used_in_other_formulas, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime, datetime
 from models import Part, Place, Staff, Parameter
 from threading import Thread
 from time import sleep
@@ -279,6 +279,7 @@ class StaffWindow(MyWindows):
             # self.entry_counter_formula_parameters = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
             self.btn_counter_register = Button(self.frame_counter, text='ایجاد پارامتر', cnf=CNF_BTN, command=self.create_parameter)
             self.btn_counter_update = Button(self.frame_counter, text='ویرایش پارامتر', cnf=CNF_BTN, command=self.update_parameter)
+            self.btn_counter_delete = Button(self.frame_counter, text='حذف پارامتر', cnf=CNF_BTN, command=self.delete_parameter)
             self.label_counter_part.grid(row=1, column=7, cnf=CNF_GRID)
             self.entry_counter_part.grid(row=1, column=5, cnf=CNF_GRID)
             self.label_counter_place.grid(row=1, column=3, cnf=CNF_GRID)
@@ -307,6 +308,7 @@ class StaffWindow(MyWindows):
             # self.entry_counter_formula_parameters.grid(row=15, column=1, cnf=CNF_GRID)
             self.btn_counter_register.grid(row=17, column=7, cnf=CNF_GRID)
             self.btn_counter_update.grid(row=17, column=5, cnf=CNF_GRID)
+            self.btn_counter_delete.grid(row=17, column=3, cnf=CNF_GRID)
             self.entry_counter_part.bind('<Return>', lambda e: self.entry_counter_place.focus_set())
             self.entry_counter_place.bind('<Return>', lambda e: self.entry_counter_name.focus_set())
             self.entry_counter_name.bind('<Return>', lambda e: self.entry_counter_type.focus_set())
@@ -331,17 +333,19 @@ class StaffWindow(MyWindows):
             self.entry_part_name.bind("<Return>", self.create_part)
             self.btn_part_register = Button(self.frame_part, text='ایجاد بخش', cnf=CNF_BTN, command=self.create_part)
             self.btn_part_update = Button(self.frame_part, text='ویرایش بخش', cnf=CNF_BTN, command=self.update_part)
+            self.btn_part_delete = Button(self.frame_part, text='حذف بخش', cnf=CNF_BTN, command=self.delete_part)
             self.label_part_name.grid(row=1, column=7, cnf=CNF_GRID)
             self.entry_part_name.grid(row=1, column=5, cnf=CNF_GRID)
             self.btn_part_register.grid(row=17, column=7, cnf=CNF_GRID)
             self.btn_part_update.grid(row=17, column=5, cnf=CNF_GRID)
+            self.btn_part_delete.grid(row=17, column=3, cnf=CNF_GRID)
             self.treev_part = ttk.Treeview(self.frame_part, height=6, selectmode ='browse', show='headings')
             self.treev_part.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
             self.verscrlbar_part = ttk.Scrollbar(self.frame_part, orient ="vertical", command = self.treev_part.yview)
             self.verscrlbar_part.grid(row=19, rowspan=3, column=11, sticky='ns')
             self.treev_part.configure(yscrollcommand = self.verscrlbar_part.set)
             self.treev_part["columns"] = ("1", "2")
-            self.treev_part.column("1", width = 200, anchor ='c')
+            self.treev_part.column("1", width = 300, anchor ='c')
             self.treev_part.column("2", width = 50, anchor ='c')
             self.treev_part.heading("1", text ="نام بخش", anchor='c')
             self.treev_part.heading("2", text ="ردیف", anchor='c')
@@ -365,12 +369,14 @@ class StaffWindow(MyWindows):
             self.entry_place_name.bind("<Return>", self.create_place)
             self.btn_place_register = Button(self.frame_place, text='ایجاد مکان جدید', cnf=CNF_BTN, command=self.create_place)
             self.btn_place_update = Button(self.frame_place, text='ویرایش مکان', cnf=CNF_BTN, command=self.update_place)
+            self.btn_place_delete = Button(self.frame_place, text='حذف مکان', cnf=CNF_BTN, command=self.delete_place)
             self.label_place_part_name.grid(row=1, column=7, cnf=CNF_GRID)
             self.entry_place_part_name.grid(row=1, column=5, cnf=CNF_GRID)
             self.label_place_name.grid(row=3, column=7, cnf=CNF_GRID)
             self.entry_place_name.grid(row=3, column=5, cnf=CNF_GRID)
             self.btn_place_register.grid(row=17, column=7, cnf=CNF_GRID)
             self.btn_place_update.grid(row=17, column=5, cnf=CNF_GRID)
+            self.btn_place_delete.grid(row=17, column=3, cnf=CNF_GRID)
             self.treev_place = ttk.Treeview(self.frame_place, height=6, selectmode ='browse', show='headings')
             self.treev_place.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
             self.verscrlbar_place = ttk.Scrollbar(self.frame_place, orient ="vertical", command = self.treev_place.yview)
@@ -769,6 +775,34 @@ class StaffWindow(MyWindows):
             msb.showerror("خطا", result_message)
             print(_)
 
+    # تابعی جهت حذف پارامتر
+    def delete_parameter(self):
+        variable_name = self.entry_counter_variable_name.get().strip()
+        this_parameter = self.connection.get_parameter_by_variable_name(variable_name)
+        if this_parameter == None:
+            msb.showerror("خطا", "پارامتر با نام متغیر نوشته شده وجود ندارد")
+            self.entry_counter_variable_name.focus_set()
+            return
+        name = this_parameter.name
+        id = this_parameter.id
+        self.root.bell()
+        answer = msb.askyesno("اطمینان", f"آیا از حذف پارامتر با نام {name} مطمئنید؟")
+        if answer==False:
+            return
+        formulas = self.connection.get_all_parameters_formula()
+        count = how_many_times_parameters_variable_name_used_in_other_formulas(variable_name, formulas)
+        if count > 0:
+            msb.showerror("خطا", f"از نام این پارامتر {count} بار در فرمول دیگر پارامترها استفاده شده است. به دلیل ایجاد مشکل در محاسبات و عملکرد کل دیتابیس، در حال حاضر از طریق این برنامه اجازه حذف این پارامتر را ندارید. ابتدا باید تمامی پارامترهایی که در فرمول خود از این پارامتر استفاده کرده اند را حذف یا ویرایش کنید تا به این پارامتر وابسته نباشند، سپس اقدام به حذف این پارامتر نمایید")
+            self.entry_counter_variable_name.focus_set()
+            return
+        result_message, _ = self.connection.delete_parameter(id)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"پارامتر {name} با موفقیت حذف شد")
+            self.refresh_ui()
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
+
     # تابعی برای این که با دابل کلیک روی نام یک پارامتر در بخش نمایش آنها، جزییات آن را نمایش دهد و قابل تغییر باشد.
     def change_counter_info(self, event=None):
         try:
@@ -869,6 +903,29 @@ class StaffWindow(MyWindows):
         result_message, _ = self.connection.update_part(id, new_name)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"بخش {old_name} با موفقیت به {new_name} تغییر یافت")
+            self.refresh_ui()
+            self.entry_part_name.delete(0, END)
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
+        self.entry_part_name.focus_set()
+    
+    # تابعی جهت حذف بخش
+    def delete_part(self, event=None):
+        cur_item = self.treev_part.focus()
+        temp = self.treev_part.item(cur_item)["values"]
+        if temp in [None, '', ()]:
+            msb.showerror('خطا', 'برای حذف بخش، ابتدا باید یک بخش را انتخاب کنید')
+            return
+        name = temp[0]
+        id = self.treev_part.item(cur_item)["text"]
+        self.root.bell()
+        answer = msb.askyesno("اطمینان", f"آیا از حذف بخش {name} مطمئنید؟")
+        if answer==False:
+            return
+        result_message, _ = self.connection.delete_part(id)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"بخش {name} با موفقیت حذف شد")
             self.refresh_ui()
             self.entry_part_name.delete(0, END)
         else:
@@ -1010,6 +1067,31 @@ class StaffWindow(MyWindows):
         result_message, _ = self.connection.update_place(id, new_name, part_id)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"نام مکان {old_name} در بخش {part} با موفقیت به {new_name} تغییر یافت")
+            self.refresh_places_tree_view(part_id)
+            self.refresh_ui()
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
+        self.entry_place_name.focus_set()
+
+    # تابعی برای حذف یک مکان
+    def delete_place(self, event=None):
+        cur_item = self.treev_place.focus()
+        temp = self.treev_place.item(cur_item)["values"]
+        if temp in [None, '', ()]:
+            msb.showerror('خطا', 'برای حذف، ابتدا باید یک مکان را انتخاب کنید')
+            return
+        name = temp[0]
+        id = self.treev_place.item(cur_item)["text"]
+        part = self.entry_place_part_name.get()
+        self.root.bell()
+        answer = msb.askyesno("اطمینان", f"آیا از حذف مکان {name} واقع در بخش {part} مطمئنید؟")
+        if answer==False:
+            return
+        part_id, part_title, part_sort = self.connection.get_part_by_title(part)
+        result_message, _ = self.connection.delete_place(id)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"مکان {name} از بخش {part} با موفقیت حذف شد")
             self.refresh_places_tree_view(part_id)
             self.refresh_ui()
         else:
@@ -1450,7 +1532,7 @@ class StaffWindow(MyWindows):
 
     def refresh_ui_from_anywhere(self):
         global signal, last_selected_child_tab_number_to_retrieve
-        sleep(1.2)
+        # sleep(1.2)
         while True:
             sleep(0.01)
             if signal:
