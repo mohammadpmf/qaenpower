@@ -304,7 +304,6 @@ class Connection():
 
     def get_parameter_log_by_parameter_id_and_date(self, parameter_id, date):
         query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `amar`.`parameters_log`.`id`, `amar`.`users`.`name` as `users_name`, `amar`.`users`.`surname` as `users_surname` FROM `amar`.`parameters_log` join `amar`.`users` ON (`amar`.`parameters_log`.`user_id`=`amar`.`users`.`id`)  WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
-        # query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `id` FROM `amar`.`parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (parameter_id, date)
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()

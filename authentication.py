@@ -88,7 +88,8 @@ class LoginForm(MyWindows):
 class StaffWindow(MyWindows):
     def __init__(self, connection: Connection, root: Tk, user: Staff):
         super().__init__(connection, root)
-        global date_picker, signal
+        global date_picker, signal, sheet_state
+        sheet_state = 'update'
         signal = 0 # برای این که وقتی یه آپدیتی کردیم رو یه پارامتر، ظاهر برنامه رو رفرش کنیم و به تابع رفرش یو آی این کلاس دسترسی داشته باشیم.
         self.logged_parts_names = set() # یه لیست از پارت هایی که در تاریخ فعلی لاگ رو ثبت کردند. البته اول لیست گرفته بودم. بعد گفتم مجموعه کنم بهتره. اگه ثبت کردند، اسمشون میره تو این مجموعه که دیگه نتونن ثبت کنن و فقط بتونن ویرایش کنن. اول کار هیچ کس ثبت نکرده، پس فقط یه مجموعه خالی داریم. هر بخشی که ثبت کرد وارد این مجموعه میشه و بعد از اون فقط میتونه ویرایش کنه.
         self.user = user
@@ -142,9 +143,6 @@ class StaffWindow(MyWindows):
         self.tab_control_frame.pack(side=TOP, expand=True, fill='both')
         self.change_day_frame = Frame(self.frame_add_statistics, bg=BG)
         self.change_day_frame.pack(side=TOP, expand=True)
-        # self.tab_control_frame.bind('<<NotebookTabChanged>>', self.enable_or_disable_confirm_button)
-        # این خیلی ارور میداد اذیت میکرد عوضش کردم. کار میکرد برنامه اما واقعا خووندن ارورها و
-        # دیباگ کردن رو خیلی سخت کرده بود. به جاش این سه تا بایند رو گذاشتم
         self.tab_control_frame.bind('<Button-1>', self.disable_confirm_buttons)
         self.tab_control_frame.bind('<Key>', self.disable_confirm_buttons)
         self.tab_control_frame.bind('<ButtonRelease-1>', self.enable_or_disable_confirm_button)
@@ -1319,7 +1317,7 @@ class StaffWindow(MyWindows):
         date_picker.combo_year.config(state='readonly')
 
     def enable_or_disable_confirm_button(self, event=None):
-        global all_counter_widgets, last_selected_child_tab_number_to_retrieve
+        global all_counter_widgets, last_selected_child_tab_number_to_retrieve, sheet_state
         # با این که تابع جدا برای دیسیبل کردن نوشتم. ولی حالات زیادی برای باگ خوردن داشت.
         # باز هم گفتم برای باگ نخوردن، اینجا هم یه بار دیسیبل کنم و بعد با شرط اونی که اوکی هست
         # رو اینیبل کنم.
@@ -1329,12 +1327,14 @@ class StaffWindow(MyWindows):
         last_selected_child_tab_number_to_retrieve = self.tab_control_frame.index(self.tab_control_frame.select())
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         if part_name in self.logged_parts_names:
+            # یعنی این صفحه، صفحه ای هست که قراره آپدیت بشه. پس اطلاعات قبلی دیتابیس باید نمایش داده بشن.
+            sheet_state = 'update'
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.enable_for_safety()
             for counter_widget in all_counter_widgets:
                 counter_widget: CounterWidget
                 if counter_widget.type in PARAMETER_TYPES[1:3]:
-                    continue
+                    continue # چون از نوع محاسباتی یا ثابتی هستند که قبلا ثبت شدن. پس لازم نیست دست بزنیم و مقادیر قبلیشون باید داخلشون نوشته بشه.
                 elif counter_widget.type==PARAMETER_TYPES[0]:
                     previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
                     counter_widget.label_previous_counter.config(text=round3(previous_value))
@@ -1349,8 +1349,42 @@ class StaffWindow(MyWindows):
                     counter_widget.entry_workout.config(state='disabled')
                     counter_widget.update_workout()
         else:
+            # یعنی این صفحه، صفحه ای هست که قراره داده جدید ثبت بشه. پس اطلاعات قبلی دیتابیس، باید در صورتی تو مقدار کار کرد جدید بیان که خودش خواسته باشه. اگه نه که برای ثابت و کنتور نمیان. برای محاسباتی هم بر اساس اطلاعات ناقص فعلی نوشته میشه
+            sheet_state = 'insert'
             self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
             self.enable_for_safety()
+            for counter_widget in all_counter_widgets:
+                counter_widget: CounterWidget
+                if counter_widget.type == PARAMETER_TYPES[2]:
+                    continue
+                elif counter_widget.type == PARAMETER_TYPES[1]:
+                    counter_widget.entry_workout.delete(0, END)
+                    if counter_widget.default_value==DEFAULT_VALUES[0]:
+                        counter_widget.entry_workout.insert(0, round3(counter_widget.a))
+                    elif counter_widget.default_value==DEFAULT_VALUES[1]:
+                        counter_widget.entry_workout.insert(0, DEFAULT_VALUES[1])
+                    elif counter_widget.default_value==DEFAULT_VALUES[2]:
+                        pass
+                elif counter_widget.type==PARAMETER_TYPES[0]:
+                    counter_widget.entry_current_counter.delete(0, END)
+                    if counter_widget.default_value==DEFAULT_VALUES[0]:
+                        counter_widget.entry_current_counter.insert(0, round3(counter_widget.a))
+                    elif counter_widget.default_value==DEFAULT_VALUES[1]:
+                        counter_widget.entry_current_counter.insert(0, DEFAULT_VALUES[1])
+                    elif counter_widget.default_value==DEFAULT_VALUES[2]:
+                        pass
+                    # previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
+                    # counter_widget.label_previous_counter.config(text=round3(previous_value))
+                    # counter_widget.entry_workout.config(state='normal')
+                    # counter_widget.entry_workout.delete(0, END)
+                    # if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
+                    #     counter_widget.boolean_var_bad.set(1)
+                    #     counter_widget.check()
+                    #     counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
+                    # else:
+                    #     counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
+                    # counter_widget.entry_workout.config(state='disabled')
+                    # counter_widget.update_workout()
 
     def set_logged_parts_names(self):
         global date_picker
@@ -1364,6 +1398,7 @@ class StaffWindow(MyWindows):
                     self.logged_parts_names.add(counter.part_title)
 
     def confirm_log_insert(self, event=None):
+        global sheet_state
         self.disable_confirm_buttons()
         temp_date = date_picker.get_date()
         if temp_date == None:
@@ -1397,6 +1432,7 @@ class StaffWindow(MyWindows):
         if result_message == "ok":
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس اضافه شدند"
             msb.showinfo('success', message)
+            sheet_state = 'update'
             self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.enable_for_safety()
@@ -1476,6 +1512,7 @@ class StaffWindow(MyWindows):
             self.enable_for_safety()
             self.update_next_logs_because_they_may_be_related_to_this_logs()
         else:
+            self.enable_or_disable_confirm_button()
             msb.showerror("ارور", result_message)
 
     def update_next_logs_because_they_may_be_related_to_this_logs(self):
@@ -1735,7 +1772,7 @@ class CounterWidget(Parameter, MyWindows):
         self.lbl_info = Label(self.info_widget, cnf=CNF_LABEL2, padx=1, text='🛈')
         self.lbl_title.grid(row=1, column=1)
         self.lbl_info.grid(row=1, column=2)
-        self.counter_log = self.connection.get_parameter_log_by_parameter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم. اگه لازم شد استفاده کنم بعدا دارمش. نشد هم که بهتر 
+        self.counter_log = self.connection.get_parameter_log_by_parameter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم.
         self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
@@ -1756,12 +1793,7 @@ class CounterWidget(Parameter, MyWindows):
             self.frame.bind('<FocusOut>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             self.btn_copy.grid(row=1, column=2, cnf=CNF_GRID2)
-            if self.default_value==DEFAULT_VALUES[0]:
-                self.entry_workout.insert(0, round3(self.a))
-            elif self.default_value==DEFAULT_VALUES[1]:
-                self.entry_workout.insert(0, DEFAULT_VALUES[1])
-            elif self.default_value==DEFAULT_VALUES[2]:
-                self.entry_workout.delete(0, END)
+            self.entry_workout.insert(0, round3(self.a))
         elif self.type==PARAMETER_TYPES[0]:
             self.btn_copy = Label(self.frame, image=self.img_copy, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
@@ -1769,18 +1801,12 @@ class CounterWidget(Parameter, MyWindows):
             self.label_previous_counter = Label(self.frame, cnf=CNF_LABEL2, text=round3(self.a), *args, **kwargs)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
-            # self.boolean_var_bad.set(not self.counter_log.is_ok) # اطلاعات رو از دیتابیس گرفته بودم. اما گفت پیش فرض همه سالم باشن. پس من تغییرش ندادم. کدش رو گذاشتم بمونه که اگه لازم شد دوباره ننویسم.
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
-            if self.default_value==DEFAULT_VALUES[0]:
-                self.entry_current_counter.insert(0, round3(self.a))
-            elif self.default_value==DEFAULT_VALUES[1]:
-                self.entry_current_counter.insert(0, DEFAULT_VALUES[1])
-            elif self.default_value==DEFAULT_VALUES[2]:
-                self.entry_current_counter.delete(0, END)
-            self.entry_workout.insert(0, self.answer)
+            self.entry_current_counter  .insert(0, round3(self.a))
+            self.entry_workout          .insert(0, self.answer)
             self.entry_workout.config(state='readonly')
             self.btn_copy               .grid(row=1, column=3, cnf=CNF_GRID2)
             self.entry_current_counter  .grid(row=1, column=2, cnf=CNF_GRID2)
@@ -1862,7 +1888,7 @@ class CounterWidget(Parameter, MyWindows):
                 all_variables_current_value_and_workout[self.variable_name].update({
                     'value': self.b,
                     'workout': self.workout
-                }) # گفته بود در هر صورت چه سالم باشه چه خراب تو ولیو خود مقدار جدید ذخیره بشه و ورک اوت هم همین طور. من هم ایف رو دیگه پاک کردم.
+                }) # گفته بود در هر صورت چه سالم باشه چه خراب تو ولیو خود مقدار جدید ذخیره بشه و ورک اوت هم همین طور. من هم ایفی که براش نوشته بودم رو دیگه پاک کردم.
             except ValueError:
                 return
             except TypeError:
