@@ -114,6 +114,16 @@ class Connection():
             return self.update_part_sort(id, id)
         except pymysql.err.IntegrityError as error:
             return (f"بخش {title} قبلا ثبت شده است", error)
+
+    def update_part(self, id, new_name):
+        query = "UPDATE `amar`.`parts` SET `title` = %s WHERE (`id` = %s);"
+        values = (new_name, id)
+        try:
+            self.cursor.execute(query, values)
+            self.connection.commit()
+            return ("ok", 0)
+        except pymysql.err.IntegrityError as error:
+            return (f"بخش {new_name} قبلا ثبت شده است", error)
     
     def update_part_sort(self, id, order):
         query = "UPDATE `amar`.`parts` SET `order` = %s WHERE (`id` = %s);"

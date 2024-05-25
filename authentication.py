@@ -331,9 +331,11 @@ class StaffWindow(MyWindows):
             self.entry_part_name = Entry(self.frame_part, cnf=CNF_ENTRY_COUNTER, justify='right')
             self.entry_part_name.bind("<Return>", self.create_part)
             self.btn_part_register = Button(self.frame_part, text='ایجاد بخش', cnf=CNF_BTN, command=self.create_part)
+            self.btn_part_update = Button(self.frame_part, text='ویرایش بخش', cnf=CNF_BTN, command=self.update_part)
             self.label_part_name.grid(row=1, column=7, cnf=CNF_GRID)
             self.entry_part_name.grid(row=1, column=5, cnf=CNF_GRID)
             self.btn_part_register.grid(row=17, column=7, cnf=CNF_GRID)
+            self.btn_part_update.grid(row=17, column=5, cnf=CNF_GRID)
             self.treev_part = ttk.Treeview(self.frame_part, height=6, selectmode ='browse', show='headings')
             self.treev_part.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
             self.verscrlbar_part = ttk.Scrollbar(self.frame_part, orient ="vertical", command = self.treev_part.yview)
@@ -837,6 +839,33 @@ class StaffWindow(MyWindows):
         result_message, _ = self.connection.create_part(title)
         if result_message=='ok':
             msb.showinfo("پیام موفقیت", f"بخش {title} با موفقیت ساخته شد.")
+            self.refresh_ui()
+            self.entry_part_name.delete(0, END)
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
+        self.entry_part_name.focus_set()
+
+    # تابعی جهت ویرایش بخش
+    def update_part(self, event=None):
+        cur_item = self.treev_part.focus()
+        temp = self.treev_part.item(cur_item)["values"]
+        if temp in [None, '', ()]:
+            msb.showerror('خطا', 'برای تغییر نام، ابتدا باید یک بخش را انتخاب کنید')
+            return
+        old_name = temp[0]
+        id = self.treev_part.item(cur_item)["text"]
+        new_name = self.entry_part_name.get().strip()
+        if new_name=="":
+            msb.showerror("خطا", "نام بخش نمیتواند خالی باشد.")
+            return
+        self.root.bell()
+        answer = msb.askyesno("اطمینان", f"آیا از تغییر نام بخش {old_name} به {new_name} مطمئنید؟")
+        if answer==False:
+            return
+        result_message, _ = self.connection.update_part(id, new_name)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"بخش {old_name} با موفقیت به {new_name} تغییر یافت")
             self.refresh_ui()
             self.entry_part_name.delete(0, END)
         else:
