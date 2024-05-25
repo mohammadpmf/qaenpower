@@ -134,7 +134,7 @@ class Connection():
 
     def create_place(self, title, part_id):
         query = "INSERT INTO `amar`.`places` (`title`, `part`, `order`) VALUES (%s, %s, 0);"
-        values = title, part_id
+        values = (title, part_id)
         try:
             self.cursor.execute(query, values)
             self.connection.commit()
@@ -149,6 +149,17 @@ class Connection():
             part_id, part_name, part_sort = self.get_part_by_id(part_id)
             return (f"مکان {title} برای بخش {part_name} قبلا ثبت شده است", error)
     
+    def update_place(self, id, new_name, part_id):
+        query = "UPDATE `amar`.`places` SET `title` = %s, `part` = %s WHERE (`id` = %s);"
+        values = (new_name, part_id, id)
+        try:
+            self.cursor.execute(query, values)
+            self.connection.commit()
+            return ("ok", 0)
+        except pymysql.err.IntegrityError as error:
+            part_id, part_name, part_sort = self.get_part_by_id(part_id)
+            return (f"مکان {new_name} برای بخش {part_name} قبلا ثبت شده است", error)
+        
     def update_place_sort(self, id, order):
         query = "UPDATE `amar`.`places` SET `order` = %s WHERE (`id` = %s);"
         values = (order, id)

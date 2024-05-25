@@ -91,7 +91,6 @@ class StaffWindow(MyWindows):
         global date_picker, signal
         signal = 0 # برای این که وقتی یه آپدیتی کردیم رو یه پارامتر، ظاهر برنامه رو رفرش کنیم و به تابع رفرش یو آی این کلاس دسترسی داشته باشیم.
         self.logged_parts_names = set() # یه لیست از پارت هایی که در تاریخ فعلی لاگ رو ثبت کردند. البته اول لیست گرفته بودم. بعد گفتم مجموعه کنم بهتره. اگه ثبت کردند، اسمشون میره تو این مجموعه که دیگه نتونن ثبت کنن و فقط بتونن ویرایش کنن. اول کار هیچ کس ثبت نکرده، پس فقط یه مجموعه خالی داریم. هر بخشی که ثبت کرد وارد این مجموعه میشه و بعد از اون فقط میتونه ویرایش کنه.
-        Thread(target=self.refresh_ui_from_anywhere, daemon=True).start()
         self.user = user
         self.main_window = Toplevel(self.frame)
         self.main_window.title(f'حساب کاربری {self.user}')
@@ -146,8 +145,8 @@ class StaffWindow(MyWindows):
         # self.tab_control_frame.bind('<<NotebookTabChanged>>', self.enable_or_disable_confirm_button)
         # این خیلی ارور میداد اذیت میکرد عوضش کردم. کار میکرد برنامه اما واقعا خووندن ارورها و
         # دیباگ کردن رو خیلی سخت کرده بود. به جاش این سه تا بایند رو گذاشتم
-        self.tab_control_frame.bind('<Button-1>', self.disable_confirm_button)
-        self.tab_control_frame.bind('<Key>', self.disable_confirm_button)
+        self.tab_control_frame.bind('<Button-1>', self.disable_confirm_buttons)
+        self.tab_control_frame.bind('<Key>', self.disable_confirm_buttons)
         self.tab_control_frame.bind('<ButtonRelease-1>', self.enable_or_disable_confirm_button)
         date_picker = DatePicker(self.connection, self.date_picker_frame)
         date_picker.pack(side=RIGHT, expand=True, fill='both')
@@ -157,7 +156,7 @@ class StaffWindow(MyWindows):
         self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX)
         self.btn_confirm_counter_log_update = Button(self.date_picker_frame_left, image=self.img_update, state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
         self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
-        self.btn_refresh_counter_logs = Button(self.date_picker_frame_left, image=self.img_refresh, font=FONT2, cnf=CNF_BTN, command=self.refresh_ui)
+        self.btn_refresh_counter_logs = Button(self.date_picker_frame_left, image=self.img_refresh, font=FONT2, cnf=CNF_BTN, command=lambda: date_picker.time_delta(0))
         self.btn_refresh_counter_logs.pack(side=LEFT, padx=PADX)
         self.seed_tabs_of_parts()
 
@@ -365,11 +364,13 @@ class StaffWindow(MyWindows):
             self.entry_place_name = Entry(self.frame_place, cnf=CNF_ENTRY_COUNTER, justify='right', state='readonly')
             self.entry_place_name.bind("<Return>", self.create_place)
             self.btn_place_register = Button(self.frame_place, text='ایجاد مکان جدید', cnf=CNF_BTN, command=self.create_place)
+            self.btn_place_update = Button(self.frame_place, text='ویرایش مکان', cnf=CNF_BTN, command=self.update_place)
             self.label_place_part_name.grid(row=1, column=7, cnf=CNF_GRID)
             self.entry_place_part_name.grid(row=1, column=5, cnf=CNF_GRID)
             self.label_place_name.grid(row=3, column=7, cnf=CNF_GRID)
             self.entry_place_name.grid(row=3, column=5, cnf=CNF_GRID)
             self.btn_place_register.grid(row=17, column=7, cnf=CNF_GRID)
+            self.btn_place_update.grid(row=17, column=5, cnf=CNF_GRID)
             self.treev_place = ttk.Treeview(self.frame_place, height=6, selectmode ='browse', show='headings')
             self.treev_place.grid(row=19, rowspan=3, column=1, columnspan=10, sticky='news')
             self.verscrlbar_place = ttk.Scrollbar(self.frame_place, orient ="vertical", command = self.treev_place.yview)
@@ -414,6 +415,8 @@ class StaffWindow(MyWindows):
             self.btn_confirm_tree_all_counters.grid(row=20, column=0, cnf=CNF_GRID)
             self.btn_down_tree_all_counters.grid(row=21, column=0, cnf=CNF_GRID, sticky='n')
             self.refresh_all_counters_treeview()
+        
+        Thread(target=self.refresh_ui_from_anywhere, daemon=True).start()
 
     ######################################### change password functions #########################################
     # تابعی جهت بررسی این که پسووردها در بخش تغییر پسوورد نمایش داده شوند یا خیر
@@ -982,6 +985,37 @@ class StaffWindow(MyWindows):
             msb.showerror("خطا", result_message)
             print(_)
         self.entry_place_name.focus_set()
+    
+    # تابعی برای ویرایش یک مکان موجود
+    def update_place(self, event=None):
+        cur_item = self.treev_place.focus()
+        temp = self.treev_place.item(cur_item)["values"]
+        if temp in [None, '', ()]:
+            msb.showerror('خطا', 'برای تغییر نام، ابتدا باید یک مکان را انتخاب کنید')
+            return
+        old_name = temp[0]
+        id = self.treev_place.item(cur_item)["text"]
+        new_name = self.entry_place_name.get().strip()
+        part = self.entry_place_part_name.get()
+        # این ایف پایین لازم نیست. اما گذاشتم باشه. چون کدش رو نوشته بودم گفتم دست نزنم که باگ
+        # جدید نخوره. اما منطقا اگه برش دارم هم نباید مشکلی پیش بیاد.
+        if new_name=="" or part=="":
+            msb.showerror("خطا", "نام مکان یا بخش نمیتواند خالی باشد.")
+            return
+        self.root.bell()
+        answer = msb.askyesno("اطمینان", f"آیا از تغییر نام مکان {old_name} به {new_name} مطمئنید؟")
+        if answer==False:
+            return
+        part_id, part_title, part_sort = self.connection.get_part_by_title(part)
+        result_message, _ = self.connection.update_place(id, new_name, part_id)
+        if result_message=='ok':
+            msb.showinfo("پیام موفقیت", f"نام مکان {old_name} در بخش {part} با موفقیت به {new_name} تغییر یافت")
+            self.refresh_places_tree_view(part_id)
+            self.refresh_ui()
+        else:
+            msb.showerror("خطا", result_message)
+            print(_)
+        self.entry_place_name.focus_set()
 
     # تابعی برای این که بعد از ساخت یک مکان در ظاهر برنامه و
     # در تری ویوی مربوطه، مکان های جدید نمایش داده شوند.
@@ -1179,10 +1213,29 @@ class StaffWindow(MyWindows):
                     all_counter_widgets[i].entry_current_counter.select_range(0, 'end')
                 return
 
-    def disable_confirm_button(self, event=None):
+    def disable_confirm_buttons(self, event=None):
         self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
         self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
-        
+        self.disable_for_safety()
+    
+    def disable_for_safety(self, event=None):
+        global date_picker
+        self.btn_refresh_counter_logs.config(state='disabled', relief='flat')
+        date_picker.btn_yesterday.config(state='disabled', relief='flat')
+        date_picker.btn_tomorrow.config(state='disabled', relief='flat')
+        date_picker.combo_day.config(state='disabled')
+        date_picker.combo_month.config(state='disabled')
+        date_picker.combo_year.config(state='disabled')
+    
+    def enable_for_safety(self, event=None):
+        global date_picker
+        self.btn_refresh_counter_logs.config(state='normal', relief='raised')
+        date_picker.btn_yesterday.config(state='normal', relief='raised')
+        date_picker.btn_tomorrow.config(state='normal', relief='raised')
+        date_picker.combo_day.config(state='readonly')
+        date_picker.combo_month.config(state='readonly')
+        date_picker.combo_year.config(state='readonly')
+
     def enable_or_disable_confirm_button(self, event=None):
         global all_counter_widgets, last_selected_child_tab_number_to_retrieve
         # با این که تابع جدا برای دیسیبل کردن نوشتم. ولی حالات زیادی برای باگ خوردن داشت.
@@ -1190,10 +1243,12 @@ class StaffWindow(MyWindows):
         # رو اینیبل کنم.
         self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
         self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
+        self.disable_for_safety()
         last_selected_child_tab_number_to_retrieve = self.tab_control_frame.index(self.tab_control_frame.select())
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         if part_name in self.logged_parts_names:
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_for_safety()
             for counter_widget in all_counter_widgets:
                 counter_widget: CounterWidget
                 if counter_widget.type in PARAMETER_TYPES[1:3]:
@@ -1213,6 +1268,7 @@ class StaffWindow(MyWindows):
                     counter_widget.update_workout()
         else:
             self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
+            self.enable_for_safety()
 
     def set_logged_parts_names(self):
         global date_picker
@@ -1226,16 +1282,18 @@ class StaffWindow(MyWindows):
                     self.logged_parts_names.add(counter.part_title)
 
     def confirm_log_insert(self, event=None):
-        self.disable_confirm_button()
+        self.disable_confirm_buttons()
         temp_date = date_picker.get_date()
         if temp_date == None:
             msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
             self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
+            self.enable_for_safety()
             return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         result = self.precheck_before_confirm(part_name)
         if result==None:
             self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
+            self.enable_for_safety()
             return
         message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
         message += "با انتخاب دکمه تایید، تمامی اطلاعات این بخش در دیتابیس ذخیره میشوند\n"
@@ -1244,6 +1302,7 @@ class StaffWindow(MyWindows):
         answer = msb.askyesno("هشدار", message)
         if not answer:
             self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
+            self.enable_for_safety()
             return
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
@@ -1254,10 +1313,11 @@ class StaffWindow(MyWindows):
                     is_ok = 1 if counter_widget.boolean_var_bad.get()==False else 0
                     result_message, ـ = counter_widget.connection.create_parameter_log(counter_widget.b, counter_widget.workout, is_ok, temp_date, counter_widget.id, self.user.id)
         if result_message == "ok":
-            self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
-            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس اضافه شدند"
             msb.showinfo('success', message)
+            self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
+            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_for_safety()
         else:
             self.enable_or_disable_confirm_button()
             msb.showerror("ارور", result_message)
@@ -1297,16 +1357,18 @@ class StaffWindow(MyWindows):
         return "ok"
 
     def confirm_log_update(self):
-        self.disable_confirm_button()
+        self.disable_confirm_buttons()
         temp_date = date_picker.get_date()
         if temp_date == None:
             msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_for_safety()
             return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         result = self.precheck_before_confirm(part_name)
         if result==None:
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_for_safety()
             return
         message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
         message += "با انتخاب دکمه تایید، تمامی اطلاعات این بخش در دیتابیس ویرایش میشوند\n"
@@ -1315,6 +1377,7 @@ class StaffWindow(MyWindows):
         answer = msb.askyesno("هشدار", message)
         if not answer:
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_for_safety()
             return
         for counter_widget in all_counter_widgets:
             counter_widget: CounterWidget
@@ -1328,6 +1391,7 @@ class StaffWindow(MyWindows):
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ویرایش شدند"
             msb.showinfo('success', message)
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_for_safety()
             self.update_next_logs_because_they_may_be_related_to_this_logs()
         else:
             msb.showerror("ارور", result_message)
