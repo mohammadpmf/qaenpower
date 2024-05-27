@@ -6,7 +6,7 @@ from ui_settings import PARAMETER_TYPES
 WRONG_LIMIT=10
 
 class Connection():
-    def __init__(self, host='127.0.0.1', username='root', password='root'):
+    def __init__(self, host='127.0.0.1', username='root', password=''):
         self.user = Staff("admin", "admin", "admin", "admin", 3, 0, "روز قبل", 1)
         self.host = host
         self.username = username
@@ -15,21 +15,21 @@ class Connection():
         self.cursor = self.connection.cursor()
         query = "CREATE SCHEMA IF NOT EXISTS `amar`;"
         self.cursor.execute(query)
-        # query = "CREATE TABLE IF NOT EXISTS `amar`.`users` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `surname` VARCHAR(64) NOT NULL, `username` VARCHAR(64) NOT NULL, `password` VARCHAR(128) NOT NULL, `access_level` TINYINT(1) NOT NULL DEFAULT 2, `wrong_times` TINYINT(2) NOT NULL DEFAULT 0, `default_date` VARCHAR(64) NOT NULL DEFAULT 'روز قبل', PRIMARY KEY (`id`), UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE);"
-        # self.cursor.execute(query)
-        # query = "CREATE TABLE IF NOT EXISTS `amar`.`sections` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `title_UNIQUE` (`title` ASC) VISIBLE);"
-        # self.cursor.execute(query)
-        # query = "CREATE TABLE IF NOT EXISTS `amar`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `section` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), INDEX `section_idx` (`section` ASC) VISIBLE, UNIQUE INDEX `place_section` (`title` ASC, `section` ASC) INVISIBLE, CONSTRAINT `section` FOREIGN KEY (`section`) REFERENCES `amar`.`sections` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
-        # self.cursor.execute(query)
-        # query = "CREATE TABLE IF NOT EXISTS `amar`.`parameters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `section` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) VISIBLE, UNIQUE INDEX `parameter_place_section` (`name` ASC, `place` ASC, `section` ASC) VISIBLE, INDEX `section2_idx` (`section` ASC) VISIBLE, INDEX `place_idx` (`place` ASC) VISIBLE, CONSTRAINT `section2` FOREIGN KEY (`section`) REFERENCES `amar`.`sections` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `amar`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
-        # self.cursor.execute(query)
-        # query = "CREATE TABLE IF NOT EXISTS `amar`.`parameters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) NOT NULL, `workout` DECIMAL(20,10) NOT NULL, `is_ok` TINYINT(1) NOT NULL DEFAULT 1, `date` DATE NOT NULL, `date_time_modified` DATETIME NOT NULL, `parameter_id` INT UNSIGNED NOT NULL, `user_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `parameter_id` FOREIGN KEY (`parameter_id`) REFERENCES `amar`.`parameters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `amar`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
-        # self.cursor.execute(query)
-        # try:
-        #     query = "INSERT INTO `amar`.`users` (`id`, `name`, `surname`, `username`, `password`, `access_level`) VALUES (0, 'مدیر', 'اصلی', 'admin', '559b56b2daa9bd5b0b659d534a3876bdf91fc9e108c60935534afd412551e740dcdf56130a077f8674b4d203eb28284a', 1);"
-        #     self.cursor.execute(query)
-        # except:
-        #     pass
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`users` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(64) NOT NULL, `surname` VARCHAR(64) NOT NULL, `username` VARCHAR(64) NOT NULL, `password` VARCHAR(128) NOT NULL, `access_level` TINYINT(1) NOT NULL DEFAULT 2, `wrong_times` TINYINT(2) NOT NULL DEFAULT 0, `default_date` VARCHAR(64) NOT NULL DEFAULT 'روز قبل', PRIMARY KEY (`id`), UNIQUE INDEX `username_UNIQUE` (`username` ASC) );"
+        self.cursor.execute(query)
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`sections` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `title_UNIQUE` (`title` ASC) );"
+        self.cursor.execute(query)
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`places` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `title` VARCHAR(45) NOT NULL, `section` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), INDEX `section_idx` (`section` ASC) , UNIQUE INDEX `place_section` (`title` ASC, `section` ASC) , CONSTRAINT `section` FOREIGN KEY (`section`) REFERENCES `amar`.`sections` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
+        self.cursor.execute(query)
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`parameters` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `name` VARCHAR(45) NOT NULL, `type` VARCHAR(45) NOT NULL, `unit` VARCHAR(45) NULL, `default_value` VARCHAR(45) NOT NULL, `variable_name` VARCHAR(45) NOT NULL, `warning_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `warning_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_lower_bound` DECIMAL(20,10) UNSIGNED NULL, `alarm_upper_bound` DECIMAL(20,10) UNSIGNED NULL, `formula` VARCHAR(255) NOT NULL DEFAULT '', `section` INT UNSIGNED NOT NULL, `place` INT UNSIGNED NOT NULL, `order` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), UNIQUE INDEX `variable_name_UNIQUE` (`variable_name` ASC) , UNIQUE INDEX `parameter_place_section` (`name` ASC, `place` ASC, `section` ASC) , INDEX `section2_idx` (`section` ASC) , INDEX `place_idx` (`place` ASC) , CONSTRAINT `section2` FOREIGN KEY (`section`) REFERENCES `amar`.`sections` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT, CONSTRAINT `place` FOREIGN KEY (`place`) REFERENCES `amar`.`places` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT);"
+        self.cursor.execute(query)
+        query = "CREATE TABLE IF NOT EXISTS `amar`.`parameters_log` (`id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `value` DECIMAL(20,10) NOT NULL, `workout` DECIMAL(20,10) NOT NULL, `is_ok` TINYINT(1) NOT NULL DEFAULT 1, `date` DATE NOT NULL, `date_time_modified` DATETIME NOT NULL, `parameter_id` INT UNSIGNED NOT NULL, `user_id` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`), CONSTRAINT `parameter_id` FOREIGN KEY (`parameter_id`) REFERENCES `amar`.`parameters` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, CONSTRAINT `user_id` FOREIGN KEY (`user_id`) REFERENCES `amar`.`users` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE);"
+        self.cursor.execute(query)
+        try:
+            query = "INSERT INTO `amar`.`users` (`id`, `name`, `surname`, `username`, `password`, `access_level`) VALUES (0, 'مدیر', 'اصلی', 'admin', '559b56b2daa9bd5b0b659d534a3876bdf91fc9e108c60935534afd412551e740dcdf56130a077f8674b4d203eb28284a', 1);"
+            self.cursor.execute(query)
+        except:
+            pass
 
     def create_user(self, name, surname, username, password):
         try:

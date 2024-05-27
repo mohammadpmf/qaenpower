@@ -1331,23 +1331,24 @@ class StaffWindow(MyWindows):
             sheet_state = 'update'
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.enable_for_safety()
-            for counter_widget in all_counter_widgets:
-                counter_widget: CounterWidget
-                if counter_widget.type in PARAMETER_TYPES[1:3]:
-                    continue # چون از نوع محاسباتی یا ثابتی هستند که قبلا ثبت شدن. پس لازم نیست دست بزنیم و مقادیر قبلیشون باید داخلشون نوشته بشه.
-                elif counter_widget.type==PARAMETER_TYPES[0]:
-                    previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
-                    counter_widget.label_previous_counter.config(text=round3(previous_value))
-                    counter_widget.entry_workout.config(state='normal')
-                    counter_widget.entry_workout.delete(0, END)
-                    if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
-                        counter_widget.boolean_var_bad.set(1)
-                        counter_widget.check()
-                        counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
-                    else:
-                        counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
-                    counter_widget.entry_workout.config(state='disabled')
-                    counter_widget.update_workout()
+            # for counter_widget in all_counter_widgets:
+            #     counter_widget: CounterWidget
+            #     if counter_widget.part_title==part_name:
+            #         if counter_widget.type in PARAMETER_TYPES[1:3]:
+            #             continue # چون از نوع محاسباتی یا ثابتی هستند که قبلا ثبت شدن. پس لازم نیست دست بزنیم و مقادیر قبلیشون باید داخلشون نوشته بشه.
+            #         elif counter_widget.type==PARAMETER_TYPES[0]:
+            #             previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
+            #             counter_widget.label_previous_counter.config(text=round3(previous_value))
+            #             counter_widget.entry_workout.config(state='normal')
+            #             counter_widget.entry_workout.delete(0, END)
+            #             if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
+            #                 counter_widget.boolean_var_bad.set(1)
+            #                 counter_widget.check()
+            #                 counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
+            #             else:
+            #                 counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
+            #             counter_widget.entry_workout.config(state='disabled')
+            #             counter_widget.update_workout()
         else:
             # یعنی این صفحه، صفحه ای هست که قراره داده جدید ثبت بشه. پس اطلاعات قبلی دیتابیس، باید در صورتی تو مقدار کار کرد جدید بیان که خودش خواسته باشه. اگه نه که برای ثابت و کنتور نمیان. برای محاسباتی هم بر اساس اطلاعات ناقص فعلی نوشته میشه
             sheet_state = 'insert'
@@ -1355,36 +1356,37 @@ class StaffWindow(MyWindows):
             self.enable_for_safety()
             for counter_widget in all_counter_widgets:
                 counter_widget: CounterWidget
-                if counter_widget.type == PARAMETER_TYPES[2]:
-                    continue
-                elif counter_widget.type == PARAMETER_TYPES[1]:
-                    counter_widget.entry_workout.delete(0, END)
-                    if counter_widget.default_value==DEFAULT_VALUES[0]:
-                        counter_widget.entry_workout.insert(0, round3(counter_widget.a))
-                    elif counter_widget.default_value==DEFAULT_VALUES[1]:
-                        counter_widget.entry_workout.insert(0, DEFAULT_VALUES[1])
-                    elif counter_widget.default_value==DEFAULT_VALUES[2]:
-                        pass
-                elif counter_widget.type==PARAMETER_TYPES[0]:
-                    counter_widget.entry_current_counter.delete(0, END)
-                    if counter_widget.default_value==DEFAULT_VALUES[0]:
-                        counter_widget.entry_current_counter.insert(0, round3(counter_widget.a))
-                    elif counter_widget.default_value==DEFAULT_VALUES[1]:
-                        counter_widget.entry_current_counter.insert(0, DEFAULT_VALUES[1])
-                    elif counter_widget.default_value==DEFAULT_VALUES[2]:
-                        pass
-                    # previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
-                    # counter_widget.label_previous_counter.config(text=round3(previous_value))
-                    # counter_widget.entry_workout.config(state='normal')
-                    # counter_widget.entry_workout.delete(0, END)
-                    # if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
-                    #     counter_widget.boolean_var_bad.set(1)
-                    #     counter_widget.check()
-                    #     counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
-                    # else:
-                    #     counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
-                    # counter_widget.entry_workout.config(state='disabled')
-                    # counter_widget.update_workout()
+                if counter_widget.part_title==part_name:
+                    if counter_widget.type == PARAMETER_TYPES[2]:
+                        continue
+                    elif counter_widget.type == PARAMETER_TYPES[1]:
+                        counter_widget.entry_workout.delete(0, END)
+                        if counter_widget.default_value==DEFAULT_VALUES[0]:
+                            counter_widget.entry_workout.insert(0, round3(counter_widget.a))
+                        elif counter_widget.default_value==DEFAULT_VALUES[1]:
+                            counter_widget.entry_workout.insert(0, DEFAULT_VALUES[1])
+                        elif counter_widget.default_value==DEFAULT_VALUES[2]:
+                            pass
+                    elif counter_widget.type==PARAMETER_TYPES[0]:
+                        counter_widget.entry_current_counter.delete(0, END)
+                        if counter_widget.default_value==DEFAULT_VALUES[0]:
+                            counter_widget.entry_current_counter.insert(0, round3(counter_widget.a))
+                        elif counter_widget.default_value==DEFAULT_VALUES[1]:
+                            counter_widget.entry_current_counter.insert(0, DEFAULT_VALUES[1])
+                        elif counter_widget.default_value==DEFAULT_VALUES[2]:
+                            pass
+                        # previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
+                        # counter_widget.label_previous_counter.config(text=round3(previous_value))
+                        # counter_widget.entry_workout.config(state='normal')
+                        # counter_widget.entry_workout.delete(0, END)
+                        # if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
+                        #     counter_widget.boolean_var_bad.set(1)
+                        #     counter_widget.check()
+                        #     counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
+                        # else:
+                        #     counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
+                        # counter_widget.entry_workout.config(state='disabled')
+                        # counter_widget.update_workout()
 
     def set_logged_parts_names(self):
         global date_picker
