@@ -383,7 +383,7 @@ class StaffWindow(MyWindows):
             self.verscrlbar_place.grid(row=19, rowspan=3, column=11, sticky='ns')
             self.treev_place.configure(yscrollcommand = self.verscrlbar_place.set)
             self.treev_place["columns"] = ("1", "2")
-            self.treev_place.column("1", width = 200, anchor ='c')
+            self.treev_place.column("1", width = 300, anchor ='c')
             self.treev_place.column("2", width = 50, anchor ='c')
             self.treev_place.heading("1", text ="نام مکان", anchor='c')
             self.treev_place.heading("2", text ="ردیف", anchor='c')
@@ -406,9 +406,9 @@ class StaffWindow(MyWindows):
             self.verscrlbar_all_counters.grid(row=19, rowspan=3, column=11, sticky='ns')
             self.treev_all_counters.configure(yscrollcommand = self.verscrlbar_all_counters.set)
             self.treev_all_counters["columns"] = ("1", "2", "3", "4")
-            self.treev_all_counters.column("1", width = 250, anchor ='c')
-            self.treev_all_counters.column("2", width = 200, anchor ='c')
-            self.treev_all_counters.column("3", width = 200, anchor ='c')
+            self.treev_all_counters.column("1", width = 350, anchor ='c')
+            self.treev_all_counters.column("2", width = 300, anchor ='c')
+            self.treev_all_counters.column("3", width = 300, anchor ='c')
             self.treev_all_counters.column("4", width = 100, anchor ='c')
             self.treev_all_counters.heading("1", text ="نام پارامتر", anchor='c')
             self.treev_all_counters.heading("2", text ="نام مکان", anchor='c')
@@ -1358,12 +1358,14 @@ class StaffWindow(MyWindows):
                         previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
                         counter_widget.label_previous_counter.config(text=round3(previous_value))
                         counter_widget.entry_workout.config(state='normal')
-                        counter_widget.entry_workout.delete(0, END)
+                        # counter_widget.entry_workout.delete(0, END) دقت کنم که این قبلا اینجا بود اگه آخرین کنتور خراب بود، باگ میخورد. ترتیب رو عوض کردم اون کنتور درست شد یکی دیگه خراب شد. خلاصه این که جاش اینجا نیست و تو دو تا شرط جدا نوشتم درست شد. گذاشتم یادم نره اشتباهی به خاطر یه خط ساده سازی دوباره این شکلیش نکنم.
                         if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
                             counter_widget.boolean_var_bad.set(1)
                             counter_widget.check()
+                            counter_widget.entry_workout.delete(0, END)
                             counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
-                        else:
+                        elif counter_widget.counter_log:
+                            counter_widget.entry_workout.delete(0, END)
                             counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
                         counter_widget.entry_workout.config(state='disabled')
                         counter_widget.update_workout()
@@ -1405,6 +1407,7 @@ class StaffWindow(MyWindows):
                         #     counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
                         # counter_widget.entry_workout.config(state='disabled')
                         # counter_widget.update_workout()
+        print('ok')
 
     def set_logged_parts_names(self):
         global date_picker
