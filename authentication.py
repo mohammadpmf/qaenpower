@@ -123,29 +123,23 @@ class StaffWindow(MyWindows):
         self.img_save           = Image.open(r'icons/save.png')
         self.img_update         = Image.open(r'icons/update.png')
         self.img_refresh        = Image.open(r'icons/refresh.png')
-        # self.img_previous_day   = Image.open(r'icons/right.png')
-        # self.img_next_day       = Image.open(r'icons/left.png')
         self.img_save           = self.img_save         .resize((SAVE_ICON_SIZE, SAVE_ICON_SIZE))
         self.img_update         = self.img_update       .resize((UPDATE_ICON_SIZE, UPDATE_ICON_SIZE))
         self.img_refresh        = self.img_refresh      .resize((REFRESH_ICON_SIZE, REFRESH_ICON_SIZE))
-        # self.img_previous_day   = self.img_previous_day .resize((CHANGE_DAY_ICON_SIZE, CHANGE_DAY_ICON_SIZE))
-        # self.img_next_day       = self.img_next_day     .resize((CHANGE_DAY_ICON_SIZE, CHANGE_DAY_ICON_SIZE))
         self.img_save           = ImageTk.PhotoImage(self.img_save)
         self.img_update         = ImageTk.PhotoImage(self.img_update)
         self.img_refresh        = ImageTk.PhotoImage(self.img_refresh)
-        # self.img_previous_day   = ImageTk.PhotoImage(self.img_previous_day)
-        # self.img_next_day       = ImageTk.PhotoImage(self.img_next_day)
         self.frame_add_statistics = Frame(self.frame_add_statistics_tab, cnf=CNF_FRM)
         self.frame_add_statistics.pack(side=RIGHT, anchor='ne')
         self.date_picker_frame = Frame(self.frame_add_statistics, bg=BG)
         self.date_picker_frame.pack(side=BOTTOM, expand=True, fill='x')
         self.tab_control_frame = ttk.Notebook(self.frame_add_statistics)
         self.tab_control_frame.pack(side=TOP, expand=True, fill='both')
-        self.change_day_frame = Frame(self.frame_add_statistics, bg=BG)
-        self.change_day_frame.pack(side=TOP, expand=True)
         self.tab_control_frame.bind('<Button-1>', self.disable_confirm_buttons)
         self.tab_control_frame.bind('<Key>', self.disable_confirm_buttons)
         self.tab_control_frame.bind('<ButtonRelease-1>', self.enable_or_disable_confirm_button)
+        self.change_day_frame = Frame(self.frame_add_statistics, bg=BG)
+        self.change_day_frame.pack(side=TOP, expand=True)
         date_picker = DatePicker(self.connection, self.date_picker_frame)
         date_picker.pack(side=RIGHT, expand=True, fill='both')
         self.date_picker_frame_left = Frame(self.date_picker_frame, bg=BG)
@@ -248,6 +242,7 @@ class StaffWindow(MyWindows):
             self.entry_counter_place = ttk.Combobox(self.frame_counter, font=FONT, width=WORDS_WIDTH, justify='center', state='readonly')
             self.label_counter_name = Label(self.frame_counter, text="نام پارامتر", cnf=CNF_LABEL)
             self.entry_counter_name = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER, justify='right')
+            # self.entry_counter_name.bind('<FocusIn>', lambda e: self.entry_counter_name.select_range(0,END))
             self.label_counter_type = Label(self.frame_counter, text="نوع پارامتر", cnf=CNF_LABEL)
             self.entry_counter_type = ttk.Combobox(self.frame_counter, values=PARAMETER_TYPES, font=FONT, width=WORDS_WIDTH, justify='center')
             self.entry_counter_type.insert(0, PARAMETER_TYPES[0])
@@ -255,24 +250,31 @@ class StaffWindow(MyWindows):
             self.entry_counter_type.bind("<<ComboboxSelected>>", self.check_counter_type)
             self.label_counter_unit = Label(self.frame_counter, text="واحد اندازه گیری", cnf=CNF_LABEL)
             self.entry_counter_unit = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+            # self.entry_counter_unit.bind('<FocusIn>', lambda e: self.entry_counter_unit.select_range(0,END))
             self.label_counter_default_value = Label(self.frame_counter, text="مقدار پیش فرض", cnf=CNF_LABEL)
             self.entry_counter_default_value = ttk.Combobox(self.frame_counter, values=DEFAULT_VALUES, font=FONT, width=WORDS_WIDTH, justify='center')
             self.entry_counter_default_value.insert(0, DEFAULT_VALUES[0])
             self.entry_counter_default_value.config(state='readonly')
             self.label_counter_variable_name = Label(self.frame_counter, text="نام متغیر", cnf=CNF_LABEL)
             self.entry_counter_variable_name = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+            # self.entry_counter_variable_name.bind('<FocusIn>', lambda e: self.entry_counter_variable_name.select_range(0,END))
             self.label_counter_warning_lower_bound = Label(self.frame_counter, text="حد پایین هشدار", cnf=CNF_LABEL)
             self.entry_counter_warning_lower_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
-            self.entry_counter_warning_lower_bound.insert(0, 0)
+            # self.entry_counter_variable_name.bind('<FocusIn>', lambda e: self.entry_counter_variable_name.select_range(0,END))
+            self.entry_counter_variable_name.insert(0, 0)
             self.label_counter_warning_upper_bound = Label(self.frame_counter, text="حد بالای هشدار", cnf=CNF_LABEL)
             self.entry_counter_warning_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+            # self.entry_counter_warning_upper_bound.bind('<FocusIn>', lambda e: self.entry_counter_warning_upper_bound.select_range(0,END))
             self.label_counter_alarm_lower_bound = Label(self.frame_counter, text="حد پایین آلارم", cnf=CNF_LABEL)
             self.entry_counter_alarm_lower_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+            # self.entry_counter_alarm_lower_bound.bind('<FocusIn>', lambda e: self.entry_counter_alarm_lower_bound.select_range(0,END))
             self.entry_counter_alarm_lower_bound.insert(0, 0)
             self.label_counter_alarm_upper_bound = Label(self.frame_counter, text="حد بالای آلارم", cnf=CNF_LABEL)
             self.entry_counter_alarm_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+            # self.entry_counter_alarm_upper_bound.bind('<FocusIn>', lambda e: self.entry_counter_alarm_upper_bound.select_range(0,END))
             self.label_counter_formula = Label(self.frame_counter, text="فرمول", cnf=CNF_LABEL)
             self.entry_counter_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+            # self.entry_counter_formula.bind('<FocusIn>', lambda e: self.entry_counter_formula.select_range(0,END))
             # self.label_counter_formula_parameters = Label(self.frame_counter, text="متغیرهای فرمول", cnf=CNF_LABEL)
             # self.entry_counter_formula_parameters = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
             self.btn_counter_register = Button(self.frame_counter, text='ایجاد پارامتر', cnf=CNF_BTN, command=self.create_parameter)
@@ -528,12 +530,12 @@ class StaffWindow(MyWindows):
 
     # تابعی برای این که وقتی نوع پارامتر انتخاب شد، کمبو باکس نوع مقدار پیش فرض تغییر کنه
     # و همچنین بعضی از باکس ها فعال یا غیر فعال بشن
-    def check_counter_type(self, event=None):
+    def check_counter_type(self, event=None, previous_type=DEFAULT_VALUES[0]):
         counter_type = self.entry_counter_type.get()
         self.entry_counter_default_value.config(state='normal')
         self.entry_counter_default_value.delete(0, END)
         if counter_type in PARAMETER_TYPES[0:2]: # یعنی یا کنتور معمولی باشه یا ثابت
-            self.entry_counter_default_value.insert(0, DEFAULT_VALUES[0])
+            self.entry_counter_default_value.insert(0, previous_type)
             self.entry_counter_default_value.config(values=DEFAULT_VALUES)
         elif counter_type==PARAMETER_TYPES[2]: # یعنی از نوع محاسباتی باشه
             self.entry_counter_default_value.config(values=[])
@@ -541,11 +543,8 @@ class StaffWindow(MyWindows):
         if counter_type==PARAMETER_TYPES[1]: # fixed:
             self.entry_counter_formula.delete(0, END)
             self.entry_counter_formula.config(state='readonly')
-            # self.entry_counter_formula_parameters.delete(0, END)
-            # self.entry_counter_formula_parameters.config(state='readonly')
         else:
             self.entry_counter_formula.config(state='normal')
-            # self.entry_counter_formula_parameters.config(state='normal')
 
     # تابعی جهت ایجاد پارامتر
     def create_parameter(self, event=None):
@@ -815,44 +814,49 @@ class StaffWindow(MyWindows):
         self.entry_counter_part.config(state='normal')
         self.entry_counter_place.config(state='normal')
         self.entry_counter_type.config(state='normal')
-        self.entry_counter_default_value.config(state='normal')
+        # self.entry_counter_default_value.config(state='normal') یه باگی داشت که تو تابع چک کنتور تایپ با ورودی دادن درستش کردم. دیگه لازم نیست که این خط اینجا باشه. گذاشتم که دفعه بعد یادم باشه. دفعه بعد میتونم پاک کنم.
         self.entry_counter_formula.config(state='normal')
-        # self.entry_counter_formula_parameters.config(state='normal')
         self.entry_counter_part.delete(0, END)
         self.entry_counter_place.delete(0, END)
         self.entry_counter_name.delete(0, END)
         self.entry_counter_type.delete(0, END)
         self.entry_counter_unit.delete(0, END)
-        self.entry_counter_default_value.delete(0, END)
+        # self.entry_counter_default_value.delete(0, END) همونی که بالا تر توضیح دادم. دفع بعد میتونم اینم پاک کنم.
         self.entry_counter_variable_name.delete(0, END)
         self.entry_counter_warning_lower_bound.delete(0, END)
         self.entry_counter_warning_upper_bound.delete(0, END)
         self.entry_counter_alarm_lower_bound.delete(0, END)
         self.entry_counter_alarm_upper_bound.delete(0, END)
         self.entry_counter_formula.delete(0, END)
-        # self.entry_counter_formula_parameters.delete(0, END)
         self.entry_counter_part.insert(0, temp_part)
         self.entry_counter_place.insert(0, temp_place)
         self.entry_counter_name.insert(0, temp_name)
         self.entry_counter_type.insert(0, temp_counter.type)
-        self.entry_counter_default_value.insert(0, temp_counter.default_value)
+        # self.entry_counter_default_value.insert(0, temp_counter.default_value) این هم دفع بعد میتونم پاک کنم.
         self.entry_counter_variable_name.insert(0, temp_counter.variable_name)
         self.entry_counter_formula.insert(0, temp_counter.formula)
         if temp_counter.unit:
             self.entry_counter_unit.insert(0, temp_counter.unit)
         if temp_counter.warning_lower_bound:
             self.entry_counter_warning_lower_bound.insert(0, round3(temp_counter.warning_lower_bound))
+        else:
+            self.entry_counter_warning_lower_bound.insert(0, 0)
         if temp_counter.warning_upper_bound:
             self.entry_counter_warning_upper_bound.insert(0, round3(temp_counter.warning_upper_bound))
         if temp_counter.alarm_lower_bound:
             self.entry_counter_alarm_lower_bound.insert(0, round3(temp_counter.alarm_lower_bound))
+        else:
+            self.entry_counter_alarm_lower_bound.insert(0, 0)
         if temp_counter.alarm_upper_bound:
             self.entry_counter_alarm_upper_bound.insert(0, round3(temp_counter.alarm_upper_bound))
         self.entry_counter_part.config(state='readonly')
         self.entry_counter_place.config(state='readonly')
         self.entry_counter_type.config(state='readonly')
         self.entry_counter_default_value.config(state='readonly')
-        self.check_counter_type()
+        # یه باگ داشت که مقدار پیش فرض رو درست نمینوشت. چون آخر سر تابع چک کنتور تایپ رو کال کرده
+        # بودم که باعث میشد پاک بشه و همون مقدار اول پیش فرض برنامه داخلش نوشته بشه. به خاطر همین
+        # به این تابع یه ورودی دادم که موقع آپدیت اذیت نکنه
+        self.check_counter_type(previous_type=temp_counter.default_value)
         # تا اینجا اوکی هست. یه باگی داشت که وقتی رو تری ویو دابل کلیک میکردیم اینور نمیشد مکان
         # کنتور رو انتخاب کرد. باید حتما رو بخش کلیک میکردیم تا مکان هاش بیان. برای رفع این
         # باگ این کار های پایین رو انجام دادم.
@@ -861,8 +865,7 @@ class StaffWindow(MyWindows):
         for p in places:
             p:Place
             new_values.append(p.title)
-        self.entry_counter_place.config(values=new_values)
-        
+        self.entry_counter_place.config(values=new_values)        
 
     ########################################## create part functions ###########################################
     # تابعی جهت ساخت بخش
@@ -1303,6 +1306,7 @@ class StaffWindow(MyWindows):
         self.btn_refresh_counter_logs.config(state='disabled', relief='flat')
         date_picker.btn_yesterday.config(state='disabled', relief='flat')
         date_picker.btn_tomorrow.config(state='disabled', relief='flat')
+        date_picker.btn_today.config(state='disabled', relief='flat')
         date_picker.combo_day.config(state='disabled')
         date_picker.combo_month.config(state='disabled')
         date_picker.combo_year.config(state='disabled')
@@ -1312,6 +1316,7 @@ class StaffWindow(MyWindows):
         self.btn_refresh_counter_logs.config(state='normal', relief='raised')
         date_picker.btn_yesterday.config(state='normal', relief='raised')
         date_picker.btn_tomorrow.config(state='normal', relief='raised')
+        date_picker.btn_today.config(state='normal', relief='raised')
         date_picker.combo_day.config(state='readonly')
         date_picker.combo_month.config(state='readonly')
         date_picker.combo_year.config(state='readonly')
@@ -1324,31 +1329,44 @@ class StaffWindow(MyWindows):
         self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
         self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
         self.disable_for_safety()
-        last_selected_child_tab_number_to_retrieve = self.tab_control_frame.index(self.tab_control_frame.select())
-        part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
+        # این خط و بعدیش رو همین طوری نوشته بودم. کلا درست کار میکرد. به غیر از بار اول که هیچ تبی
+        # تو قسمت ثبت آمار وجود نداشت. دفعه اول که یه پارت میساختیم چون هیچ تبی وجود نداشت ارور
+        # میداد و جابه جایی صفحات درست کار نمیکرد. به خاطر همین این ترای و اکسپت رو براش نوشتم
+        # بعد به پارت نیم ارور میداد. اون رو هم درست کردم. در آخر چون سلکت نشده بود به رفرش یو آی فرام
+        # انیور ارور میداد که اون جا هم یه ترای اکسپت گذاشتم. این طوری باعث میشه که همون دفعه اول
+        # هم اوکی باشه و بشه با برنامه کار کرد. اما موقعی که اینها نبود باید برنامه بسته میشد و مجددا
+        # باز میشد تا درست کار کنه.
+        try:
+            last_selected_child_tab_number_to_retrieve = self.tab_control_frame.index(self.tab_control_frame.select())
+        except:
+            last_selected_child_tab_number_to_retrieve = 0
+        try:
+            part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
+        except:
+            part_name = ''
         if part_name in self.logged_parts_names:
             # یعنی این صفحه، صفحه ای هست که قراره آپدیت بشه. پس اطلاعات قبلی دیتابیس باید نمایش داده بشن.
             sheet_state = 'update'
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.enable_for_safety()
-            # for counter_widget in all_counter_widgets:
-            #     counter_widget: CounterWidget
-            #     if counter_widget.part_title==part_name:
-            #         if counter_widget.type in PARAMETER_TYPES[1:3]:
-            #             continue # چون از نوع محاسباتی یا ثابتی هستند که قبلا ثبت شدن. پس لازم نیست دست بزنیم و مقادیر قبلیشون باید داخلشون نوشته بشه.
-            #         elif counter_widget.type==PARAMETER_TYPES[0]:
-            #             previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
-            #             counter_widget.label_previous_counter.config(text=round3(previous_value))
-            #             counter_widget.entry_workout.config(state='normal')
-            #             counter_widget.entry_workout.delete(0, END)
-            #             if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
-            #                 counter_widget.boolean_var_bad.set(1)
-            #                 counter_widget.check()
-            #                 counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
-            #             else:
-            #                 counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
-            #             counter_widget.entry_workout.config(state='disabled')
-            #             counter_widget.update_workout()
+            for counter_widget in all_counter_widgets:
+                counter_widget: CounterWidget
+                if counter_widget.part_title==part_name:
+                    if counter_widget.type in PARAMETER_TYPES[1:3]:
+                        continue # چون از نوع محاسباتی یا ثابتی هستند که قبلا ثبت شدن. پس لازم نیست دست بزنیم و مقادیر قبلیشون باید داخلشون نوشته بشه.
+                    elif counter_widget.type==PARAMETER_TYPES[0]:
+                        previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
+                        counter_widget.label_previous_counter.config(text=round3(previous_value))
+                        counter_widget.entry_workout.config(state='normal')
+                        counter_widget.entry_workout.delete(0, END)
+                        if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
+                            counter_widget.boolean_var_bad.set(1)
+                            counter_widget.check()
+                            counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
+                        else:
+                            counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
+                        counter_widget.entry_workout.config(state='disabled')
+                        counter_widget.update_workout()
         else:
             # یعنی این صفحه، صفحه ای هست که قراره داده جدید ثبت بشه. پس اطلاعات قبلی دیتابیس، باید در صورتی تو مقدار کار کرد جدید بیان که خودش خواسته باشه. اگه نه که برای ثابت و کنتور نمیان. برای محاسباتی هم بر اساس اطلاعات ناقص فعلی نوشته میشه
             sheet_state = 'insert'
@@ -1512,49 +1530,51 @@ class StaffWindow(MyWindows):
             msb.showinfo('success', message)
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.enable_for_safety()
-            self.update_next_logs_because_they_may_be_related_to_this_logs()
+            self.update_next_logs_if_necessary()
         else:
             self.enable_or_disable_confirm_button()
             msb.showerror("ارور", result_message)
 
-    def update_next_logs_because_they_may_be_related_to_this_logs(self):
+    def update_next_logs_if_necessary(self):
         global all_variables_current_value_and_workout, all_counter_widgets
         temp_date = date_picker.get_date()
-        # برای اینکه ایزوله باشه و کار بقیه برنامه رو خراب نکنه، تو یه متغیر جدید ذخیره کردم و همینجا
-        # فقط ازش استفاده میشه. این تابع که تموم شه دیگه کاری باهاش نداریم
         updated_logs = self.connection.get_parameters_log_by_date(temp_date)
-        next_day_logs = self.connection.get_parameters_next_log_by_date(temp_date)
-        try:
-            for counters in self.all_counters_2d:
-                for counter in counters:
-                    counter: Parameter
-                    if counter.formula != "":
-                        parameters = get_formula_parameters(counter.formula)
-                        values = []
-                        for p in parameters:
-                            if p=='b':
-                                values.append(next_day_logs.get(counter.variable_name).value)
-                            elif p=='a':
-                                values.append(updated_logs.get(counter.variable_name).value)
-                            else:
-                                values.append(updated_logs.get(p).workout)
-                        answer = calculate_fn(counter.formula, parameters, values)
+        updated_next_logs = self.connection.get_parameters_next_log_by_date(temp_date)
+        for counters in self.all_counters_2d:
+            for counter in counters:
+                counter: Parameter
+                if counter.type==PARAMETER_TYPES[1]:
+                    continue # پارامترهای ثابت، وابسته به بقیه نیستند. پس تغییری نمیکنند و لازم نیست الکی بررسیشون کنیم و چون تغییر نمیکنند به دیتابیس هم لازم نیست دستوری بدیم پس میریم سراغ پارامتر بعدی
+                # چون ثابت نبودند، پس حتما فرمول دارند
+                parameters = get_formula_parameters(counter.formula)
+                values = []
+                for p in parameters:
+                    if updated_next_logs.get(counter.variable_name)!=None:
+                        if p=='b':
+                            values.append(updated_next_logs.get(counter.variable_name).value)
+                        elif p=='a':
+                            values.append(updated_logs.get(counter.variable_name).value)
+                        else:
+                            values.append(updated_next_logs.get(p).workout)
+                    elif updated_next_logs.get(counter.variable_name)==None:
+                        values.append(0)
+                answer = calculate_fn(counter.formula, parameters, values)
+                if updated_next_logs.get(counter.variable_name)!=None:
                     if counter.type==PARAMETER_TYPES[2]:
-                        next_day_logs[counter.variable_name].workout=answer
-                    elif counter.type==PARAMETER_TYPES[1]:
-                        pass # پارامترهای ثابت، وابسته به بقیه نیستند. پس تغییری نمیکنند.
+                        updated_next_logs[counter.variable_name].workout=answer
                     elif counter.type==PARAMETER_TYPES[0]:
                         # پارامترهای کنتور، اگه سالم باشن باید تغییر کنند. اما اگه خراب باشن، به مقدار ورک اوتشون دست نمیزنیم و همون قبلی میمونن
-                        if next_day_logs[counter.variable_name].is_ok:
-                            next_day_logs[counter.variable_name].workout=answer
+                        if updated_next_logs[counter.variable_name].is_ok:
+                            updated_next_logs[counter.variable_name].workout=answer
                         else:
                             pass
-            for log in next_day_logs.values():
+                else:
+                    pass
+        for log in updated_next_logs.values():
+            if log!=None:
                 self.connection.change_log_by_computer_id(log)
-        except:
-            pass
         del updated_logs
-        del next_day_logs
+        del updated_next_logs
 
 
     ########################################### generic functions ###########################################
@@ -1582,7 +1602,10 @@ class StaffWindow(MyWindows):
                     temp=self.tab_control_frame.index('end')-1
                 self.refresh_ui()
                 self.tab_control.select(self.frame_add_statistics_tab)
-                self.tab_control_frame.select(temp)
+                try:
+                    self.tab_control_frame.select(temp)
+                except:
+                    pass # اولین بار که برنامه هیچ صفحه ای نداره، نمیتونه یک تب خاص رو بذاره و ارور میده. باید صفحه بسته بشه و دوباره باز بشه. که با این پس که گذاشتم دیگه لازم نیست ببنده. چون ارور نمیده
                 self.enable_or_disable_confirm_button()
     
     def confirm_default_date(self):
@@ -1602,25 +1625,29 @@ class DatePicker(MyWindows):
         self.img_calendar       = Image.open(r'icons/calendar.png')
         self.img_previous_day   = Image.open(r'icons/right.png')
         self.img_next_day       = Image.open(r'icons/left.png')
+        self.img_today          = Image.open(r'icons/today.png')
         self.img_calendar       = self.img_calendar     .resize((DATE_PICKER_ICON_SIZE, DATE_PICKER_ICON_SIZE))
         self.img_previous_day   = self.img_previous_day .resize((CHANGE_DAY_ICON_SIZE, CHANGE_DAY_ICON_SIZE))
         self.img_next_day       = self.img_next_day     .resize((CHANGE_DAY_ICON_SIZE, CHANGE_DAY_ICON_SIZE))
+        self.img_today          = self.img_today        .resize((CHANGE_DAY_ICON_SIZE, CHANGE_DAY_ICON_SIZE))
         self.img_calendar       = ImageTk.PhotoImage(self.img_calendar)
         self.img_previous_day   = ImageTk.PhotoImage(self.img_previous_day)
         self.img_next_day       = ImageTk.PhotoImage(self.img_next_day)
-        self.btn_show_date_picker = Button(self.frame, image=self.img_calendar, cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=self.show_or_hide_date_picker)
+        self.img_today          = ImageTk.PhotoImage(self.img_today)
         self.year = StringVar(self.frame)
         self.month = StringVar(self.frame)
         self.day = StringVar(self.frame)
+        self.btn_show_date_picker = Button(self.frame, image=self.img_calendar, cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=self.show_or_hide_date_picker)
         self.btn_yesterday = Button(self.frame, image=self.img_previous_day, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(-1))
         self.btn_tomorrow = Button(self.frame, image=self.img_next_day, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(1))
+        self.btn_today = Button(self.frame, image=self.img_today, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: self.refresh_date())
         self.combo_year = ttk.Combobox(self.frame, values=self.years_list, textvariable=self.year, width=7, state='readonly', font=FONT, justify='center')
         self.combo_month = ttk.Combobox(self.frame, values=self.months_list, textvariable=self.month, width=5, state='readonly', font=FONT, justify='center')
         self.combo_day = ttk.Combobox(self.frame, values=self.days_list, textvariable=self.day, width=5, state='readonly', font=FONT, justify='center')
         self.combo_year.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_month.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_day.bind("<<ComboboxSelected>>", self.check_date)
-        self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL, pady=32, width=20)
+        self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL, pady=32, width=18)
         self.btn_show_date_picker.pack(cnf=CNF_PACK2)
         self.btn_tomorrow.pack(cnf=CNF_PACK2, side=LEFT)
         self.label_date.pack(cnf=CNF_PACK2, side=LEFT)
@@ -1633,11 +1660,13 @@ class DatePicker(MyWindows):
             self.combo_day.pack(cnf=CNF_PACK2)
             self.combo_month.pack(cnf=CNF_PACK2)
             self.combo_year.pack(cnf=CNF_PACK2)
+            self.btn_today.pack(cnf=CNF_PACK2)
         else:
             self.btn_show_date_picker.config(relief='raised')
             self.combo_day.pack_forget()
             self.combo_month.pack_forget()
             self.combo_year.pack_forget()
+            self.btn_today.pack_forget()
 
     def refresh_date(self, date=None):
         global selected_date, all_variables_current_value_and_workout
@@ -1759,7 +1788,7 @@ class PartWidget(MyWindows):
                     all_counter_widgets.append(c)
                     c.grid(row=i, column=1000-1-j, sticky='news', padx=4, pady=2)
 
-class CounterWidget(Parameter, MyWindows):
+class CounterWidget(Parameter, MyWindows): #inja
     def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, part_title=None, *args, **kwargs):
         super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
