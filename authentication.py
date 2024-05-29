@@ -131,25 +131,27 @@ class StaffWindow(MyWindows):
         self.img_refresh        = ImageTk.PhotoImage(self.img_refresh)
         self.frame_add_statistics = Frame(self.frame_add_statistics_tab, cnf=CNF_FRM)
         self.frame_add_statistics.pack(side=RIGHT, anchor='ne')
-        self.date_picker_frame = Frame(self.frame_add_statistics, bg=BG)
-        self.date_picker_frame.pack(side=BOTTOM, expand=True, fill='x')
         self.tab_control_frame = ttk.Notebook(self.frame_add_statistics)
         self.tab_control_frame.pack(side=TOP, expand=True, fill='both')
         self.tab_control_frame.bind('<Button-1>', self.disable_confirm_buttons)
         self.tab_control_frame.bind('<Key>', self.disable_confirm_buttons)
         self.tab_control_frame.bind('<ButtonRelease-1>', self.enable_or_disable_confirm_button)
-        self.change_day_frame = Frame(self.frame_add_statistics, bg=BG)
-        self.change_day_frame.pack(side=TOP, expand=True)
-        date_picker = DatePicker(self.connection, self.date_picker_frame)
+        self.bottom_frame = Frame(self.frame_add_statistics, bg=BG)
+        self.bottom_frame.pack(side=BOTTOM, expand=True, fill='x')
+        # self.change_day_frame = Frame(self.frame_add_statistics, bg=BG)
+        # self.change_day_frame.pack(side=TOP, expand=True)
+        self.bottom_frame_right = Frame(self.bottom_frame, bg=BG)
+        self.bottom_frame_right.pack(side=RIGHT, expand=True, fill='both')
+        self.bottom_frame_left = Frame(self.bottom_frame, bg=BG)
+        self.bottom_frame_left.pack(side=LEFT)
+        date_picker = DatePicker(self.connection, self.bottom_frame_right)
         date_picker.pack(side=RIGHT, expand=True, fill='both')
-        self.date_picker_frame_left = Frame(self.date_picker_frame, bg=BG)
-        self.date_picker_frame_left.pack(side=LEFT, expand=True, fill='both')
-        self.btn_confirm_counter_log_insert = Button(self.date_picker_frame_left, image=self.img_save, state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_insert)
-        self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX)
-        self.btn_confirm_counter_log_update = Button(self.date_picker_frame_left, image=self.img_update, state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
+        self.btn_confirm_counter_log_insert = Button(self.bottom_frame_left, image=self.img_save, state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_insert)
+        # self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX) # تو ورژنی که خواسته بود گفت که حذف بشه موقعی که فعال نیست.
+        self.btn_confirm_counter_log_update = Button(self.bottom_frame_left, image=self.img_update, state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
         self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
-        self.btn_refresh_counter_logs = Button(self.date_picker_frame_left, image=self.img_refresh, font=FONT2, cnf=CNF_BTN, command=lambda: date_picker.time_delta(0))
-        self.btn_refresh_counter_logs.pack(side=LEFT, padx=PADX)
+        self.btn_refresh_counter_logs = Button(self.bottom_frame_left, image=self.img_refresh, font=FONT2, cnf=CNF_BTN, command=lambda: date_picker.time_delta(0))
+        self.btn_refresh_counter_logs.pack(side=RIGHT, padx=PADX)
         self.seed_tabs_of_parts()
 
         ###################################### frame_change_users_password ######################################
@@ -273,7 +275,8 @@ class StaffWindow(MyWindows):
             self.entry_counter_alarm_upper_bound = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
             # self.entry_counter_alarm_upper_bound.bind('<FocusIn>', lambda e: self.entry_counter_alarm_upper_bound.select_range(0,END))
             self.label_counter_formula = Label(self.frame_counter, text="فرمول", cnf=CNF_LABEL)
-            self.entry_counter_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER)
+            self.entry_counter_formula = Entry(self.frame_counter, cnf=CNF_ENTRY_COUNTER, width=WORDS_WIDTH*2)
+            self.entry_counter_formula.insert(0, 'b-a')
             # self.entry_counter_formula.bind('<FocusIn>', lambda e: self.entry_counter_formula.select_range(0,END))
             self.btn_counter_register = Button(self.frame_counter, text='ایجاد پارامتر', cnf=CNF_BTN, command=self.create_parameter)
             self.btn_counter_update = Button(self.frame_counter, text='ویرایش پارامتر', cnf=CNF_BTN, command=self.update_parameter)
@@ -301,7 +304,7 @@ class StaffWindow(MyWindows):
             self.label_counter_alarm_upper_bound.grid(row=13, column=3, cnf=CNF_GRID)
             self.entry_counter_alarm_upper_bound.grid(row=13, column=1, cnf=CNF_GRID)
             self.label_counter_formula.grid(row=15, column=7, cnf=CNF_GRID)
-            self.entry_counter_formula.grid(row=15, column=5, cnf=CNF_GRID)
+            self.entry_counter_formula.grid(row=15, column=3, columnspan=3, cnf=CNF_GRID)
             self.btn_counter_register.grid(row=17, column=7, cnf=CNF_GRID)
             self.btn_counter_update.grid(row=17, column=5, cnf=CNF_GRID)
             self.btn_counter_delete.grid(row=17, column=3, cnf=CNF_GRID)
@@ -1342,6 +1345,8 @@ class StaffWindow(MyWindows):
             # یعنی این صفحه، صفحه ای هست که قراره آپدیت بشه. پس اطلاعات قبلی دیتابیس باید نمایش داده بشن.
             sheet_state = 'update'
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.btn_confirm_counter_log_insert.pack_forget()
+            self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
             self.enable_for_safety()
             for counter_widget in all_counter_widgets:
                 counter_widget: CounterWidget
@@ -1366,6 +1371,8 @@ class StaffWindow(MyWindows):
         else:
             # یعنی این صفحه، صفحه ای هست که قراره داده جدید ثبت بشه. پس اطلاعات قبلی دیتابیس، باید در صورتی تو مقدار کار کرد جدید بیان که خودش خواسته باشه. اگه نه که برای ثابت و کنتور نمیان. برای محاسباتی هم بر اساس اطلاعات ناقص فعلی نوشته میشه
             sheet_state = 'insert'
+            self.btn_confirm_counter_log_update.pack_forget()
+            self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX)
             self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
             self.enable_for_safety()
             for counter_widget in all_counter_widgets:
@@ -1401,7 +1408,6 @@ class StaffWindow(MyWindows):
                         #     counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
                         # counter_widget.entry_workout.config(state='disabled')
                         # counter_widget.update_workout()
-        print('ok')
 
     def set_logged_parts_names(self):
         global date_picker
@@ -1452,6 +1458,8 @@ class StaffWindow(MyWindows):
             sheet_state = 'update'
             self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.btn_confirm_counter_log_insert.pack_forget()
+            self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
             self.enable_for_safety()
         else:
             self.enable_or_disable_confirm_button()
@@ -1631,21 +1639,29 @@ class DatePicker(MyWindows):
         self.img_previous_day   = ImageTk.PhotoImage(self.img_previous_day)
         self.img_next_day       = ImageTk.PhotoImage(self.img_next_day)
         self.img_today          = ImageTk.PhotoImage(self.img_today)
-        self.year = StringVar(self.frame)
-        self.month = StringVar(self.frame)
-        self.day = StringVar(self.frame)
-        self.btn_show_date_picker = Button(self.frame, image=self.img_calendar, cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=self.show_or_hide_date_picker)
-        self.btn_yesterday = Button(self.frame, image=self.img_previous_day, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(-1))
-        self.btn_tomorrow = Button(self.frame, image=self.img_next_day, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(1))
-        self.btn_today = Button(self.frame, image=self.img_today, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: self.refresh_date())
-        self.combo_year = ttk.Combobox(self.frame, values=self.years_list, textvariable=self.year, width=7, state='readonly', font=FONT, justify='center')
-        self.combo_month = ttk.Combobox(self.frame, values=self.months_list, textvariable=self.month, width=5, state='readonly', font=FONT, justify='center')
-        self.combo_day = ttk.Combobox(self.frame, values=self.days_list, textvariable=self.day, width=5, state='readonly', font=FONT, justify='center')
+        self.frame_right = Frame(self.frame, bg=BG)
+        self.frame_middle = Frame(self.frame, bg=BG)
+        self.frame_left = Frame(self.frame, bg=BG)
+        self.frame_right.pack(side=RIGHT)
+        self.frame_middle.pack(side=RIGHT, expand=True, fill='both')
+        self.frame_left.pack(side=RIGHT, expand=True, fill='both')
+        self.year = StringVar(self.frame_right)
+        self.month = StringVar(self.frame_right)
+        self.day = StringVar(self.frame_right)
+
+        self.btn_show_date_picker = Button(self.frame_right, image=self.img_calendar, cnf=CNF_BTN, font=FONT3, padx=0, pady=0, command=self.show_or_hide_date_picker)
+        self.combo_year = ttk.Combobox(self.frame_right, values=self.years_list, textvariable=self.year, width=7, state='readonly', font=FONT, justify='center')
+        self.combo_month = ttk.Combobox(self.frame_right, values=self.months_list, textvariable=self.month, width=5, state='readonly', font=FONT, justify='center')
+        self.combo_day = ttk.Combobox(self.frame_right, values=self.days_list, textvariable=self.day, width=5, state='readonly', font=FONT, justify='center')
+        self.btn_today = Button(self.frame_right, image=self.img_today, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: self.refresh_date())
         self.combo_year.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_month.bind("<<ComboboxSelected>>", self.check_date)
         self.combo_day.bind("<<ComboboxSelected>>", self.check_date)
-        self.label_date = Label(self.frame, text="!!! تاریخ نامعتبر !!!", cnf=CNF_LABEL, pady=32, width=18)
         self.btn_show_date_picker.pack(cnf=CNF_PACK2)
+
+        self.btn_yesterday = Button(self.frame_middle, image=self.img_previous_day, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(-1))
+        self.btn_tomorrow = Button(self.frame_middle, image=self.img_next_day, cnf=CNF_BTN, font=FONT, padx=0, pady=0, command=lambda: date_picker.time_delta(1))
+        self.label_date = Label(self.frame_middle, text=INVALID_DATE, cnf=CNF_LABEL, pady=32, width=14)
         self.btn_tomorrow.pack(cnf=CNF_PACK2, side=LEFT)
         self.label_date.pack(cnf=CNF_PACK2, side=LEFT)
         self.btn_yesterday.pack(cnf=CNF_PACK2, side=LEFT)
@@ -1693,16 +1709,30 @@ class DatePicker(MyWindows):
         self.check_date()
 
     def check_date(self, event=None):
-        y = self.year.get()
-        m = self.month.get()
-        d = self.day.get()
+        y = int(self.year.get())
+        m = int(self.month.get())
+        d = int(self.day.get())
+        now = datetime.now()
+        jalali_now = jdatetime.GregorianToJalali(now.year, now.month, now.day)
+        if y>jalali_now.jyear:
+            temp=INVALID_DATE
+            self.label_date.config(text=temp)
+            return
+        if m>jalali_now.jmonth:
+            temp=INVALID_DATE
+            self.label_date.config(text=temp)
+            return
+        if d>jalali_now.jday:
+            temp=INVALID_DATE
+            self.label_date.config(text=temp)
+            return
         try:
             date = jdatetime.date(int(y), int(m), int(d))
             temp = f"{WEEKDAYS.get(date.weekday())} {d} {MONTH_NAMES.get(int(m))} {y}"
             self.label_date.config(text=temp)
             self.confirm()
         except ValueError:
-            temp = "!!! تاریخ نامعتبر !!!"
+            temp=INVALID_DATE
             self.label_date.config(text=temp)
 
     def confirm(self):
@@ -1721,9 +1751,11 @@ class DatePicker(MyWindows):
             new_date = jdate + d
             self.refresh_date(new_date)
         except ValueError:
-            msb.showerror('', "تاریخ به درستی انتخاب نشده است")
+            msb.showerror('', INVALID_DATE)
 
     def get_date(self):
+        if self.label_date['text']==INVALID_DATE:
+            return None
         try:
             jdate = jdatetime.date(int(self.combo_year.get()), int(self.combo_month.get()), int(self.combo_day.get()))
             date = jdate.togregorian()
@@ -1781,11 +1813,11 @@ class PartWidget(MyWindows):
                         id=counter.id,
                         place_title=counter.place_title,
                         part_title=counter.part_title,
-                        font=FONT2)
+                        )
                     all_counter_widgets.append(c)
                     c.grid(row=i, column=1000-1-j, sticky='news', padx=4, pady=2)
 
-class CounterWidget(Parameter, MyWindows): #inja
+class CounterWidget(Parameter, MyWindows):
     def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, part_title=None, *args, **kwargs):
         super().__init__(part, place, name, variable_name, formula, type, default_value, unit, warning_lower_bound, warning_upper_bound, alarm_lower_bound, alarm_upper_bound, id, place_title, part_title)
         MyWindows.__init__(self, connection, root)
@@ -1796,7 +1828,7 @@ class CounterWidget(Parameter, MyWindows): #inja
         self.info_widget = Frame(self.root, bg=BG)
         self.info_widget.grid()
         self.frame = LabelFrame(self.root, labelwidget=self.info_widget, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=BG, fg=FG, *args, **kwargs)
-        self.lbl_title = Label(self.info_widget, cnf=CNF_LABEL, font=FONT3, text=self.name)
+        self.lbl_title = Label(self.info_widget, cnf=CNF_LABEL2, text=self.name)
         self.lbl_info = Label(self.info_widget, cnf=CNF_LABEL2, padx=1, text='🛈')
         self.lbl_title.grid(row=1, column=1)
         self.lbl_info.grid(row=1, column=2)
@@ -1813,11 +1845,11 @@ class CounterWidget(Parameter, MyWindows): #inja
                     values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
             self.answer = calculate_fn(self.formula, parameters, values)
         if self.type==PARAMETER_TYPES[2]:
-            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LABEL2, pady=4, width=17, height=1, *args, **kwargs)
+            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LABEL2, font=FONT2, pady=4, width=18, height=1, *args, **kwargs)
         elif self.type==PARAMETER_TYPES[1]:
             self.btn_copy = Label(self.frame, image=self.img_copy, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
-            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=22, *args, **kwargs)
+            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, font=FONT2, width=24, *args, **kwargs)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
             self.btn_copy.grid(row=1, column=2, cnf=CNF_GRID2)
@@ -1825,9 +1857,9 @@ class CounterWidget(Parameter, MyWindows): #inja
         elif self.type==PARAMETER_TYPES[0]:
             self.btn_copy = Label(self.frame, image=self.img_copy, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
-            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH2+1, *args, **kwargs)
+            self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, font=FONT2_5, width=WORDS_WIDTH2+2, *args, **kwargs)
             self.label_previous_counter = Label(self.frame, cnf=CNF_LABEL2, text=round3(self.a), *args, **kwargs)
-            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, width=WORDS_WIDTH3, *args, **kwargs)
+            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, font=FONT2, width=WORDS_WIDTH3+2, *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
             self.frame.bind('<FocusOut>', self.next)
@@ -1873,7 +1905,7 @@ class CounterWidget(Parameter, MyWindows): #inja
             elif isinstance(w_u, Decimal) and self.workout>w_u:
                 bg = WARNING_COLOR
             else:
-                bg=BG
+                bg = OK_COLOR
         except ValueError:
             bg=ALARM_COLOR
         except TypeError:

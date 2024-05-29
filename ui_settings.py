@@ -14,6 +14,8 @@ DISABLED_FG = "#1b1b1b"
 DISABLED_BG = '#cccccc'
 WARNING_COLOR = '#d6d051'
 ALARM_COLOR = '#aa0000'
+OK_COLOR = 'dark green'
+INVALID_DATE = "!!! تاریخ نامعتبر !!!"
 COPY_ICON_SIZE = 25
 DATE_PICKER_ICON_SIZE = CHANGE_DAY_ICON_SIZE = 64
 SAVE_ICON_SIZE = UPDATE_ICON_SIZE = REFRESH_ICON_SIZE = 64
@@ -26,6 +28,7 @@ BNT_COPY_WIDTH=1
 PARAMETER_WIDGET_WIDTH = WORDS_WIDTH2*2
 FONT = ('B Nazanin', 24)
 FONT2 = ('B Nazanin', 18)
+FONT2_5 = ('B Nazanin', 16)
 FONT3 = ('B Nazanin', 12)
 FONT4 = ('B Nazanin', 8)
 PARAMETER_TYPES = ['کنتور', 'ثابت', 'محاسباتی']
@@ -48,21 +51,52 @@ CNF_BTN = {
     'padx': PADX,
     'pady': PADY,
 }
-CNF_BTN2 = CNF_BTN.copy()
-CNF_BTN2.update({
+CNF_BTN2 = {
     'bg': BG_LIGHTER,
+    'fg': FG,
     'font': FONT3,
-})
-CNF_LABEL=CNF_BTN.copy()
-CNF_LABEL2=CNF_LABEL.copy()
-CNF_LABEL2.update({
+    'padx': PADX,
+    'pady': PADY,
+}
+CNF_LABEL={
+    'bg': BG,
+    'fg': FG,
+    'font': FONT,
+    'padx': PADX,
+    'pady': PADY,
+}
+CNF_LABEL2={
+    'bg': BG,
+    'fg': FG,
     'font': FONT3,
+    'padx': PADX,
+    'pady': PADY,
     'disabledforeground': DISABLED_FG,
     'justify': 'c',
-})
-CNF_CHB=CNF_BTN.copy()
-CNF_CHB2=CNF_BTN.copy()
-CNF_CHB2['font']=FONT3
+}
+CNF_LABEL3={
+    'bg': BG,
+    'fg': FG,
+    'font': FONT4,
+    'padx': PADX,
+    'pady': PADY,
+    'disabledforeground': DISABLED_FG,
+    'justify': 'c',
+}
+CNF_CHB={
+    'bg': BG,
+    'fg': FG,
+    'font': FONT,
+    'padx': PADX,
+    'pady': PADY,
+}
+CNF_CHB2={
+    'bg': BG,
+    'fg': FG,
+    'font': FONT3,
+    'padx': PADX,
+    'pady': PADY,
+}
 CNF_ENTRY = {
     'bg': BG,
     'fg': FG,
@@ -74,19 +108,46 @@ CNF_ENTRY = {
     'disabledbackground': DISABLED_BG,
     'disabledforeground': DISABLED_FG,
 }
-CNF_ENTRY2 = CNF_ENTRY.copy()
-CNF_ENTRY2.update({
+CNF_ENTRY2 = {
+    'bg': BG,
+    'fg': FG,
+    'selectbackground': FG,
+    'selectforeground': BG,
     'font': FONT3,
+    'insertbackground': FG,
+    'readonlybackground': DISABLED_BG,
+    'disabledbackground': DISABLED_BG,
+    'disabledforeground': DISABLED_FG,
     'justify': 'c',
     'width': WORDS_WIDTH2+WORDS_WIDTH3,
-})
-CNF_ENTRY_USER = CNF_ENTRY.copy()
-CNF_ENTRY_COUNTER = CNF_ENTRY_USER.copy()
-CNF_ENTRY_COUNTER['width']=WORDS_WIDTH
-
+}
+CNF_ENTRY_USER = {
+    'bg': BG,
+    'fg': FG,
+    'selectbackground': FG,
+    'selectforeground': BG,
+    'font': FONT,
+    'insertbackground': FG,
+    'readonlybackground': DISABLED_BG,
+    'disabledbackground': DISABLED_BG,
+    'disabledforeground': DISABLED_FG,
+}
+CNF_ENTRY_COUNTER = {
+    'bg': BG,
+    'fg': FG,
+    'selectbackground': FG,
+    'selectforeground': BG,
+    'font': FONT,
+    'insertbackground': FG,
+    'readonlybackground': DISABLED_BG,
+    'disabledbackground': DISABLED_BG,
+    'disabledforeground': DISABLED_FG,
+    'width': WORDS_WIDTH,
+}
 CNF_GRID = {
     'padx': PADX,
     'pady': PADY+5,
+    'sticky': 'ew'
 }
 CNF_GRID2={
     'padx': 4,
