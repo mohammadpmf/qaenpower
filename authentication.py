@@ -6,6 +6,8 @@ from models import Part, Place, Staff, Parameter
 from threading import Thread
 from time import sleep
 from decimal import Decimal
+from json import dump, load
+from json.decoder import JSONDecodeError
 
 
 class MyWindows():
@@ -1770,6 +1772,8 @@ class PartWidget(MyWindows):
         global all_counter_widgets
         self.places_with_counters=places_with_counters # یک لیستی از مکان ها با پارامترهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه پارامتر هست.
         self.my_canvas = Canvas(self.frame, width=int(self.S_WIDTH*0.985), height=int(self.S_HEIGHT*0.72), bg=BG)
+        self.my_canvas.bind("<MouseWheel>", self.on_mousewheel)
+        # self.my_canvas.bind_all("<MouseWheel>", self.on_mousewheel)
         self.ver_scrollbar = Scrollbar(self.frame, orient=VERTICAL, command=self.my_canvas.yview)
         self.hor_scrollbar = Scrollbar(self.frame, orient=HORIZONTAL, command=self.my_canvas.xview)
         self.my_canvas.configure(yscrollcommand=self.ver_scrollbar.set, xscrollcommand=self.hor_scrollbar.set)
@@ -1816,6 +1820,11 @@ class PartWidget(MyWindows):
                         )
                     all_counter_widgets.append(c)
                     c.grid(row=i, column=1000-1-j, sticky='news', padx=4, pady=2)
+
+    def on_mousewheel(self, event=None):
+        print(event)
+        self.my_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
 
 class CounterWidget(Parameter, MyWindows):
     def __init__(self, connection: Connection, root: Tk, part, place, name, variable_name, formula='', type='کنتور', default_value=0, unit=None, warning_lower_bound=None, warning_upper_bound=None, alarm_lower_bound=None, alarm_upper_bound=None, id=None, place_title=None, part_title=None, *args, **kwargs):
