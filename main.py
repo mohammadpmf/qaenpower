@@ -1,5 +1,6 @@
 from authentication import *
 import pymysql
+import os
 
 
 def check_mysql_password(event=None):
@@ -13,6 +14,10 @@ def check_mysql_password(event=None):
         temp_window.destroy()
         root.deiconify()
         if bv_dont_ask_again.get():
+            try:
+                os.mkdir('files')
+            except FileExistsError:
+                pass # فولدر خودش وجود داره. چی بهتر از این :)
             f = open(r'files/shared_preferences.json', 'w')
             shared_preferences.update({
                 'host': host,
