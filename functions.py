@@ -43,9 +43,9 @@ def get_jnow():
     return jnow
 
 
-def round3(number:float) -> float|int:
+def round4(number:float) -> float|int:
     number = float(number)
-    number = round(number, 3)
+    number = round(number, 4)
     if int(number)==number:
         return int(number)
     return number
@@ -138,7 +138,7 @@ def calculate_fn(formula: str, parameters: list, values: list):
     '''
     fn = Expression(formula, parameters)
     try:
-        answer = round3(fn(*values))
+        answer = round4(fn(*values))
         return answer
     except TypeError:
         return 0

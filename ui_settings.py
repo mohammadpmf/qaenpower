@@ -12,9 +12,9 @@ FG2='green'
 # DISABLED_FG = "dark cyan"
 DISABLED_FG = "#1b1b1b"
 DISABLED_BG = '#cccccc'
-WARNING_COLOR = '#d6d051'
-ALARM_COLOR = '#aa0000'
-OK_COLOR = 'dark green'
+WARNING_COLOR = 'yellow'
+ALARM_COLOR = 'red'
+OK_COLOR = 'light green'
 INVALID_DATE = "!!! تاریخ نامعتبر !!!"
 COPY_ICON_SIZE = 25
 DATE_PICKER_ICON_SIZE = CHANGE_DAY_ICON_SIZE = 64

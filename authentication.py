@@ -1,7 +1,7 @@
 from ui_settings import *
 from PIL import Image, ImageTk
 from connection import Connection
-from functions import calculate_fn, get_formula_parameters, how_many_times_parameters_variable_name_used_in_other_formulas, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round3, jdatetime, datetime
+from functions import calculate_fn, get_formula_parameters, how_many_times_parameters_variable_name_used_in_other_formulas, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round4, jdatetime, datetime
 from models import Part, Place, Staff, Parameter
 from threading import Thread
 from time import sleep
@@ -837,17 +837,17 @@ class StaffWindow(MyWindows):
         if temp_counter.unit:
             self.entry_counter_unit.insert(0, temp_counter.unit)
         if temp_counter.warning_lower_bound:
-            self.entry_counter_warning_lower_bound.insert(0, round3(temp_counter.warning_lower_bound))
+            self.entry_counter_warning_lower_bound.insert(0, round4(temp_counter.warning_lower_bound))
         else:
             self.entry_counter_warning_lower_bound.insert(0, 0)
         if temp_counter.warning_upper_bound:
-            self.entry_counter_warning_upper_bound.insert(0, round3(temp_counter.warning_upper_bound))
+            self.entry_counter_warning_upper_bound.insert(0, round4(temp_counter.warning_upper_bound))
         if temp_counter.alarm_lower_bound:
-            self.entry_counter_alarm_lower_bound.insert(0, round3(temp_counter.alarm_lower_bound))
+            self.entry_counter_alarm_lower_bound.insert(0, round4(temp_counter.alarm_lower_bound))
         else:
             self.entry_counter_alarm_lower_bound.insert(0, 0)
         if temp_counter.alarm_upper_bound:
-            self.entry_counter_alarm_upper_bound.insert(0, round3(temp_counter.alarm_upper_bound))
+            self.entry_counter_alarm_upper_bound.insert(0, round4(temp_counter.alarm_upper_bound))
         self.entry_counter_part.config(state='readonly')
         self.entry_counter_place.config(state='readonly')
         self.entry_counter_type.config(state='readonly')
@@ -1357,17 +1357,17 @@ class StaffWindow(MyWindows):
                         continue # چون از نوع محاسباتی یا ثابتی هستند که قبلا ثبت شدن. پس لازم نیست دست بزنیم و مقادیر قبلیشون باید داخلشون نوشته بشه.
                     elif counter_widget.type==PARAMETER_TYPES[0]:
                         previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
-                        counter_widget.label_previous_counter.config(text=round3(previous_value))
+                        counter_widget.label_previous_counter.config(text=round4(previous_value))
                         counter_widget.entry_workout.config(state='normal')
                         # counter_widget.entry_workout.delete(0, END) دقت کنم که این قبلا اینجا بود اگه آخرین کنتور خراب بود، باگ میخورد. ترتیب رو عوض کردم اون کنتور درست شد یکی دیگه خراب شد. خلاصه این که جاش اینجا نیست و تو دو تا شرط جدا نوشتم درست شد. گذاشتم یادم نره اشتباهی به خاطر یه خط ساده سازی دوباره این شکلیش نکنم.
                         if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
                             counter_widget.boolean_var_bad.set(1)
                             counter_widget.check()
                             counter_widget.entry_workout.delete(0, END)
-                            counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
+                            counter_widget.entry_workout.insert(0, round4(counter_widget.counter_log.workout))
                         elif counter_widget.counter_log:
                             counter_widget.entry_workout.delete(0, END)
-                            counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
+                            counter_widget.entry_workout.insert(0, round4(counter_widget.answer))
                         counter_widget.entry_workout.config(state='disabled')
                         counter_widget.update_workout()
         else:
@@ -1385,7 +1385,7 @@ class StaffWindow(MyWindows):
                     elif counter_widget.type == PARAMETER_TYPES[1]:
                         counter_widget.entry_workout.delete(0, END)
                         if counter_widget.default_value==DEFAULT_VALUES[0]:
-                            counter_widget.entry_workout.insert(0, round3(counter_widget.a))
+                            counter_widget.entry_workout.insert(0, round4(counter_widget.a))
                         elif counter_widget.default_value==DEFAULT_VALUES[1]:
                             counter_widget.entry_workout.insert(0, DEFAULT_VALUES[1])
                         elif counter_widget.default_value==DEFAULT_VALUES[2]:
@@ -1393,21 +1393,21 @@ class StaffWindow(MyWindows):
                     elif counter_widget.type==PARAMETER_TYPES[0]:
                         counter_widget.entry_current_counter.delete(0, END)
                         if counter_widget.default_value==DEFAULT_VALUES[0]:
-                            counter_widget.entry_current_counter.insert(0, round3(counter_widget.a))
+                            counter_widget.entry_current_counter.insert(0, round4(counter_widget.a))
                         elif counter_widget.default_value==DEFAULT_VALUES[1]:
                             counter_widget.entry_current_counter.insert(0, DEFAULT_VALUES[1])
                         elif counter_widget.default_value==DEFAULT_VALUES[2]:
                             pass
                         # previous_value = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
-                        # counter_widget.label_previous_counter.config(text=round3(previous_value))
+                        # counter_widget.label_previous_counter.config(text=round4(previous_value))
                         # counter_widget.entry_workout.config(state='normal')
                         # counter_widget.entry_workout.delete(0, END)
                         # if counter_widget.counter_log and counter_widget.counter_log.is_ok==0: # قبل از اند اون رو گذاشتم چون اگه رکوردی نبود نان میداد و خب نمیشه از تو هیچی ایز اوکی رو در آورد.
                         #     counter_widget.boolean_var_bad.set(1)
                         #     counter_widget.check()
-                        #     counter_widget.entry_workout.insert(0, round3(counter_widget.counter_log.workout))
+                        #     counter_widget.entry_workout.insert(0, round4(counter_widget.counter_log.workout))
                         # else:
-                        #     counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
+                        #     counter_widget.entry_workout.insert(0, round4(counter_widget.answer))
                         # counter_widget.entry_workout.config(state='disabled')
                         # counter_widget.update_workout()
 
@@ -1626,7 +1626,7 @@ class StaffWindow(MyWindows):
 class DatePicker(MyWindows):
     days_list = [i for i in range(1, 32)]
     months_list = [i for i in range(1, 13)]
-    years_list = [i for i in range(1400, 1410)]
+    years_list = [i for i in range(1350, 1451)]
     def __init__(self, connection: Connection, root: Tk):
         super().__init__(connection, root)
         self.img_calendar       = Image.open(r'icons/calendar.png')
@@ -1720,11 +1720,11 @@ class DatePicker(MyWindows):
             temp=INVALID_DATE
             self.label_date.config(text=temp)
             return
-        if m>jalali_now.jmonth:
+        if y==jalali_now.jyear and m>jalali_now.jmonth:
             temp=INVALID_DATE
             self.label_date.config(text=temp)
             return
-        if d>jalali_now.jday:
+        if y==jalali_now.jyear and m==jalali_now.jmonth and d>jalali_now.jday:
             temp=INVALID_DATE
             self.label_date.config(text=temp)
             return
@@ -1772,8 +1772,8 @@ class PartWidget(MyWindows):
         global all_counter_widgets
         self.places_with_counters=places_with_counters # یک لیستی از مکان ها با پارامترهایی که داخلشون هست. یعنی یک لیستی از تاپل ها که هر کودوم از تاپل ها هر عضوشون یه پارامتر هست.
         self.my_canvas = Canvas(self.frame, width=int(self.S_WIDTH*0.985), height=int(self.S_HEIGHT*0.72), bg=BG)
-        self.my_canvas.bind("<MouseWheel>", self.on_mousewheel)
-        # self.my_canvas.bind_all("<MouseWheel>", self.on_mousewheel)
+        # self.my_canvas.bind("<MouseWheel>", self.on_mousewheel)
+        self.my_canvas.bind_all("<MouseWheel>", self.on_mousewheel)
         self.ver_scrollbar = Scrollbar(self.frame, orient=VERTICAL, command=self.my_canvas.yview)
         self.hor_scrollbar = Scrollbar(self.frame, orient=HORIZONTAL, command=self.my_canvas.xview)
         self.my_canvas.configure(yscrollcommand=self.ver_scrollbar.set, xscrollcommand=self.hor_scrollbar.set)
@@ -1842,7 +1842,7 @@ class CounterWidget(Parameter, MyWindows):
         self.lbl_title.grid(row=1, column=1)
         self.lbl_info.grid(row=1, column=2)
         self.counter_log = self.connection.get_parameter_log_by_parameter_id_and_date(self.id , date_picker.get_date()) # اطلاعات آخرین لاگ این تاریخ رو موقع تعریف کنتور ویجت گرفتم که مثلا اگه خراب بود بتونم تیکش رو فعال کنم. اما گفت لازم نیست. دیگه پاک نکردم. داخل سلف ذخیره اش کردم.
-        self.a = self.b = round3(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
+        self.a = self.b = round4(float(all_variables_current_value_and_workout.get(self.variable_name).get('value')))
         self.answer = '' # چیزی که قراره تو کنتور نوشته بشه، پیشفرضش خالی هست. اگه تغییر ندادیم خالی میمونه. اگه تغییر بدیم که بر اساس نوع پارامتر عوض میشه.
         if self.formula != "":
             parameters = get_formula_parameters(self.formula)
@@ -1851,30 +1851,30 @@ class CounterWidget(Parameter, MyWindows):
                 if p in ['a', 'b']:
                     values.append(self.b)
                 else:
-                    values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
+                    values.append(round4(float(all_variables_current_value_and_workout.get(p).get('workout'))))
             self.answer = calculate_fn(self.formula, parameters, values)
         if self.type==PARAMETER_TYPES[2]:
-            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LABEL2, font=FONT2, pady=4, width=18, height=1, *args, **kwargs)
+            self.entry_workout = Label(self.frame, text=self.answer, cnf=CNF_LABEL2, font=FONT2, pady=4, width=18, padx=14, height=1, *args, **kwargs)
         elif self.type==PARAMETER_TYPES[1]:
             self.btn_copy = Label(self.frame, image=self.img_copy, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
-            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, font=FONT2, width=24, *args, **kwargs)
+            self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, font=FONT2, width=23, *args, **kwargs)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
-            self.btn_copy.grid(row=1, column=2, cnf=CNF_GRID2)
-            self.entry_workout.insert(0, round3(self.a))
+            self.btn_copy.grid(row=1, column=2, cnf=CNF_GRID2, padx=9)
+            self.entry_workout.insert(0, round4(self.a))
         elif self.type==PARAMETER_TYPES[0]:
             self.btn_copy = Label(self.frame, image=self.img_copy, cnf=CNF_BTN2, relief='raised', *args, **kwargs)
             self.btn_copy.bind('<Button-1>', self.copy_paste)
             self.entry_current_counter = Entry(self.frame, cnf=CNF_ENTRY2, font=FONT2_5, width=WORDS_WIDTH2+2, *args, **kwargs)
-            self.label_previous_counter = Label(self.frame, cnf=CNF_LABEL2, text=round3(self.a), *args, **kwargs)
+            self.label_previous_counter = Label(self.frame, cnf=CNF_LABEL2, text=round4(self.a), *args, **kwargs)
             self.entry_workout = Entry(self.frame, cnf=CNF_ENTRY2, font=FONT2, width=WORDS_WIDTH3+2, *args, **kwargs)
             self.boolean_var_bad = BooleanVar(self.frame)
             self.checkbutton_bad = Checkbutton(self.frame, cnf=CNF_CHB2, variable=self.boolean_var_bad, text='خرابی', command=self.check)
             self.frame.bind('<FocusOut>', self.next)
             self.entry_current_counter.bind('<KeyRelease>', self.update_workout)
             self.entry_workout.bind('<KeyRelease>', self.update_workout)
-            self.entry_current_counter  .insert(0, round3(self.a))
+            self.entry_current_counter  .insert(0, round4(self.a))
             self.entry_workout          .insert(0, self.answer)
             self.entry_workout.config(state='readonly')
             self.btn_copy               .grid(row=1, column=3, cnf=CNF_GRID2)
@@ -1979,7 +1979,7 @@ class CounterWidget(Parameter, MyWindows):
                     elif p=='a':
                         values.append(counter_widget.a)
                     else:
-                        values.append(round3(float(all_variables_current_value_and_workout.get(p).get('workout'))))
+                        values.append(round4(float(all_variables_current_value_and_workout.get(p).get('workout'))))
                 counter_widget.answer = calculate_fn(counter_widget.formula, parameters, values)
             if counter_widget.type==PARAMETER_TYPES[2]:
                 counter_widget.entry_workout.config(text=counter_widget.answer)
@@ -1992,10 +1992,10 @@ class CounterWidget(Parameter, MyWindows):
                 counter_widget.entry_workout.config(state='normal')
                 counter_widget.entry_workout.delete(0, END)
                 if counter_widget.boolean_var_bad.get()==False:
-                    counter_widget.entry_workout.insert(0, round3(counter_widget.answer))
+                    counter_widget.entry_workout.insert(0, round4(counter_widget.answer))
                     counter_widget.entry_workout.config(state='readonly')
                 else:
-                    counter_widget.entry_workout.insert(0, round3(counter_widget.workout))
+                    counter_widget.entry_workout.insert(0, round4(counter_widget.workout))
             counter_widget.check_color()
 
     def update_workout(self, event=None):
