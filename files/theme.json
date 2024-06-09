@@ -1,0 +1,11 @@
+{
+    "BG": "sky blue",
+    "BG_LIGHTER": "sky blue",
+    "FG": "black",
+    "FG2": "green",
+    "DISABLED_FG": "#1b1b1b",
+    "DISABLED_BG": "#cccccc",
+    "WARNING_COLOR": "yellow",
+    "ALARM_COLOR": "red",
+    "OK_COLOR": "light green"
+}
