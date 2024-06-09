@@ -2,6 +2,7 @@ import hashlib
 from datetime import datetime
 import jdatetime
 from Equation import Expression
+from ui_settings import PARAMETER_TYPES
 
 
 def hash_password(password: str, salt="mohammad pourmohammadi fallah"):
@@ -44,7 +45,10 @@ def get_jnow():
 
 
 def round4(number:float) -> float|int:
-    number = float(number)
+    try:
+        number = float(number)
+    except ValueError:
+        return 0
     number = round(number, 4)
     if int(number)==number:
         return int(number)
@@ -56,11 +60,11 @@ def what_is_variable_name_problem(name: str, counters_variable_names: tuple):
     if name == "":
         return "نام متغیر را تعیین کنید"
     elif name in ['a', 'b']:
-        return "برای نام متغیر نمی توانید از a و b استفاده کنید."
+        return "استفاده کنید a و b برای نام متغیر نمی توانید از"
     elif not name.isidentifier():
         return "نام متغیر مناسب نیست"
     elif name in counters_variable_names:
-        return "نام متغیر تکراری است و برای یکی از پارامترهای قبلی تعریف شده است."
+        return "نام متغیر تکراری است و برای یکی از پارامترهای قبلی تعریف شده است"
     return None
 
 # تابعی که میشماره هر پارامتر چند جای دیگه تو فرمول ها استفاده شده که اگه حداقل یه بار استفاده شده بود، اجازه پاک کردن بهش ندیم
@@ -76,11 +80,15 @@ def how_many_times_parameters_variable_name_used_in_other_formulas(variable_name
 # تابعی جهت بررسی این که فرمول نوشته شده درست است یا نه.
 # در مرحله دوم که پارامترها رو خودم به دست میارم، دوباره برای همین تابع ارسال میکنم که بررسی کنه داخل دیتابیس هم باشن.
 # در واقع دیگه لازم نیست دستی وارد بشه تو قسمت اول. اما به جای تابع جداگانه کلک زدم ۲ بار همین تابع رو صدا کردم.
-def what_is_formula_problem(formula: str, formula_parameters:list, variable_name: str, counters_variable_names: tuple):
+def what_is_formula_problem(formula: str, formula_parameters:list, variable_name: str, counters_variable_names: tuple, type: str):
     parameters = formula_parameters
     if variable_name in parameters:
         return "از نام متغیر پارامتر نمی توان در فرمول خودش استفاده کرد"
     bad_params = [] # پارامترهایی که قبلا در دیتابیس ثبت نشده اند. اما کاربر به اشتباه به ما داده است.
+    if type==PARAMETER_TYPES[2]:
+        for p in parameters:
+            if p =='b':
+                return f"استفاده کرد b در فرمول پارامترهای محاسباتی نمیتوان از"
     for p in parameters:
         if p in ['a', 'b']:
             continue
@@ -133,7 +141,7 @@ def get_formula_parameters(formula: str) -> list:
 # تابعی که در برنامه مقدار پارامتر مورد نظر را حساب کند و نمایش دهد.
 def calculate_fn(formula: str, parameters: list, values: list):
     '''
-    مقدار محاسبه را با دقت سه رقم اعشار تحویل میدهد
+    مقدار محاسبه را با دقت چهار رقم اعشار تحویل میدهد
     در صورتی که به مشکل بخورد ۰ تحویل می دهد
     '''
     fn = Expression(formula, parameters)
@@ -141,8 +149,20 @@ def calculate_fn(formula: str, parameters: list, values: list):
         answer = round4(fn(*values))
         return answer
     except TypeError:
+        print("Warning in calculate_fn except layer 1 :D (Decimal & Float)")
+        values_copy = []
+        for item in values:
+            values_copy.append(float(item))
+        try:
+            answer = round4(fn(*values_copy))
+            return answer
+        except TypeError:
+            print("Error in calculate_fn except layer 2 :D (Decimal & Float)")
+            return 0
+    except ZeroDivisionError:
+        print("Warning in calculate_fn except layer 1 :D (Zero Division)")
         return 0
-
+    
 if __name__=='__main__':
     print(hash_password('admin', '1'))
     word='salam'

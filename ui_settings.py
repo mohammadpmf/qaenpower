@@ -1,20 +1,41 @@
 from tkinter import Tk, Label, Entry, Button, BooleanVar, Checkbutton, Toplevel, Frame, StringVar, LabelFrame, Canvas, Scrollbar
 from tkinter import TOP, RIGHT, BOTTOM, LEFT, END, VERTICAL, HORIZONTAL
 from tkinter import ttk
+from tkinter import colorchooser
 from tkinter import messagebox as msb
+from json import dump, load
+from json.decoder import JSONDecodeError
 
 
-BG='sky blue'
-BG_LIGHTER='sky blue'
-FG='black'
-FG2='green'
-# DISABLED_FG = "gray"
-# DISABLED_FG = "dark cyan"
-DISABLED_FG = "#1b1b1b"
-DISABLED_BG = '#cccccc'
-WARNING_COLOR = 'yellow'
-ALARM_COLOR = 'red'
-OK_COLOR = 'light green'
+try:
+    f = open(r'files/theme.json', 'r')
+    COLORS = load(f)
+    f.close()
+except JSONDecodeError:
+    COLORS = {
+        "BG": "sky blue",
+        "BG_LIGHTER": "sky blue",
+        "FG": "black",
+        "FG2": "green",
+        "DISABLED_FG": "#1b1b1b",
+        "DISABLED_BG": "#cccccc",
+        "WARNING_COLOR": "yellow",
+        "ALARM_COLOR": "red",
+        "OK_COLOR": "light green",
+    }
+except FileNotFoundError:
+    COLORS = {
+        "BG": "sky blue",
+        "BG_LIGHTER": "sky blue",
+        "FG": "black",
+        "FG2": "green",
+        "DISABLED_FG": "#1b1b1b",
+        "DISABLED_BG": "#cccccc",
+        "WARNING_COLOR": "yellow",
+        "ALARM_COLOR": "red",
+        "OK_COLOR": "light green",
+    }
+
 INVALID_DATE = "!!! تاریخ نامعتبر !!!"
 COPY_ICON_SIZE = 25
 DATE_PICKER_ICON_SIZE = CHANGE_DAY_ICON_SIZE = 64
@@ -33,115 +54,115 @@ FONT3 = ('B Nazanin', 12)
 FONT4 = ('B Nazanin', 8)
 PARAMETER_TYPES = ['کنتور', 'ثابت', 'محاسباتی']
 DEFAULT_VALUES = ['مقدار کنتور روز قبل', '0', 'خالی']
-DEFAULT_DATE_VALUES = ['روز قبل', 'روز جاری', 'روز بعد']
+DEFAULT_DATE_VALUES = ['روز قبل', 'روز جاری']
 
 CNF_LBL_FRM = {
-    'bg': BG,
+    'bg': COLORS['BG'],
     'font': FONT3,
     'padx': PADX,
     'pady': PADY,
 }
 CNF_FRM = {
-    'bg': BG,
+    'bg': COLORS['BG'],
 }
 CNF_BTN = {
-    'bg': BG,
-    'fg': FG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
     'font': FONT,
     'padx': PADX,
     'pady': PADY,
 }
 CNF_BTN2 = {
-    'bg': BG_LIGHTER,
-    'fg': FG,
+    'bg': COLORS['BG_LIGHTER'],
+    'fg': COLORS['FG'],
     'font': FONT3,
     'padx': PADX,
     'pady': PADY,
 }
 CNF_LABEL={
-    'bg': BG,
-    'fg': FG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
     'font': FONT,
     'padx': PADX,
     'pady': PADY,
 }
 CNF_LABEL2={
-    'bg': BG,
-    'fg': FG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
     'font': FONT3,
     'padx': PADX,
     'pady': PADY,
-    'disabledforeground': DISABLED_FG,
+    'disabledforeground': COLORS['DISABLED_FG'],
     'justify': 'c',
 }
 CNF_LABEL3={
-    'bg': BG,
-    'fg': FG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
     'font': FONT4,
     'padx': PADX,
     'pady': PADY,
-    'disabledforeground': DISABLED_FG,
+    'disabledforeground': COLORS['DISABLED_FG'],
     'justify': 'c',
 }
 CNF_CHB={
-    'bg': BG,
-    'fg': FG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
     'font': FONT,
     'padx': PADX,
     'pady': PADY,
 }
 CNF_CHB2={
-    'bg': BG,
-    'fg': FG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
     'font': FONT3,
     'padx': PADX,
     'pady': PADY,
 }
 CNF_ENTRY = {
-    'bg': BG,
-    'fg': FG,
-    'selectbackground': FG,
-    'selectforeground': BG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
+    'selectbackground': COLORS['FG'],
+    'selectforeground': COLORS['BG'],
     'font': FONT,
-    'insertbackground': FG,
-    'readonlybackground': DISABLED_BG,
-    'disabledbackground': DISABLED_BG,
-    'disabledforeground': DISABLED_FG,
+    'insertbackground': COLORS['FG'],
+    'readonlybackground': COLORS['DISABLED_BG'],
+    'disabledbackground': COLORS['DISABLED_BG'],
+    'disabledforeground': COLORS['DISABLED_FG'],
 }
 CNF_ENTRY2 = {
-    'bg': BG,
-    'fg': FG,
-    'selectbackground': FG,
-    'selectforeground': BG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
+    'selectbackground': COLORS['FG'],
+    'selectforeground': COLORS['BG'],
     'font': FONT3,
-    'insertbackground': FG,
-    'readonlybackground': DISABLED_BG,
-    'disabledbackground': DISABLED_BG,
-    'disabledforeground': DISABLED_FG,
+    'insertbackground': COLORS['FG'],
+    'readonlybackground': COLORS['DISABLED_BG'],
+    'disabledbackground': COLORS['DISABLED_BG'],
+    'disabledforeground': COLORS['DISABLED_FG'],
     'justify': 'c',
     'width': WORDS_WIDTH2+WORDS_WIDTH3,
 }
 CNF_ENTRY_USER = {
-    'bg': BG,
-    'fg': FG,
-    'selectbackground': FG,
-    'selectforeground': BG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
+    'selectbackground': COLORS['FG'],
+    'selectforeground': COLORS['BG'],
     'font': FONT,
-    'insertbackground': FG,
-    'readonlybackground': DISABLED_BG,
-    'disabledbackground': DISABLED_BG,
-    'disabledforeground': DISABLED_FG,
+    'insertbackground': COLORS['FG'],
+    'readonlybackground': COLORS['DISABLED_BG'],
+    'disabledbackground': COLORS['DISABLED_BG'],
+    'disabledforeground': COLORS['DISABLED_FG'],
 }
 CNF_ENTRY_COUNTER = {
-    'bg': BG,
-    'fg': FG,
-    'selectbackground': FG,
-    'selectforeground': BG,
+    'bg': COLORS['BG'],
+    'fg': COLORS['FG'],
+    'selectbackground': COLORS['FG'],
+    'selectforeground': COLORS['BG'],
     'font': FONT,
-    'insertbackground': FG,
-    'readonlybackground': DISABLED_BG,
-    'disabledbackground': DISABLED_BG,
-    'disabledforeground': DISABLED_FG,
+    'insertbackground': COLORS['FG'],
+    'readonlybackground': COLORS['DISABLED_BG'],
+    'disabledbackground': COLORS['DISABLED_BG'],
+    'disabledforeground': COLORS['DISABLED_FG'],
     'width': WORDS_WIDTH,
 }
 CNF_GRID = {
@@ -197,37 +218,37 @@ def create_my_theme():
                     settings = {
                         'TCombobox': {
                             'configure': {
-                                'selectbackground': BG,
-                                'fieldbackground': BG,
-                                'background': BG,
-                                'foreground': FG,
+                                'selectbackground': COLORS['BG'],
+                                'fieldbackground': COLORS['BG'],
+                                'background': COLORS['BG'],
+                                'foreground': COLORS['FG'],
                                 }
                             },
                         'TNotebook': {
                             'configure': {
                                 'tabmargins': [2, 0, 2, 0], # LTBR
                                 'tabposition': 'ne',
-                                'background': BG,
+                                'background': COLORS['BG'],
                             }
                         },
                         'TNotebook.Tab': {
                             'configure': {
                                 'padding': [5, 1],
-                                'background': BG,
-                                'foreground': FG,
+                                'background': COLORS['BG'],
+                                'foreground': COLORS['FG'],
                                 'font': FONT2
                                 }
                         }
                     })
     style.theme_use(f'my_style')
-    style.map('TCombobox', fieldbackground=[('readonly', BG)])
-    style.map('TCombobox', selectbackground=[('readonly', BG)])
-    style.map('TCombobox', selectforeground=[('readonly',  FG)])
-    style.configure("Treeview",background=BG,foreground=FG,rowheight=48,fieldbackground=BG, font=FONT)
-    style.configure("Treeview.Heading", background="#222222", foreground=FG2, font=FONT)
-    style.map("Treeview",background=[('selected', FG)])
-    style.map("Treeview",foreground=[('selected', BG)])
-    style.map("TNotebook",background=[('selected', BG)])
+    style.map('TCombobox', fieldbackground=[('readonly', COLORS['BG'])])
+    style.map('TCombobox', selectbackground=[('readonly', COLORS['BG'])])
+    style.map('TCombobox', selectforeground=[('readonly',  COLORS['FG'])])
+    style.configure("Treeview",background=COLORS['BG'],foreground=COLORS['FG'],rowheight=48,fieldbackground=COLORS['BG'], font=FONT)
+    style.configure("Treeview.Heading", background="#222222", foreground=COLORS['FG2'], font=FONT)
+    style.map("Treeview",background=[('selected', COLORS['FG'])])
+    style.map("Treeview",foreground=[('selected', COLORS['BG'])])
+    style.map("TNotebook",background=[('selected', COLORS['BG'])])
     style.map("TNotebook",expand=[('selected', [1, 1, 1, 0])])
-    style.map("TNotebook.Tab",background=[('selected', FG)])
-    style.map("TNotebook.Tab",foreground=[('selected', BG)])
+    style.map("TNotebook.Tab",background=[('selected', COLORS['FG'])])
+    style.map("TNotebook.Tab",foreground=[('selected', COLORS['BG'])])
