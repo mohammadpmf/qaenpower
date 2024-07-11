@@ -39,8 +39,8 @@ class LoginForm(MyWindows):
         self.entry_username.focus_set()
         self.label_password = Label(self.frame, text="رمز عبور", cnf=CNF_LABEL)
         self.entry_password = Entry(self.frame, cnf=CNF_ENTRY, show='*')
-        self.entry_username.insert(0, 'admin') # در پایان حذف شود
-        self.entry_password.insert(0, 'admin') # در پایان حذف شود
+        # self.entry_username.insert(0, 'admin') # در پایان حذف شود
+        # self.entry_password.insert(0, 'admin') # در پایان حذف شود
         self.bv_show_password = BooleanVar(self.frame)
         self.checkbox_show_password = Checkbutton(self.frame, text='نمایش رمز عبور', variable=self.bv_show_password, cnf=CNF_CHB, command=self.show_password)
         self.btn_login = Button(self.frame, text='ورود به حساب کاربری', cnf=CNF_BTN, command=self.login)
@@ -1278,7 +1278,10 @@ class StaffWindow(MyWindows):
             parts_tab.append(PartWidget(self.connection, tabs_list[i], places_with_counters, self))
             parts_tab[i].pack()
         self.tab_control_frame.pack(expand=1, fill="both")
-        self.tab_control_frame.select(len(self.tab_control_frame.children)-1)
+        try:
+            self.tab_control_frame.select(len(self.tab_control_frame.children)-1)
+        except:
+            pass
         for i, counter_widget in enumerate(list(all_counter_widgets.values())):
             counter_widget: CounterWidget
             if counter_widget.type==PARAMETER_TYPES[2]:
