@@ -1,7 +1,7 @@
 from ui_settings import *
 from PIL import Image, ImageTk
 from connection import Connection
-from functions import calculate_fn, get_formula_parameters, how_many_times_parameters_variable_name_used_in_other_formulas, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round4, jdatetime, datetime
+from functions import calculate_fn, get_duration_between_days, get_formula_parameters, how_many_times_parameters_variable_name_used_in_other_formulas, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round4, jdatetime, datetime
 from models import Part, Place, Staff, Parameter, ParameterLog
 import win32api
 from threading import Thread
@@ -39,8 +39,8 @@ class LoginForm(MyWindows):
         self.entry_username.focus_set()
         self.label_password = Label(self.frame, text="رمز عبور", cnf=CNF_LABEL)
         self.entry_password = Entry(self.frame, cnf=CNF_ENTRY, show='*')
-        # self.entry_username.insert(0, 'admin') # در پایان حذف شود
-        # self.entry_password.insert(0, 'admin') # در پایان حذف شود
+        self.entry_username.insert(0, 'admin') # در پایان حذف شود
+        self.entry_password.insert(0, 'admin') # در پایان حذف شود
         self.bv_show_password = BooleanVar(self.frame)
         self.checkbox_show_password = Checkbutton(self.frame, text='نمایش رمز عبور', variable=self.bv_show_password, cnf=CNF_CHB, command=self.show_password)
         self.btn_login = Button(self.frame, text='ورود به حساب کاربری', cnf=CNF_BTN, command=self.login)
@@ -1385,7 +1385,7 @@ class StaffWindow(MyWindows):
     def confirm_log_insert(self, event=None):
         global sheet_state, date_picker, all_counter_widgets
         self.disable_confirm_buttons()
-        if date_picker.get_date() == None:
+        if date_picker.label_date['text']==INVALID_DATE or date_picker.get_date() == None:
             msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
             self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
             self.enable_for_safety()
@@ -1433,8 +1433,9 @@ class StaffWindow(MyWindows):
     # تابی برای بررسی این که اعداد با ظاهر فعلی در صفحه در دیتابیس ذخیره شوند یا نه
     # اگر اشتباه باشند که اجازه نمیدهد. اگر منفی باشند کاربر باید تایید کند تا به مرحله بعد برود.
     def precheck_before_confirm(self, part_name):
-        global all_counter_widgets
+        global all_counter_widgets, date_picker
         negative_numbers = 0
+        selected_counter = None # برای این که تو حالتی که یه مکان هیچ کنتوری نداره و روی ذخیره زده میشه باگ نخوره، این متغیر رو باید اینجا تعریف کنیم که یه مقدار داشته باشه.
         for counter_widget in list(all_counter_widgets.values()):
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
@@ -1457,6 +1458,19 @@ class StaffWindow(MyWindows):
                 except:
                     msb.showerror("اخطار", "به مقادیر دقت کنید. ظاهرا برخی از مقادیر یا ثبت نشده اند و یا به درستی ثبت نشده اند")
                     return
+                finally:
+                    selected_counter=counter_widget # برای این که آخر سر بدونیم توی کودوم بخش هستیم که موقع آپدیت میخوایم بررسی کنیم چند کوئری نزنیم. تو متغیر چندین بار ذخیره میکنیم و مهم نیست کودوم هست چون همه تو یه مکان هستند. اما ما آخری شو ذخیره میکنیم و با اون کوئری میزنیم.
+        if selected_counter: # یعنی حداقل یه کنتور بوده تو این مکان
+            last_log_date = self.connection.get_last_log_date_of_parameter_by_id(selected_counter.id)
+            diff=get_duration_between_days(date_picker.get_date(), last_log_date)
+            if diff>1:
+                self.root.bell()
+                answer = msb.askyesno("احتیاط", f"از زمان ثبت آخرین داده های این بخش {diff} روز می گذرد. آیا مطمئنید که در این بین داده ای برای ثبت وجود ندارد؟ در صورت تایید، برای این بازه زمانی دیگر نمیتوانید داده جدیدی ثبت کنید و تمام تغییرات در این محدوده برای روز {date_picker.label_date['text']} در نظر گرفته می شوند. آیا مطمئنید؟")
+                if not answer:
+                    return None
+        else:
+            msb.showerror("اخطار", "هیچ پارامتری در این مکان وجود ندارد و نمیتوان اطلاعاتی از این مکان ثبت کرد")
+            return None
         if negative_numbers>0:
             message = f"{negative_numbers} عدد از فیلدها منفی شده اند.\n"
             message += "لطفا اعداد را با دقت بیشتری وارد کنید"
@@ -1468,7 +1482,7 @@ class StaffWindow(MyWindows):
     def confirm_log_update(self):
         global date_picker, all_counter_widgets
         self.disable_confirm_buttons()
-        if date_picker.get_date() == None:
+        if date_picker.label_date['text']==INVALID_DATE or date_picker.get_date() == None:
             msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.enable_for_safety()
@@ -1824,7 +1838,6 @@ class DatePicker(MyWindows):
             date = jdatetime.date(int(y), int(m), int(d))
             temp = f"{WEEKDAYS.get(date.weekday())} {d} {MONTH_NAMES.get(int(m))} {y}"
             self.label_date.config(text=temp)
-            print(self.get_date())
             signal=1
         except ValueError:
             temp=INVALID_DATE

@@ -44,6 +44,10 @@ def get_jnow():
     return jnow
 
 
+def get_duration_between_days(d1: datetime, d2: datetime):
+    return (d1-d2).days
+
+
 def round4(number:float) -> float|int:
     try:
         number = float(number)
