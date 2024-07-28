@@ -44,8 +44,13 @@ def get_jnow():
     return jnow
 
 
-def get_duration_between_days(d1: datetime, d2: datetime):
-    return (d1-d2).days
+def get_duration_between_days(d1: datetime, d2: datetime|None):
+    if d2 == None:
+        return 0 # چون اگه تاریخ دوم نان باشه یعنی تا حالا هیچ لاگی ثبت نشده. پس اولین لاگش هست و مشکلی نداره.
+    try:
+        return (d1-d2).days # یک عدد اینت میده که تفاوت تعداد روزهاست
+    except TypeError:
+        return 0 # قاعدتا نباید این اتفاق بیفته. چون دی ۱ رو از تقویم میگیره که اگه تاریخ نامعتبر باشه قبلش بهش ارور دادم. اما گذاشتم که اگه یه جوری تاریخ تقویم براش تاریخ نا معتبر ارسال شد و دیت تایم نبود، باز هم ۰ برگردونه که برنامه باگ نخوره و حداقل مثل حالت قبل کار کنه
 
 
 def round4(number:float) -> float|int:

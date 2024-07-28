@@ -1667,7 +1667,7 @@ class StaffWindow(MyWindows):
             counter_widget.a = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
             if counter_widget.a==None:
                 counter_widget.a=0
-            if sheet_state=='update':
+            if counter_widget.part_title in self.logged_parts_names:
                 if counter_widget.type==PARAMETER_TYPES[2]:
                     counter_widget.label_previous_counter.config(text=round4(counter_widget.a))
                     counter_widget.entry_workout.config(text=round4(counter_widget.workout))
@@ -1687,7 +1687,7 @@ class StaffWindow(MyWindows):
                     elif counter_widget.counter_log:
                         counter_widget.boolean_var_bad.set(False)
                         counter_widget.entry_workout.config(state='disabled')
-            elif sheet_state=='insert':
+            else:
                 if counter_widget.type==PARAMETER_TYPES[2]:
                     counter_widget.label_previous_counter.config(text=round4(counter_widget.b)) # inja
                     counter_widget.entry_workout.config(text='', bg=COLORS['ALARM_COLOR'])
