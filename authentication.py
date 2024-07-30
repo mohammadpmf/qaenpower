@@ -1426,7 +1426,7 @@ class StaffWindow(MyWindows):
                     result_message, ـ = counter_widget.connection.create_parameter_log(counter_widget.b, counter_widget.workout, is_ok, date_picker.get_date(), counter_widget.id, self.user.id)
         if result_message == "ok":
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس اضافه شدند"
-            msb.showinfo('success', message)
+            msb.showinfo('موفق', message)
             sheet_state = 'update'
             self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
@@ -1524,7 +1524,7 @@ class StaffWindow(MyWindows):
                     result_message, ـ = counter_widget.connection.update_parameter_log(counter_widget.b, counter_widget.workout, is_ok, date_picker.get_date(), counter_widget.id, self.user.id)
         if result_message == "ok":
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ویرایش شدند"
-            msb.showinfo('success', message)
+            msb.showinfo('موفق', message)
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.enable_for_safety()
             try:
