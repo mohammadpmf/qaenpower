@@ -128,12 +128,15 @@ class StaffWindow(MyWindows):
         self.img_save           = Image.open(r'icons/save.png')
         self.img_update         = Image.open(r'icons/update.png')
         self.img_refresh        = Image.open(r'icons/refresh.png')
+        self.img_delete         = Image.open(r'icons/delete.png')
         self.img_save           = self.img_save         .resize((SAVE_ICON_SIZE, SAVE_ICON_SIZE))
         self.img_update         = self.img_update       .resize((UPDATE_ICON_SIZE, UPDATE_ICON_SIZE))
         self.img_refresh        = self.img_refresh      .resize((REFRESH_ICON_SIZE, REFRESH_ICON_SIZE))
+        self.img_delete         = self.img_delete       .resize((DELETE_ICON_SIZE, DELETE_ICON_SIZE))
         self.img_save           = ImageTk.PhotoImage(self.img_save)
         self.img_update         = ImageTk.PhotoImage(self.img_update)
         self.img_refresh        = ImageTk.PhotoImage(self.img_refresh)
+        self.img_delete         = ImageTk.PhotoImage(self.img_delete)
         self.frame_add_statistics = Frame(self.frame_add_statistics_tab, cnf=CNF_FRM)
         self.frame_add_statistics.pack(side=RIGHT, anchor='ne')
         self.tab_control_frame = ttk.Notebook(self.frame_add_statistics)
@@ -149,6 +152,8 @@ class StaffWindow(MyWindows):
         self.bottom_frame_left.pack(side=LEFT)
         date_picker = DatePicker(self.connection, self.bottom_frame_right)
         date_picker.pack(side=RIGHT, expand=True, fill='both')
+        self.btn_confirm_counter_log_delete = Button(self.bottom_frame_left, image=self.img_delete, font=FONT2, cnf=CNF_BTN, command=self.confirm_log_delete)
+        self.btn_confirm_counter_log_delete.pack(side=RIGHT, padx=PADX)
         self.btn_confirm_counter_log_insert = Button(self.bottom_frame_left, image=self.img_save, state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_insert)
         # self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX) # تو ورژنی که خواسته بود گفت که حذف بشه موقعی که فعال نیست.
         self.btn_confirm_counter_log_update = Button(self.bottom_frame_left, image=self.img_update, state='disabled', font=FONT2, cnf=CNF_BTN, command=self.confirm_log_update)
@@ -1344,21 +1349,27 @@ class StaffWindow(MyWindows):
         date_picker.combo_month.config(state='readonly')
         date_picker.combo_year.config(state='readonly')
 
-    def enable_or_disable_confirm_button(self, event=None):
-        global sheet_state
+    def enable_or_disable_confirm_buttons(self, event=None):
+        global sheet_state, date_picker
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         if part_name in self.logged_parts_names:
             sheet_state = 'update'
         else:
             sheet_state = 'insert'
         if sheet_state=='update':
-            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.btn_confirm_counter_log_insert.pack_forget()
+            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
+            if self.connection.can_be_this_parts_info_deleted_at_this_date(part_name, date_picker.get_date()):
+                self.btn_confirm_counter_log_delete.config(state='normal', relief='raised')
+            else:
+                self.btn_confirm_counter_log_delete.config(state='disabled', relief='flat')
         else:
-            self.btn_confirm_counter_log_update.pack_forget()
             self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX)
             self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
+            self.btn_confirm_counter_log_update.pack_forget()
+            self.btn_confirm_counter_log_delete.config(state='disabled', relief='flat')
+
 
     def set_logged_parts_names(self):
         global date_picker
@@ -1421,6 +1432,7 @@ class StaffWindow(MyWindows):
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.btn_confirm_counter_log_insert.pack_forget()
             self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
+            self.btn_confirm_counter_log_delete.config(state='normal', relief='raised')
             self.enable_for_safety()
             try:
                 list(all_counter_widgets.values())[0].next()
@@ -1580,6 +1592,18 @@ class StaffWindow(MyWindows):
         del updated_logs
         del updated_next_logs
 
+    def confirm_log_delete(self):
+        global date_picker
+        if date_picker.label_date['text']==INVALID_DATE or date_picker.get_date() == None:
+            msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
+            self.enable_for_safety()
+            return
+        part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
+        if msb.askyesno("اطمینان", f"آیا از حذف لاگ های ثبت شده در بخش {part_name} در تاریخ {date_picker.get_date()} مطمئنید؟"):
+            result = self.connection.delete_parameter_logs_by_part_name_and_date(part_name, date_picker.get_date())
+            self.refresh_ui()
+            msb.showinfo("موفقیت", f"{result} عدد از لاگ های ثبت شده با موفقیت حذف شدند")
+
     ########################################### generic functions ###########################################
     def select_color(self, what_color):
         choosed_color = colorchooser.askcolor()
@@ -1640,16 +1664,17 @@ class StaffWindow(MyWindows):
     
     def enable_btns_without_filling_counter_widgets(self, event=None):
         self.disable_for_safety()
-        self.enable_or_disable_confirm_button()
+        self.enable_or_disable_confirm_buttons()
         self.enable_for_safety()
 
     def fill_counter_widgets(self, event=None):
         global all_counter_widgets, sheet_state, date_picker
         self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
         self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
+        self.btn_confirm_counter_log_delete.config(state='disabled', relief='flat')
         self.disable_for_safety()
         self.set_logged_parts_names()
-        self.enable_or_disable_confirm_button()
+        self.enable_or_disable_confirm_buttons()
         self.enable_for_safety()
         for counter_widget in list(all_counter_widgets.values()):
             counter_widget: CounterWidget

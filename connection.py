@@ -546,6 +546,27 @@ class Connection():
         for formula in self.cursor.fetchall():
             formulas.append(formula[0])
         return formulas
+    
+    def can_be_this_parts_info_deleted_at_this_date(self, part_name, date):
+        query = "SELECT `date` FROM `tbl_parameters` JOIN `tbl_sections` ON (`tbl_parameters`.`section`=`tbl_sections`.`id`) JOIN `tbl_parameters_log` ON (`tbl_parameters`.`id`=`tbl_parameters_log`.`parameter_id`) WHERE `tbl_sections`.`title`=%s AND `date`>%s LIMIT 1;"
+        values = (part_name, date)
+        self.cursor.execute(query, values)
+        temp = self.cursor.fetchone()
+        if temp == None:
+            return True
+        return False
+    
+    def delete_parameter_logs_by_part_name_and_date(self, part_name, date):
+        query = "SELECT `tbl_parameters_log`.`id` FROM `tbl_parameters_log` JOIN `tbl_parameters` ON (`tbl_parameters_log`.`parameter_id`=`tbl_parameters`.`id`) JOIN `tbl_sections` ON (`tbl_parameters`.`section`=`tbl_sections`.`id`) WHERE (`tbl_sections`.`title`=%s AND `date`=%s);"
+        values = (part_name, date)
+        self.cursor.execute(query, values)
+        temp = self.cursor.fetchall()
+        query = "DELETE FROM `tbl_parameters_log` WHERE `id` in %s;"
+        values = (temp, )
+        result = self.cursor.execute(query, values)
+        self.connection.commit()
+        return result
+
 
 if __name__ == "__main__":
     c = Connection()
