@@ -566,6 +566,17 @@ class Connection():
         result = self.cursor.execute(query, values)
         self.connection.commit()
         return result
+    
+    def get_number_of_logged_counters_of_this_date(self, date):
+        query = "SELECT COUNT(`id`) FROM `tbl_parameters_log` WHERE (`date`=%s);"
+        values = (date, )
+        self.cursor.execute(query, values)
+        return self.cursor.fetchone()[0] # همیشه جواب میده. حتی اگه ۰ تا هم باشه یه تاپل میده با مقدار صفر و نان نمیده
+
+    def get_number_of_all_counters(self):
+        query = "SELECT COUNT(`id`) FROM `tbl_parameters`;"
+        self.cursor.execute(query)
+        return self.cursor.fetchone()[0] # همیشه جواب میده. حتی اگه ۰ تا هم باشه یه تاپل میده با مقدار صفر و نان نمیده
 
 
 if __name__ == "__main__":

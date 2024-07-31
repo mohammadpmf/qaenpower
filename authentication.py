@@ -39,8 +39,8 @@ class LoginForm(MyWindows):
         self.entry_username.focus_set()
         self.label_password = Label(self.frame, text="رمز عبور", cnf=CNF_LABEL)
         self.entry_password = Entry(self.frame, cnf=CNF_ENTRY, show='*')
-        self.entry_username.insert(0, 'admin') # در پایان حذف شود
-        self.entry_password.insert(0, 'admin') # در پایان حذف شود
+        # self.entry_username.insert(0, 'admin') # در پایان حذف شود
+        # self.entry_password.insert(0, 'admin') # در پایان حذف شود
         self.bv_show_password = BooleanVar(self.frame)
         self.checkbox_show_password = Checkbutton(self.frame, text='نمایش رمز عبور', variable=self.bv_show_password, cnf=CNF_CHB, command=self.show_password)
         self.btn_login = Button(self.frame, text='ورود به حساب کاربری', cnf=CNF_BTN, command=self.login)
@@ -90,7 +90,9 @@ class LoginForm(MyWindows):
 class StaffWindow(MyWindows):
     def __init__(self, connection: Connection, root: Tk, user: Staff):
         super().__init__(connection, root)
-        global date_picker, signal, sheet_state
+        global date_picker, signal, sheet_state, number_of_all_counters, number_of_all_logged_counters
+        number_of_all_counters = self.connection.get_number_of_all_counters() # درسته که یه کوئری خیلی ساده هست. اما چون هر بار از دیتابیس بپرسیم خوب نیست، اول کار ازش یه بار پرسیدم و داخل یه متغیر پایتونی ذخیره اش کردم که سرعت برنامه بالاتر بره و الکی به دیتابیس هیت نزنیم.
+        number_of_all_logged_counters = number_of_all_counters # برای این که لحظه اول برنامه، مقدار که نداره ارور میخوره. اول کار مقدارش رو برابر میذارم که گیر نده. حالا اگه داده اضافه یا کم بشه تغییرش میدیم وسط برنامه
         sheet_state = 'insert'
         signal = 0 # برای این که وقتی یه آپدیتی کردیم رو یه پارامتر، ظاهر برنامه رو رفرش کنیم و به تابع رفرش یو آی این کلاس دسترسی داشته باشیم.
         self.logged_parts_names = set() # یه لیست از پارت هایی که در تاریخ فعلی لاگ رو ثبت کردند. البته اول لیست گرفته بودم. بعد گفتم مجموعه کنم بهتره. اگه ثبت کردند، اسمشون میره تو این مجموعه که دیگه نتونن ثبت کنن و فقط بتونن ویرایش کنن. اول کار هیچ کس ثبت نکرده، پس فقط یه مجموعه خالی داریم. هر بخشی که ثبت کرد وارد این مجموعه میشه و بعد از اون فقط میتونه ویرایش کنه.
@@ -1327,6 +1329,7 @@ class StaffWindow(MyWindows):
             print('Unknown Expeption :D')
         self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
         self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
+        self.btn_confirm_counter_log_delete.config(state='disabled', relief='flat')
         self.disable_for_safety()
     
     def disable_for_safety(self, event=None):
@@ -1340,7 +1343,7 @@ class StaffWindow(MyWindows):
         date_picker.combo_year.config(state='disabled')
     
     def enable_for_safety(self, event=None):
-        global date_picker
+        global date_picker, number_of_all_logged_counters, number_of_all_counters
         self.btn_refresh_counter_logs.config(state='normal', relief='raised')
         date_picker.btn_yesterday.config(state='normal', relief='raised')
         date_picker.btn_tomorrow.config(state='normal', relief='raised')
@@ -1348,6 +1351,9 @@ class StaffWindow(MyWindows):
         date_picker.combo_day.config(state='readonly')
         date_picker.combo_month.config(state='readonly')
         date_picker.combo_year.config(state='readonly')
+        if number_of_all_logged_counters!=0 and number_of_all_logged_counters!=number_of_all_counters:
+            date_picker.freeze_date_picker(True)
+
 
     def enable_or_disable_confirm_buttons(self, event=None):
         global sheet_state, date_picker
@@ -1358,6 +1364,7 @@ class StaffWindow(MyWindows):
             sheet_state = 'insert'
         if sheet_state=='update':
             self.btn_confirm_counter_log_insert.pack_forget()
+            self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
             self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
             if self.connection.can_be_this_parts_info_deleted_at_this_date(part_name, date_picker.get_date()):
@@ -1365,8 +1372,9 @@ class StaffWindow(MyWindows):
             else:
                 self.btn_confirm_counter_log_delete.config(state='disabled', relief='flat')
         else:
-            self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX)
             self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
+            self.btn_confirm_counter_log_insert.pack(side=LEFT, padx=PADX)
+            self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
             self.btn_confirm_counter_log_update.pack_forget()
             self.btn_confirm_counter_log_delete.config(state='disabled', relief='flat')
 
@@ -1394,17 +1402,17 @@ class StaffWindow(MyWindows):
                 break
 
     def confirm_log_insert(self, event=None):
-        global sheet_state, date_picker, all_counter_widgets
+        global sheet_state, date_picker, all_counter_widgets, number_of_all_logged_counters
         self.disable_confirm_buttons()
         if date_picker.label_date['text']==INVALID_DATE or date_picker.get_date() == None:
             msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
-            self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
+            self.enable_or_disable_confirm_buttons()
             self.enable_for_safety()
             return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         result = self.precheck_before_confirm(part_name)
         if result==None:
-            self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
+            self.enable_or_disable_confirm_buttons()
             self.enable_for_safety()
             return
         message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
@@ -1413,7 +1421,7 @@ class StaffWindow(MyWindows):
         self.root.bell()
         answer = msb.askyesno("هشدار", message)
         if not answer:
-            self.btn_confirm_counter_log_insert.config(state='normal', relief='raised')
+            self.enable_or_disable_confirm_buttons()
             self.enable_for_safety()
             return
         for counter_widget in list(all_counter_widgets.values()):
@@ -1428,11 +1436,13 @@ class StaffWindow(MyWindows):
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس اضافه شدند"
             msb.showinfo('موفق', message)
             sheet_state = 'update'
+            self.set_logged_parts_names()
             self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
-            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.btn_confirm_counter_log_insert.pack_forget()
+            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
             self.btn_confirm_counter_log_update.pack(side=LEFT, padx=PADX)
             self.btn_confirm_counter_log_delete.config(state='normal', relief='raised')
+            number_of_all_logged_counters = self.connection.get_number_of_logged_counters_of_this_date(date_picker.get_date())
             self.enable_for_safety()
             try:
                 list(all_counter_widgets.values())[0].next()
@@ -1492,17 +1502,17 @@ class StaffWindow(MyWindows):
         return "ok"
 
     def confirm_log_update(self):
-        global date_picker, all_counter_widgets
+        global date_picker, all_counter_widgets, number_of_all_logged_counters
         self.disable_confirm_buttons()
         if date_picker.label_date['text']==INVALID_DATE or date_picker.get_date() == None:
             msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
-            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_or_disable_confirm_buttons()
             self.enable_for_safety()
             return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         result = self.precheck_before_confirm(part_name)
         if result==None:
-            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_or_disable_confirm_buttons()
             self.enable_for_safety()
             return
         message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
@@ -1511,7 +1521,7 @@ class StaffWindow(MyWindows):
         self.root.bell()
         answer = msb.askyesno("هشدار", message)
         if not answer:
-            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_or_disable_confirm_buttons()
             self.enable_for_safety()
             return
         for counter_widget in list(all_counter_widgets.values()):
@@ -1525,7 +1535,8 @@ class StaffWindow(MyWindows):
         if result_message == "ok":
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ویرایش شدند"
             msb.showinfo('موفق', message)
-            self.btn_confirm_counter_log_update.config(state='normal', relief='raised')
+            self.enable_or_disable_confirm_buttons()
+            number_of_all_logged_counters = self.connection.get_number_of_logged_counters_of_this_date(date_picker.get_date())
             self.enable_for_safety()
             try:
                 list(all_counter_widgets.values())[0].next()
@@ -1593,14 +1604,18 @@ class StaffWindow(MyWindows):
         del updated_next_logs
 
     def confirm_log_delete(self):
-        global date_picker
+        global date_picker, number_of_all_logged_counters
         if date_picker.label_date['text']==INVALID_DATE or date_picker.get_date() == None:
             msb.showerror("خطا", "لطفا تاریخ را به درستی انتخاب کنید")
             self.enable_for_safety()
             return
         part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
+        self.root.bell()
         if msb.askyesno("اطمینان", f"آیا از حذف لاگ های ثبت شده در بخش {part_name} در تاریخ {date_picker.get_date()} مطمئنید؟"):
             result = self.connection.delete_parameter_logs_by_part_name_and_date(part_name, date_picker.get_date())
+            self.set_logged_parts_names()
+            number_of_all_logged_counters = self.connection.get_number_of_logged_counters_of_this_date(date_picker.get_date())
+            self.enable_for_safety()
             self.refresh_ui()
             msb.showinfo("موفقیت", f"{result} عدد از لاگ های ثبت شده با موفقیت حذف شدند")
 
@@ -1668,7 +1683,7 @@ class StaffWindow(MyWindows):
         self.enable_for_safety()
 
     def fill_counter_widgets(self, event=None):
-        global all_counter_widgets, sheet_state, date_picker
+        global all_counter_widgets, sheet_state, date_picker, number_of_all_logged_counters
         self.btn_confirm_counter_log_insert.config(state='disabled', relief='flat')
         self.btn_confirm_counter_log_update.config(state='disabled', relief='flat')
         self.btn_confirm_counter_log_delete.config(state='disabled', relief='flat')
@@ -1742,6 +1757,7 @@ class StaffWindow(MyWindows):
             except:
                 pass
         self.check_colors_and_correct_them()
+        number_of_all_logged_counters=self.connection.get_number_of_logged_counters_of_this_date(date_picker.get_date())
     
     def check_colors_and_correct_them(self):
         global all_counter_widgets
@@ -1819,6 +1835,8 @@ class DatePicker(MyWindows):
             self.btn_today.pack_forget()
 
     def refresh_date(self, date=None):
+        if not self.check_if_ohter_parts_are_filled():
+            return
         if date==None: # این برای اول کار هست. وقتی که تابع تایم دلتا این رو صدا میکنه بهش روز رو میده و نان نیست. پس این ایف اجرا نمیشه.
             date=get_jnow()
             if self.connection.user.default_date==DEFAULT_DATE_VALUES[0]:
@@ -1842,6 +1860,8 @@ class DatePicker(MyWindows):
 
     def check_date(self, event=None):
         global signal
+        if not self.check_if_ohter_parts_are_filled():
+            return
         y = int(self.year.get())
         m = int(self.month.get())
         d = int(self.day.get())
@@ -1890,7 +1910,29 @@ class DatePicker(MyWindows):
             return date
         except:
             return None
-        
+    
+    def check_if_ohter_parts_are_filled(self):
+        global number_of_all_logged_counters, number_of_all_counters
+        # print(f"{number_of_all_counters=}\n{number_of_all_logged_counters=}")
+        # print('-'*50)
+        if number_of_all_logged_counters!=0 and number_of_all_logged_counters!=number_of_all_counters:
+            msb.showwarning("هشدار", "لطفا داده سایر بخش ها تکمیل و ذخیره شود.")
+            freeze = True
+        else:
+            freeze = False
+        self.freeze_date_picker(freeze)
+        return not freeze
+    
+    def freeze_date_picker(self, freeze):
+        if freeze:
+            self.combo_day.config(state='disabled')
+            self.combo_month.config(state='disabled')
+            self.combo_year.config(state='disabled')
+        else:
+            self.combo_day.config(state='readonly')
+            self.combo_month.config(state='readonly')
+            self.combo_year.config(state='readonly')
+
 
 class PartWidget(MyWindows):
     def __init__(self, connection: Connection, root: Tk, places_with_counters, staff_window: StaffWindow):
