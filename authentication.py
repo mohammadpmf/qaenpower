@@ -39,8 +39,8 @@ class LoginForm(MyWindows):
         self.entry_username.focus_set()
         self.label_password = Label(self.frame, text="رمز عبور", cnf=CNF_LABEL)
         self.entry_password = Entry(self.frame, cnf=CNF_ENTRY, show='*')
-        # self.entry_username.insert(0, 'admin') # در پایان حذف شود
-        # self.entry_password.insert(0, 'admin') # در پایان حذف شود
+        self.entry_username.insert(0, 'admin') # در پایان حذف شود
+        self.entry_password.insert(0, 'admin') # در پایان حذف شود
         self.bv_show_password = BooleanVar(self.frame)
         self.checkbox_show_password = Checkbutton(self.frame, text='نمایش رمز عبور', variable=self.bv_show_password, cnf=CNF_CHB, command=self.show_password)
         self.btn_login = Button(self.frame, text='ورود به حساب کاربری', cnf=CNF_BTN, command=self.login)
@@ -1493,12 +1493,17 @@ class StaffWindow(MyWindows):
         else:
             msb.showerror("اخطار", "هیچ پارامتری در این مکان وجود ندارد و نمیتوان اطلاعاتی از این مکان ثبت کرد")
             return None
-        if negative_numbers>0:
-            message = f"{negative_numbers} عدد از فیلدها منفی شده اند.\n"
-            message += "لطفا اعداد را با دقت بیشتری وارد کنید"
-            answer = msb.askretrycancel("هشدار", message)
-            if not answer:
-                return None
+        # تو ورژن جدید گفتن دما رو هم اضافه کردن که میتونه منفی باشه
+        # به خاطر همین این چک رو برداشتم. متغیر نگتیو نامبر به همین منظور
+        # تعریف شده و فقط داخل همین تابع استفاده شده. اما گفتم شاید بعدا
+        # دوباره بخوان برگردونن دیگه خطوط اضافه بالا رو حذف نکردم. خود
+        # برنامه حساب میکنه دیگه. مشکلی نیست.
+        # if negative_numbers>0:
+        #     message = f"{negative_numbers} عدد از فیلدها منفی شده اند.\n"
+        #     message += "لطفا اعداد را با دقت بیشتری وارد کنید"
+        #     answer = msb.askretrycancel("هشدار", message)
+        #     if not answer:
+        #         return None
         return "ok"
 
     def confirm_log_update(self):
