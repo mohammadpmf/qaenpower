@@ -2032,7 +2032,7 @@ class CounterWidget(Parameter, MyWindows):
         self.info_widget = Frame(self.root, bg=COLORS['BG'])
         self.info_widget.grid()
         self.frame = LabelFrame(self.root, labelwidget=self.info_widget, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=COLORS['BG'], fg=COLORS['FG'], *args, **kwargs)
-        self.lbl_title = Label(self.info_widget, cnf=CNF_LABEL2, text=self.name)
+        self.lbl_title = Label(self.info_widget, cnf=CNF_LABEL2, font=FONT, text=self.name)
         self.lbl_info = Label(self.info_widget, cnf=CNF_LABEL2, padx=1, text='🛈')
         self.lbl_title.grid(row=1, column=1)
         self.lbl_info.grid(row=1, column=2)
