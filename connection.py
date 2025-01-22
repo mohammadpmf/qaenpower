@@ -311,36 +311,36 @@ class Connection():
         self.cursor.execute(query, values)
         return self.cursor.fetchone()
 
-    def create_parameter_log(self, value, workout, is_ok, date, parameter_id, user_id):
-        query = "INSERT INTO `tbl_parameters_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
-        values = (value, workout, is_ok, date, datetime.now(), parameter_id, user_id)
+    def create_parameter_log(self, value, workout, is_ok, date, parameter_id, user_id, failure_reason=""):
+        query = "INSERT INTO `tbl_parameters_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `failure_reason`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
+        values = (value, workout, is_ok, date, datetime.now(), parameter_id, user_id, failure_reason)
         self.cursor.execute(query, values)
         self.connection.commit()
-        query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `failure_reason`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
-    def update_parameter_log(self, value, workout, is_ok, date, parameter_id, user_id):
+    def update_parameter_log(self, value, workout, is_ok, date, parameter_id, user_id, failure_reason=""):
         query = "SELECT `id` FROM `tbl_parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (parameter_id, date)
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone() # پارامتری هایی که از قبل وجود دارند، لاگ هم دارند. اما ممکنه برای یک مکان پارامتر جدیدی اضافه بشه که لاگ قبلی نداره. در این صورت پس برای این پارامتر هیچ جوابی نمیده و این طوری به ارور میخوریم. پس در این حالت میگیم براش بسازه و آپدیت نکنه.
         if temp in [None, '', ()]:
-            return self.create_parameter_log(value, workout, is_ok, date, parameter_id, user_id)
+            return self.create_parameter_log(value, workout, is_ok, date, parameter_id, user_id, failure_reason)
         parameter_log_id=temp[0]
-        query = "UPDATE `tbl_parameters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
-        values = (value, workout, is_ok, datetime.now(), user_id, parameter_log_id)
+        query = "UPDATE `tbl_parameters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s, `failure_reason` = %s WHERE (`id` = %s);"
+        values = (value, workout, is_ok, datetime.now(), user_id, failure_reason, parameter_log_id)
         self.cursor.execute(query, values)
         self.connection.commit()
-        query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
-        values = (value, workout, is_ok, date, datetime.now(), parameter_id, user_id)
+        query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `failure_reason`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
+        values = (value, workout, is_ok, date, datetime.now(), parameter_id, user_id, failure_reason)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
 
     def get_parameter_log_by_parameter_id_and_date(self, parameter_id, date):
-        query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `tbl_parameters_log`.`id`, `tbl_users`.`name` as `users_name`, `tbl_users`.`surname` as `users_surname` FROM `tbl_parameters_log` join `tbl_users` ON (`tbl_parameters_log`.`user_id`=`tbl_users`.`id`)  WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `failure_reason`, `tbl_parameters_log`.`id`, `tbl_users`.`name` as `users_name`, `tbl_users`.`surname` as `users_surname` FROM `tbl_parameters_log` join `tbl_users` ON (`tbl_parameters_log`.`user_id`=`tbl_users`.`id`)  WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (parameter_id, date)
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone()
@@ -350,11 +350,11 @@ class Connection():
 
     def get_parameters_log_by_date(self, date) -> dict[ParameterLog|None]:
         self.set_max_date_into_temp_table(date)
-        query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `tbl_parameters_log`.`parameter_id`, `tbl_parameters_log`.`user_id`, `tbl_parameters_log`.`id`, `tbl_users`.`name` AS `users_name`, `tbl_users`.`surname` AS `users_surname`, `tbl_parameters`.`type`, `tbl_parameters`.`variable_name` FROM (`tbl_parameters` JOIN `tbl_parameters_max_date` ON (`tbl_parameters`.`id`=`tbl_parameters_max_date`.`parameter_id`)) JOIN `tbl_parameters_log` ON (`tbl_parameters`.`id`=`tbl_parameters_log`.`parameter_id` AND `tbl_parameters_max_date`.`max_date`=`tbl_parameters_log`.`date`) JOIN `tbl_users` ON (`tbl_parameters_log`.`user_id`=`tbl_users`.`id`);"
+        query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `tbl_parameters_log`.`parameter_id`, `tbl_parameters_log`.`user_id`, `failure_reason`, `tbl_parameters_log`.`id`, `tbl_users`.`name` AS `users_name`, `tbl_users`.`surname` AS `users_surname`, `tbl_parameters`.`type`, `tbl_parameters`.`variable_name` FROM (`tbl_parameters` JOIN `tbl_parameters_max_date` ON (`tbl_parameters`.`id`=`tbl_parameters_max_date`.`parameter_id`)) JOIN `tbl_parameters_log` ON (`tbl_parameters`.`id`=`tbl_parameters_log`.`parameter_id` AND `tbl_parameters_max_date`.`max_date`=`tbl_parameters_log`.`date`) JOIN `tbl_users` ON (`tbl_parameters_log`.`user_id`=`tbl_users`.`id`);"
         self.cursor.execute(query)
         temp_dict = {}
         for item in self.cursor.fetchall():
-            variable_name = item[11]
+            variable_name = item[12]
             temp_dict[variable_name] = ParameterLog(*item[:-1])
         query = "SELECT `id`, `variable_name` FROM `tbl_parameters`;"
         self.cursor.execute(query)
@@ -370,11 +370,11 @@ class Connection():
     
     def get_parameters_next_log_by_date(self, date):
         self.set_min_date_into_temp_table(date)
-        query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `tbl_parameters_log`.`parameter_id`, `tbl_parameters_log`.`user_id`, `tbl_parameters_log`.`id`, `tbl_users`.`name` AS `users_name`, `tbl_users`.`surname` AS `users_surname`, `tbl_parameters`.`type`, `tbl_parameters`.`variable_name` FROM (`tbl_parameters` JOIN `tbl_parameters_min_date` ON (`tbl_parameters`.`id`=`tbl_parameters_min_date`.`parameter_id`)) JOIN `tbl_parameters_log` ON (`tbl_parameters`.`id`=`tbl_parameters_log`.`parameter_id` AND `tbl_parameters_min_date`.`min_date`=`tbl_parameters_log`.`date`) JOIN `tbl_users` ON (`tbl_parameters_log`.`user_id`=`tbl_users`.`id`);"
+        query = "SELECT `value`, `workout`, `is_ok`, `date`, `date_time_modified`, `tbl_parameters_log`.`parameter_id`, `tbl_parameters_log`.`user_id`, `failure_reason`, `tbl_parameters_log`.`id`, `tbl_users`.`name` AS `users_name`, `tbl_users`.`surname` AS `users_surname`, `tbl_parameters`.`type`, `tbl_parameters`.`variable_name` FROM (`tbl_parameters` JOIN `tbl_parameters_min_date` ON (`tbl_parameters`.`id`=`tbl_parameters_min_date`.`parameter_id`)) JOIN `tbl_parameters_log` ON (`tbl_parameters`.`id`=`tbl_parameters_log`.`parameter_id` AND `tbl_parameters_min_date`.`min_date`=`tbl_parameters_log`.`date`) JOIN `tbl_users` ON (`tbl_parameters_log`.`user_id`=`tbl_users`.`id`);"
         self.cursor.execute(query)
         temp_dict = {}
         for item in self.cursor.fetchall():
-            variable_name = item[11]
+            variable_name = item[12]
             temp_dict[variable_name] = ParameterLog(*item[:-1])
         query = "SELECT `id`, `variable_name` FROM `tbl_parameters`;"
         self.cursor.execute(query)

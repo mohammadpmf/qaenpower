@@ -1428,10 +1428,10 @@ class StaffWindow(MyWindows):
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
                 if counter_widget.type in PARAMETER_TYPES[1:3]:
-                    result_message, ـ = counter_widget.connection.create_parameter_log(counter_widget.workout, counter_widget.workout, 1, date_picker.get_date(), counter_widget.id, self.user.id)
+                    result_message, ـ = counter_widget.connection.create_parameter_log(counter_widget.workout, counter_widget.workout, 1, date_picker.get_date(), counter_widget.id, self.user.id, counter_widget.failure_reason)
                 elif counter_widget.type==PARAMETER_TYPES[0]:
                     is_ok = 1 if counter_widget.boolean_var_bad.get()==False else 0
-                    result_message, ـ = counter_widget.connection.create_parameter_log(counter_widget.b, counter_widget.workout, is_ok, date_picker.get_date(), counter_widget.id, self.user.id)
+                    result_message, ـ = counter_widget.connection.create_parameter_log(counter_widget.b, counter_widget.workout, is_ok, date_picker.get_date(), counter_widget.id, self.user.id, counter_widget.failure_reason)
         if result_message == "ok":
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس اضافه شدند"
             msb.showinfo('موفق', message)
@@ -1533,10 +1533,10 @@ class StaffWindow(MyWindows):
             counter_widget: CounterWidget
             if counter_widget.part_title==part_name:
                 if counter_widget.type in PARAMETER_TYPES[1:3]:
-                    result_message, ـ = counter_widget.connection.update_parameter_log(counter_widget.workout, counter_widget.workout, 1, date_picker.get_date(), counter_widget.id, self.user.id)
+                    result_message, ـ = counter_widget.connection.update_parameter_log(counter_widget.workout, counter_widget.workout, 1, date_picker.get_date(), counter_widget.id, self.user.id, counter_widget.failure_reason)
                 elif counter_widget.type==PARAMETER_TYPES[0]:
                     is_ok = 1 if counter_widget.boolean_var_bad.get()==False else 0
-                    result_message, ـ = counter_widget.connection.update_parameter_log(counter_widget.b, counter_widget.workout, is_ok, date_picker.get_date(), counter_widget.id, self.user.id)
+                    result_message, ـ = counter_widget.connection.update_parameter_log(counter_widget.b, counter_widget.workout, is_ok, date_picker.get_date(), counter_widget.id, self.user.id, counter_widget.failure_reason)
         if result_message == "ok":
             message = f"اطلاعات بخش {part_name} با موفقیت در دیتابیس ویرایش شدند"
             msb.showinfo('موفق', message)
@@ -1706,9 +1706,11 @@ class StaffWindow(MyWindows):
             if counter_widget.counter_log!=None:
                 counter_widget.workout = counter_widget.counter_log.workout
                 counter_widget.b = counter_widget.counter_log.value
+                counter_widget.failure_reason = counter_widget.counter_log.failure_reason
             else:
                 counter_widget.workout = 0
                 counter_widget.b = 0
+                counter_widget.failure_reason = ""
             counter_widget.a = counter_widget.connection.get_previous_value_of_parameter_by_id_and_date(counter_widget.id, date_picker.get_date())
             if counter_widget.a==None:
                 counter_widget.a=0
@@ -1759,6 +1761,10 @@ class StaffWindow(MyWindows):
                     counter_widget.boolean_var_bad.set(False)
             try:
                 create_tool_tip(counter_widget.lbl_info, text=counter_widget.counter_log.users_full_name)
+            except:
+                pass
+            try:
+                create_tool_tip2(counter_widget.checkbutton_bad, text=counter_widget.counter_log.failure_reason)
             except:
                 pass
         self.check_colors_and_correct_them()
@@ -2037,7 +2043,8 @@ class CounterWidget(Parameter, MyWindows):
         self.lbl_info.bind("<Button-1>", self.show_whole_log)
         self.lbl_title.grid(row=1, column=1)
         self.lbl_info.grid(row=1, column=2)
-        self.counter_log = None # بعدا برای هر پارامتر مقدار دهی میشه با یک لاگ کامل از اون پارامتر. دیگه اینجا الکی به دیتابیس هیت نزدم
+        self.failure_reason = ""  # اول کار دلیل خرابی همه پارامتر ها هیچی هست.اگه از نوع کنتور باشه و ذکر بشه، عوضش میکنیم.
+        self.counter_log = None  # بعدا برای هر پارامتر مقدار دهی میشه با یک لاگ کامل از اون پارامتر. دیگه اینجا الکی به دیتابیس هیت نزدم
         # self.a = self.b = self.workout = None # این هم بعدا مقدار دهی میشه. اول کار تعریف کردم که ارور نده و در جاهای دیگه کد بدونه که هر نمونه از این کلاس این ۲ تا رو داره
         self.a = self.b = self.workout = 0
         if self.type==PARAMETER_TYPES[2]:
@@ -2303,8 +2310,24 @@ class CounterWidget(Parameter, MyWindows):
         self.update_workout()
     
     def check(self):
+        def change_failure_reason():
+            temp = entry_failure_reason.get().strip()
+            if temp == "":
+                msb.showwarning("خطا", "دلیل خرابی کنتور نمی تواند خالی باشد!")
+                return
+            self.failure_reason = temp
+            failure_reason_window.destroy()
+        
         if self.type==PARAMETER_TYPES[0]: # اگه انواع دیگه باشن، بولین ور براشون تعریف نشده و این تابع براشون ارور میده. پس شرط گذاشتم براش.
             if self.boolean_var_bad.get():
+                failure_reason_window = Toplevel(self.root, cnf=CNF_FRM)
+                failure_reason_window.grab_set()
+                entry_failure_reason = Entry(failure_reason_window, cnf=CNF_ENTRY)
+                entry_failure_reason.insert(0, self.failure_reason)
+                entry_failure_reason.grid(row=1, column=1, cnf=CNF_GRID)
+                Label(failure_reason_window, cnf=CNF_LABEL, text="علت خرابی").grid(row=1, column=2, cnf=CNF_GRID)
+                Button(failure_reason_window, cnf=CNF_BTN, text="ثبت", command=change_failure_reason).grid(row=2, column=1, cnf=CNF_GRID)
+                Button(failure_reason_window, cnf=CNF_BTN, text="انصراف", command=failure_reason_window.destroy).grid(row=2, column=2, cnf=CNF_GRID)
                 self.checkbutton_bad.config(fg=COLORS['ALARM_COLOR'])
                 self.entry_workout.config(state='normal')
                 self.entry_workout.focus_set()
@@ -2347,6 +2370,44 @@ class ToolTip(object):
 
 def create_tool_tip(widget, text):
     toolTip = ToolTip(widget)
+    def enter(event):
+        toolTip.showtip(text)
+    def leave(event):
+        toolTip.hidetip()
+    widget.bind('<Enter>', enter)
+    widget.bind('<Leave>', leave)
+
+class ToolTip2(object):
+    def __init__(self, widget):
+        self.widget = widget
+        self.tipwindow = None
+        self.id = None
+        self.x = self.y = 0
+
+    def showtip(self, text):
+        "Display text in tooltip window"
+        self.text = text
+        if self.tipwindow or not self.text:
+            return
+        x, y, cx, cy = self.widget.bbox("insert")
+        x = x + self.widget.winfo_rootx() + 30
+        y = y + cy + self.widget.winfo_rooty() - 5
+        self.tipwindow = tw = Toplevel(self.widget)
+        tw.wm_overrideredirect(1)
+        tw.wm_geometry("+%d+%d" % (x, y))
+        label = Label(tw, text=self.text, justify='left',
+                      background="#ffffe0", relief='solid', borderwidth=1,
+                      font=("tahoma", "8", "normal"))
+        label.pack(ipadx=1)
+
+    def hidetip(self):
+        tw = self.tipwindow
+        self.tipwindow = None
+        if tw:
+            tw.destroy()
+
+def create_tool_tip2(widget, text):
+    toolTip = ToolTip2(widget)
     def enter(event):
         toolTip.showtip(text)
     def leave(event):
