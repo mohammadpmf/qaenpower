@@ -1,7 +1,7 @@
 from ui_settings import *
 from PIL import Image, ImageTk
 from connection import Connection
-from functions import calculate_fn, get_duration_between_days, get_formula_parameters, how_many_times_parameters_variable_name_used_in_other_formulas, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round4, jdatetime, datetime
+from functions import calculate_fn, get_duration_between_days, get_formula_parameters, how_many_times_parameters_variable_name_used_in_other_formulas, what_is_variable_name_problem, what_is_formula_problem, get_jnow, round4, jdatetime, datetime, my_gregorian_to_jalali
 from models import Part, Place, Staff, Parameter, ParameterLog
 import win32api
 from threading import Thread
@@ -2034,6 +2034,7 @@ class CounterWidget(Parameter, MyWindows):
         self.frame = LabelFrame(self.root, labelwidget=self.info_widget, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=COLORS['BG'], fg=COLORS['FG'], *args, **kwargs)
         self.lbl_title = Label(self.info_widget, cnf=CNF_LABEL2, font=FONT, text=self.name)
         self.lbl_info = Label(self.info_widget, cnf=CNF_LABEL2, padx=1, text='🛈')
+        self.lbl_info.bind("<Button-1>", self.show_whole_log)
         self.lbl_title.grid(row=1, column=1)
         self.lbl_info.grid(row=1, column=2)
         self.counter_log = None # بعدا برای هر پارامتر مقدار دهی میشه با یک لاگ کامل از اون پارامتر. دیگه اینجا الکی به دیتابیس هیت نزدم
@@ -2065,6 +2066,44 @@ class CounterWidget(Parameter, MyWindows):
             self.checkbutton_bad        .grid(row=2, column=1, cnf=CNF_GRID2)
             self.label_previous_counter .grid(row=2, column=2, cnf=CNF_GRID2)
         self.entry_workout.grid(row=1, column=1, cnf=CNF_GRID2)
+    
+    def show_whole_log(self, event=None):
+        temp_log_window = Toplevel(self.root)
+        title = f"لاگ های ثبت شده از کنتور {self.name} واقع در مکان {self.place_title} از بخش {self.part_title}"
+        label_title_temp_log_window = Label(temp_log_window, text=title, cnf=CNF_LABEL)
+        label_title_temp_log_window.pack(side=TOP, fill="x")
+        treeview_temp_log_window = ttk.Treeview(temp_log_window, selectmode ='browse', show="headings")
+        verscrlbar = ttk.Scrollbar(temp_log_window, orient ="vertical", command = treeview_temp_log_window.yview)
+        verscrlbar.pack(side=RIGHT, fill="y")
+        treeview_temp_log_window.pack(side=RIGHT, expand=True, fill="both")
+        treeview_temp_log_window.configure(yscrollcommand = verscrlbar.set)
+        treeview_temp_log_window["columns"] = ("1", "2", "3", "4", "5", "6", "7")
+        treeview_temp_log_window.column("1", width = 350, anchor ='c')
+        treeview_temp_log_window.column("2", width = 200, anchor ='c')
+        treeview_temp_log_window.column("3", width = 200, anchor ='c')
+        treeview_temp_log_window.column("4", width = 200, anchor ='c')
+        treeview_temp_log_window.column("5", width = 350, anchor ='c')
+        treeview_temp_log_window.column("6", width = 350, anchor ='c')
+        treeview_temp_log_window.column("7", width = 80, anchor ='c')
+        treeview_temp_log_window.heading("1", text ="تاریخ و زمان ثبت")
+        treeview_temp_log_window.heading("2", text ="وضعیت پارامتر")
+        treeview_temp_log_window.heading("3", text ="عملکرد ثبت شده")
+        treeview_temp_log_window.heading("4", text ="مقدار ثبت شده")
+        treeview_temp_log_window.heading("5", text ="نام کاربری ثبت کننده")
+        treeview_temp_log_window.heading("6", text ="نام و نام خانوادگی")
+        treeview_temp_log_window.heading("7", text ="ردیف")
+        result = self.connection.get_all_logs_of_parameter_by_id(self.id)
+        for index, parameter_log in enumerate(result):
+            temp_info = (
+                my_gregorian_to_jalali(parameter_log[1]),
+                "سالم" if parameter_log[2]==1 else "خراب",
+                round4(parameter_log[3]),
+                round4(parameter_log[4]),
+                parameter_log[5],
+                parameter_log[6],
+                index+1
+            )
+            treeview_temp_log_window.insert("", 'end', text =parameter_log[0],values = temp_info)
  
     def check_color(self, event=None):
         w_l = self.warning_lower_bound

@@ -316,6 +316,9 @@ class Connection():
         values = (value, workout, is_ok, date, datetime.now(), parameter_id, user_id)
         self.cursor.execute(query, values)
         self.connection.commit()
+        query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        self.cursor.execute(query, values)
+        self.connection.commit()
         return ("ok", 0)
 
     def update_parameter_log(self, value, workout, is_ok, date, parameter_id, user_id):
@@ -328,6 +331,10 @@ class Connection():
         parameter_log_id=temp[0]
         query = "UPDATE `tbl_parameters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
         values = (value, workout, is_ok, datetime.now(), user_id, parameter_log_id)
+        self.cursor.execute(query, values)
+        self.connection.commit()
+        query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        values = (value, workout, is_ok, date, datetime.now(), parameter_id, user_id)
         self.cursor.execute(query, values)
         self.connection.commit()
         return ("ok", 0)
@@ -575,6 +582,12 @@ class Connection():
         query = "SELECT COUNT(`id`) FROM `tbl_parameters`;"
         self.cursor.execute(query)
         return self.cursor.fetchone()[0] # همیشه جواب میده. حتی اگه ۰ تا هم باشه یه تاپل میده با مقدار صفر و نان نمیده
+
+    def get_all_logs_of_parameter_by_id(self, parameter_id):
+        query = "SELECT `tbl_parameters_real_log`.`id`, `date_time_modified`, `is_ok`, `workout`, `value`, `tbl_users`.`username`, CONCAT(`tbl_users`.`name`, ' ', `tbl_users`.`surname`) AS `full_name` FROM `tbl_parameters_real_log` JOIN `tbl_users` ON `tbl_parameters_real_log`.`user_id`=`tbl_users`.`id` WHERE `parameter_id`=%s order by date_time_modified DESC;"
+        values = parameter_id
+        self.cursor.execute(query, values)
+        return self.cursor.fetchall()
 
 
 if __name__ == "__main__":
