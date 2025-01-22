@@ -58,7 +58,7 @@ class Parameter():
 
 
 class ParameterLog():
-    def __init__(self, value, workout, is_ok, date, date_time_modified, parameter_id, user_id, id, users_name, users_surname, type=None):
+    def __init__(self, value, workout, is_ok, date, date_time_modified, parameter_id, user_id, failure_reason, id, users_name, users_surname, type=None):
         self.value=value
         self.workout=workout
         self.is_ok=is_ok
@@ -66,6 +66,7 @@ class ParameterLog():
         self.date_time_modified=date_time_modified
         self.parameter_id=parameter_id
         self.user_id=user_id
+        self.failure_reason=failure_reason
         self.id=id
         self.users_full_name = f"{users_name} {users_surname}"
         self.type=type
