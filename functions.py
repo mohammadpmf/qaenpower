@@ -171,7 +171,13 @@ def calculate_fn(formula: str, parameters: list, values: list):
     except ZeroDivisionError:
         print("Warning in calculate_fn except layer 1 :D (Zero Division)")
         return 0
-    
+
+
+def my_gregorian_to_jalali(gregorian_date: datetime):
+    jalali_date = jdatetime.datetime.fromgregorian(datetime=gregorian_date)
+    return jalali_date.strftime("%Y-%m-%d      %H:%M:%S")
+
+
 if __name__=='__main__':
     print(hash_password('admin', '1'))
     word='salam'
