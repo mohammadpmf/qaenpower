@@ -584,7 +584,7 @@ class Connection():
         return self.cursor.fetchone()[0] # همیشه جواب میده. حتی اگه ۰ تا هم باشه یه تاپل میده با مقدار صفر و نان نمیده
 
     def get_all_logs_of_parameter_by_id(self, parameter_id):
-        query = "SELECT `tbl_parameters_real_log`.`id`, `date_time_modified`, `is_ok`, `workout`, `value`, `tbl_users`.`username`, CONCAT(`tbl_users`.`name`, ' ', `tbl_users`.`surname`) AS `full_name` FROM `tbl_parameters_real_log` JOIN `tbl_users` ON `tbl_parameters_real_log`.`user_id`=`tbl_users`.`id` WHERE `parameter_id`=%s order by date_time_modified DESC;"
+        query = "SELECT `tbl_parameters_real_log`.`id`, `date_time_modified`, `date`, `is_ok`, `workout`, `value`, `tbl_users`.`username`, CONCAT(`tbl_users`.`name`, ' ', `tbl_users`.`surname`) AS `full_name` FROM `tbl_parameters_real_log` JOIN `tbl_users` ON `tbl_parameters_real_log`.`user_id`=`tbl_users`.`id` WHERE `parameter_id`=%s order by date_time_modified DESC;"
         values = parameter_id
         self.cursor.execute(query, values)
         return self.cursor.fetchall()
