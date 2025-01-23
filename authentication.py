@@ -2040,7 +2040,8 @@ class CounterWidget(Parameter, MyWindows):
         self.frame = LabelFrame(self.root, labelwidget=self.info_widget, cnf=CNF_LBL_FRM, padx=PADX, pady=PADY, labelanchor='n', bg=COLORS['BG'], fg=COLORS['FG'], *args, **kwargs)
         self.lbl_title = Label(self.info_widget, cnf=CNF_LABEL2, font=FONT, text=self.name)
         self.lbl_info = Label(self.info_widget, cnf=CNF_LABEL2, padx=1, text='🛈')
-        self.lbl_info.bind("<Button-1>", self.show_whole_log)
+        self.lbl_info.bind("<Button-1>", self.show_one_day_log)
+        self.lbl_info.bind("<Button-3>", self.show_whole_log)
         self.lbl_title.grid(row=1, column=1)
         self.lbl_info.grid(row=1, column=2)
         self.failure_reason = ""  # اول کار دلیل خرابی همه پارامتر ها هیچی هست.اگه از نوع کنتور باشه و ذکر بشه، عوضش میکنیم.
@@ -2114,6 +2115,48 @@ class CounterWidget(Parameter, MyWindows):
                 index+1
             )
             treeview_temp_log_window.insert("", 'end', text =parameter_log[0],values = temp_info)
+    
+    def show_one_day_log(self, event=None):
+        global date_picker
+        temp_log_window = Toplevel(self.root)
+        title = f"لاگ های ثبت شده از کنتور {self.name} واقع در مکان {self.place_title} از بخش {self.part_title}"
+        label_title_temp_log_window = Label(temp_log_window, text=title, cnf=CNF_LABEL)
+        label_title_temp_log_window.pack(side=TOP, fill="x")
+        treeview_temp_log_window = ttk.Treeview(temp_log_window, selectmode ='browse', show="headings")
+        verscrlbar = ttk.Scrollbar(temp_log_window, orient ="vertical", command = treeview_temp_log_window.yview)
+        verscrlbar.pack(side=RIGHT, fill="y")
+        treeview_temp_log_window.pack(side=RIGHT, expand=True, fill="both")
+        treeview_temp_log_window.configure(yscrollcommand = verscrlbar.set)
+        treeview_temp_log_window["columns"] = ("1", "2", "3", "4", "5", "6", "7", "8")
+        treeview_temp_log_window.column("1", width = 350, anchor ='c')
+        treeview_temp_log_window.column("2", width = 180, anchor ='c')
+        treeview_temp_log_window.column("3", width = 180, anchor ='c')
+        treeview_temp_log_window.column("4", width = 180, anchor ='c')
+        treeview_temp_log_window.column("5", width = 180, anchor ='c')
+        treeview_temp_log_window.column("6", width = 350, anchor ='c')
+        treeview_temp_log_window.column("7", width = 350, anchor ='c')
+        treeview_temp_log_window.column("8", width = 80, anchor ='c')
+        treeview_temp_log_window.heading("1", text ="تاریخ و زمان ویرایش")
+        treeview_temp_log_window.heading("2", text ="تاریخ پارامتر")
+        treeview_temp_log_window.heading("3", text ="وضعیت پارامتر")
+        treeview_temp_log_window.heading("4", text ="عملکرد ثبت شده")
+        treeview_temp_log_window.heading("5", text ="مقدار ثبت شده")
+        treeview_temp_log_window.heading("6", text ="نام کاربری ثبت کننده")
+        treeview_temp_log_window.heading("7", text ="نام و نام خانوادگی")
+        treeview_temp_log_window.heading("8", text ="ردیف")
+        result = self.connection.get_all_logs_of_parameter_by_id_just_for_one_day(self.id, date_picker.get_date())
+        for index, parameter_log in enumerate(result):
+            temp_info = (
+                my_gregorian_to_jalali(parameter_log[1]),
+                my_gregorian_to_jalali(parameter_log[2])[0:10],
+                "سالم" if parameter_log[3]==1 else "خراب",
+                round4(parameter_log[4]),
+                round4(parameter_log[5]),
+                parameter_log[6],
+                parameter_log[7],
+                index+1
+            )
+            treeview_temp_log_window.insert("", 'end', text =parameter_log[0],values = temp_info)    
  
     def check_color(self, event=None):
         w_l = self.warning_lower_bound
@@ -2320,6 +2363,7 @@ class CounterWidget(Parameter, MyWindows):
                 return
             self.failure_reason = temp
             failure_reason_window.destroy()
+            self.entry_workout.focus_set()
         
         if self.type==PARAMETER_TYPES[0]: # اگه انواع دیگه باشن، بولین ور براشون تعریف نشده و این تابع براشون ارور میده. پس شرط گذاشتم براش.
             if self.boolean_var_bad.get():
@@ -2329,12 +2373,13 @@ class CounterWidget(Parameter, MyWindows):
                 entry_failure_reason = Entry(failure_reason_window, cnf=CNF_ENTRY)
                 entry_failure_reason.insert(0, self.failure_reason)
                 entry_failure_reason.grid(row=1, column=1, cnf=CNF_GRID)
+                entry_failure_reason.focus_set()
+                entry_failure_reason.bind("<Return>", lambda e:change_failure_reason())
                 Label(failure_reason_window, cnf=CNF_LABEL, text="علت خرابی").grid(row=1, column=2, cnf=CNF_GRID)
                 Button(failure_reason_window, cnf=CNF_BTN, text="ثبت", command=change_failure_reason).grid(row=2, column=1, cnf=CNF_GRID)
                 Button(failure_reason_window, cnf=CNF_BTN, text="انصراف", command=failure_reason_window.destroy).grid(row=2, column=2, cnf=CNF_GRID)
                 self.checkbutton_bad.config(fg=COLORS['ALARM_COLOR'])
                 self.entry_workout.config(state='normal')
-                self.entry_workout.focus_set()
             else:
                 self.checkbutton_bad.config(fg=COLORS['FG'])
                 self.entry_workout.config(state='readonly')
