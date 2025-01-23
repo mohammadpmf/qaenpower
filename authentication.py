@@ -1926,7 +1926,13 @@ class DatePicker(MyWindows):
         global number_of_all_logged_counters, number_of_all_counters
         # print(f"{number_of_all_counters=}\n{number_of_all_logged_counters=}")
         # print('-'*50)
-        if number_of_all_logged_counters!=0 and number_of_all_logged_counters!=number_of_all_counters:
+        today = self.get_date()
+        last_log_date = self.connection.get_last_log_date()
+        if (
+            number_of_all_logged_counters != 0
+            and number_of_all_logged_counters != number_of_all_counters
+            and today >= last_log_date
+        ):
             msb.showwarning("هشدار", "لطفا داده سایر بخش ها تکمیل و ذخیره شود.")
             freeze = True
         else:

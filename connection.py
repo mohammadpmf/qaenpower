@@ -594,6 +594,14 @@ class Connection():
         values = parameter_id, parameter_id, date
         self.cursor.execute(query, values)
         return self.cursor.fetchall()
+    
+    def get_last_log_date(self):
+        query = "SELECT `date` FROM `tbl_parameters_log` ORDER BY `date` DESC LIMIT 1;"
+        self.cursor.execute(query)
+        temp = self.cursor.fetchone()
+        if temp == None:
+            return None
+        return temp[0]
 
 
 if __name__ == "__main__":
