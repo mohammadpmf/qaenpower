@@ -602,6 +602,26 @@ class Connection():
         if temp == None:
             return None
         return temp[0]
+    
+    def get_number_of_records_after_date_in_part(self, date, part_name):
+        query = """
+        SELECT 
+            (SELECT COUNT(DISTINCT `tbl_parameters_log`.`id`) 
+            FROM `tbl_parameters_log` 
+            JOIN `tbl_parameters` ON `tbl_parameters_log`.`parameter_id` = `tbl_parameters`.`id` 
+            JOIN `tbl_sections` ON `tbl_parameters`.`section` = `tbl_sections`.`id` 
+            WHERE `tbl_sections`.`title` = %s AND `tbl_parameters_log`.`date` > %s) 
+            / 
+            (SELECT COUNT(`tbl_parameters`.`id`) 
+            FROM `tbl_parameters` 
+            JOIN `tbl_sections` ON `tbl_parameters`.`section` = `tbl_sections`.`id` 
+            WHERE `tbl_sections`.`title` = %s) 
+        AS `result`;
+        """
+        values = (part_name, date, part_name)
+        self.cursor.execute(query, values)
+        result = self.cursor.fetchone()[0]
+        return int(result)
 
 
 if __name__ == "__main__":

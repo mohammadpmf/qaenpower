@@ -1520,6 +1520,18 @@ class StaffWindow(MyWindows):
             self.enable_or_disable_confirm_buttons()
             self.enable_for_safety()
             return
+        if self.user.access_level==2:
+            result = self.connection.get_number_of_records_after_date_in_part(
+                date_picker.get_date(), part_name
+                )
+            if result > 1:
+                message = f"بیش از {result} رکورد پس از این روز ثبت شده اند. با توجه به "
+                message += "سطح دسترسی شما، شما تنها توانایی تغییر ۲ رکورد آخر را دارید. "
+                message += "برای تغییر روزهای قبل تر، باید دسترسی سطح مدیریت داشته باشید!"
+                msb.showwarning("هشدار", message)
+                self.enable_or_disable_confirm_buttons()
+                self.enable_for_safety()
+                return
         message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
         message += "با انتخاب دکمه تایید، تمامی اطلاعات این بخش در دیتابیس ویرایش میشوند\n"
         message += "در صورت اطمنیان، دکمه تایید را فشار دهید"
