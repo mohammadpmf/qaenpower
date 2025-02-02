@@ -2102,33 +2102,36 @@ class CounterWidget(Parameter, MyWindows):
         verscrlbar.pack(side=RIGHT, fill="y")
         treeview_temp_log_window.pack(side=RIGHT, expand=True, fill="both")
         treeview_temp_log_window.configure(yscrollcommand = verscrlbar.set)
-        treeview_temp_log_window["columns"] = ("1", "2", "3", "4", "5", "6", "7", "8")
-        treeview_temp_log_window.column("1", width = 350, anchor ='c')
-        treeview_temp_log_window.column("2", width = 180, anchor ='c')
-        treeview_temp_log_window.column("3", width = 180, anchor ='c')
-        treeview_temp_log_window.column("4", width = 180, anchor ='c')
-        treeview_temp_log_window.column("5", width = 180, anchor ='c')
-        treeview_temp_log_window.column("6", width = 350, anchor ='c')
-        treeview_temp_log_window.column("7", width = 350, anchor ='c')
-        treeview_temp_log_window.column("8", width = 80, anchor ='c')
+        treeview_temp_log_window["columns"] = ("1", "2", "3", "4", "5", "6", "7", "8", "9")
+        treeview_temp_log_window.column("1", width = 300, anchor ='c')
+        treeview_temp_log_window.column("2", width = 140, anchor ='c')
+        treeview_temp_log_window.column("3", width = 320, anchor ='c')
+        treeview_temp_log_window.column("4", width = 160, anchor ='c')
+        treeview_temp_log_window.column("5", width = 160, anchor ='c')
+        treeview_temp_log_window.column("6", width = 160, anchor ='c')
+        treeview_temp_log_window.column("7", width = 240, anchor ='c')
+        treeview_temp_log_window.column("8", width = 240, anchor ='c')
+        treeview_temp_log_window.column("9", width = 60, anchor ='c')
         treeview_temp_log_window.heading("1", text ="تاریخ و زمان ویرایش")
         treeview_temp_log_window.heading("2", text ="تاریخ پارامتر")
-        treeview_temp_log_window.heading("3", text ="وضعیت پارامتر")
-        treeview_temp_log_window.heading("4", text ="عملکرد ثبت شده")
-        treeview_temp_log_window.heading("5", text ="مقدار ثبت شده")
-        treeview_temp_log_window.heading("6", text ="نام کاربری ثبت کننده")
-        treeview_temp_log_window.heading("7", text ="نام و نام خانوادگی")
-        treeview_temp_log_window.heading("8", text ="ردیف")
+        treeview_temp_log_window.heading("3", text ="توضیحات")
+        treeview_temp_log_window.heading("4", text ="وضعیت پارامتر")
+        treeview_temp_log_window.heading("5", text ="عملکرد ثبت شده")
+        treeview_temp_log_window.heading("6", text ="مقدار ثبت شده")
+        treeview_temp_log_window.heading("7", text ="نام کاربری ثبت کننده")
+        treeview_temp_log_window.heading("8", text ="نام و نام خانوادگی")
+        treeview_temp_log_window.heading("9", text ="ردیف")
         result = self.connection.get_all_logs_of_parameter_by_id(self.id)
         for index, parameter_log in enumerate(result):
             temp_info = (
                 my_gregorian_to_jalali(parameter_log[1]),
-                my_gregorian_to_jalali(parameter_log[2])[0:10],
-                "سالم" if parameter_log[3]==1 else "خراب",
-                round4(parameter_log[4]),
+                my_gregorian_to_jalali(parameter_log[2])[-10:],
+                parameter_log[3] if parameter_log[4]==0 else "",
+                "سالم" if parameter_log[4]==1 else "خراب",
                 round4(parameter_log[5]),
-                parameter_log[6],
+                round4(parameter_log[6]),
                 parameter_log[7],
+                parameter_log[8],
                 index+1
             )
             treeview_temp_log_window.insert("", 'end', text =parameter_log[0], values = temp_info)
@@ -2144,33 +2147,36 @@ class CounterWidget(Parameter, MyWindows):
         verscrlbar.pack(side=RIGHT, fill="y")
         treeview_temp_log_window.pack(side=RIGHT, expand=True, fill="both")
         treeview_temp_log_window.configure(yscrollcommand = verscrlbar.set)
-        treeview_temp_log_window["columns"] = ("1", "2", "3", "4", "5", "6", "7", "8")
-        treeview_temp_log_window.column("1", width = 350, anchor ='c')
-        treeview_temp_log_window.column("2", width = 180, anchor ='c')
-        treeview_temp_log_window.column("3", width = 180, anchor ='c')
-        treeview_temp_log_window.column("4", width = 180, anchor ='c')
-        treeview_temp_log_window.column("5", width = 180, anchor ='c')
-        treeview_temp_log_window.column("6", width = 350, anchor ='c')
-        treeview_temp_log_window.column("7", width = 350, anchor ='c')
-        treeview_temp_log_window.column("8", width = 80, anchor ='c')
+        treeview_temp_log_window["columns"] = ("1", "2", "3", "4", "5", "6", "7", "8", "9")
+        treeview_temp_log_window.column("1", width = 300, anchor ='c')
+        treeview_temp_log_window.column("2", width = 140, anchor ='c')
+        treeview_temp_log_window.column("3", width = 320, anchor ='c')
+        treeview_temp_log_window.column("4", width = 160, anchor ='c')
+        treeview_temp_log_window.column("5", width = 160, anchor ='c')
+        treeview_temp_log_window.column("6", width = 160, anchor ='c')
+        treeview_temp_log_window.column("7", width = 240, anchor ='c')
+        treeview_temp_log_window.column("8", width = 240, anchor ='c')
+        treeview_temp_log_window.column("9", width = 60, anchor ='c')
         treeview_temp_log_window.heading("1", text ="تاریخ و زمان ویرایش")
         treeview_temp_log_window.heading("2", text ="تاریخ پارامتر")
-        treeview_temp_log_window.heading("3", text ="وضعیت پارامتر")
-        treeview_temp_log_window.heading("4", text ="عملکرد ثبت شده")
-        treeview_temp_log_window.heading("5", text ="مقدار ثبت شده")
-        treeview_temp_log_window.heading("6", text ="نام کاربری ثبت کننده")
-        treeview_temp_log_window.heading("7", text ="نام و نام خانوادگی")
-        treeview_temp_log_window.heading("8", text ="ردیف")
+        treeview_temp_log_window.heading("3", text ="توضیحات")
+        treeview_temp_log_window.heading("4", text ="وضعیت پارامتر")
+        treeview_temp_log_window.heading("5", text ="عملکرد ثبت شده")
+        treeview_temp_log_window.heading("6", text ="مقدار ثبت شده")
+        treeview_temp_log_window.heading("7", text ="نام کاربری ثبت کننده")
+        treeview_temp_log_window.heading("8", text ="نام و نام خانوادگی")
+        treeview_temp_log_window.heading("9", text ="ردیف")
         result = self.connection.get_all_logs_of_parameter_by_id_just_for_one_day(self.id, date_picker.get_date())
         for index, parameter_log in enumerate(result):
             temp_info = (
                 my_gregorian_to_jalali(parameter_log[1]),
-                my_gregorian_to_jalali(parameter_log[2])[0:10],
-                "سالم" if parameter_log[3]==1 else "خراب",
-                round4(parameter_log[4]),
+                my_gregorian_to_jalali(parameter_log[2])[-10:],
+                parameter_log[3] if parameter_log[4]==0 else "",
+                "سالم" if parameter_log[4]==1 else "خراب",
                 round4(parameter_log[5]),
-                parameter_log[6],
+                round4(parameter_log[6]),
                 parameter_log[7],
+                parameter_log[8],
                 index+1
             )
             treeview_temp_log_window.insert("", 'end', text =parameter_log[0], values = temp_info)    
