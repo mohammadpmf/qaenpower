@@ -175,7 +175,7 @@ def calculate_fn(formula: str, parameters: list, values: list):
 
 def my_gregorian_to_jalali(gregorian_date: datetime):
     jalali_date = jdatetime.datetime.fromgregorian(datetime=gregorian_date)
-    return jalali_date.strftime("%Y-%m-%d      %H:%M:%S")
+    return jalali_date.strftime("%H:%M:%S      %Y-%m-%d")
 
 
 if __name__=='__main__':
