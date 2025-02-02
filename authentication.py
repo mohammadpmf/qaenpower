@@ -2131,8 +2131,8 @@ class CounterWidget(Parameter, MyWindows):
                 parameter_log[7],
                 index+1
             )
-            treeview_temp_log_window.insert("", 'end', text =parameter_log[0],values = temp_info)
-    
+            treeview_temp_log_window.insert("", 'end', text =parameter_log[0], values = temp_info)
+
     def show_one_day_log(self, event=None):
         global date_picker
         temp_log_window = Toplevel(self.root)
@@ -2173,8 +2173,14 @@ class CounterWidget(Parameter, MyWindows):
                 parameter_log[7],
                 index+1
             )
-            treeview_temp_log_window.insert("", 'end', text =parameter_log[0],values = temp_info)    
- 
+            treeview_temp_log_window.insert("", 'end', text =parameter_log[0], values = temp_info)    
+         
+        treeview_temp_log_window.tag_configure('different_bg', background=COLORS["WARNING_COLOR"])
+        children = treeview_temp_log_window.get_children()
+        if children:
+            last_item = children[-1]
+            treeview_temp_log_window.item(last_item, tags=('different_bg',))
+
     def check_color(self, event=None):
         w_l = self.warning_lower_bound
         w_u = self.warning_upper_bound
