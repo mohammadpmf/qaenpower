@@ -584,13 +584,13 @@ class Connection():
         return self.cursor.fetchone()[0] # همیشه جواب میده. حتی اگه ۰ تا هم باشه یه تاپل میده با مقدار صفر و نان نمیده
 
     def get_all_logs_of_parameter_by_id(self, parameter_id):
-        query = "SELECT `tbl_parameters_real_log`.`id`, `date_time_modified`, `date`, `is_ok`, `workout`, `value`, `tbl_users`.`username`, CONCAT(`tbl_users`.`name`, ' ', `tbl_users`.`surname`) AS `full_name` FROM `tbl_parameters_real_log` JOIN `tbl_users` ON `tbl_parameters_real_log`.`user_id`=`tbl_users`.`id` WHERE `parameter_id`=%s ORDER BY date_time_modified DESC;"
+        query = "SELECT `tbl_parameters_real_log`.`id`, `date_time_modified`, `date`, `failure_reason`, `is_ok`, `workout`, `value`, `tbl_users`.`username`, CONCAT(`tbl_users`.`name`, ' ', `tbl_users`.`surname`) AS `full_name` FROM `tbl_parameters_real_log` JOIN `tbl_users` ON `tbl_parameters_real_log`.`user_id`=`tbl_users`.`id` WHERE `parameter_id`=%s ORDER BY date_time_modified DESC;"
         values = parameter_id
         self.cursor.execute(query, values)
         return self.cursor.fetchall()
 
     def get_all_logs_of_parameter_by_id_just_for_one_day(self, parameter_id, date):
-        query = "SELECT `tbl_parameters_real_log`.`id`, `date_time_modified`, `date`, `is_ok`, `workout`, `value`, `tbl_users`.`username`, CONCAT(`tbl_users`.`name`, ' ', `tbl_users`.`surname`) AS `full_name` FROM `tbl_parameters_real_log` JOIN `tbl_users` ON `tbl_parameters_real_log`.`user_id` = `tbl_users`.`id` WHERE `parameter_id` = %s AND `date` = (SELECT MAX(`date`) FROM `tbl_parameters_real_log` WHERE `parameter_id` = %s AND `date` <= %s) ORDER BY `date_time_modified` DESC;"
+        query = "SELECT `tbl_parameters_real_log`.`id`, `date_time_modified`, `date`, `failure_reason`, `is_ok`, `workout`, `value`, `tbl_users`.`username`, CONCAT(`tbl_users`.`name`, ' ', `tbl_users`.`surname`) AS `full_name` FROM `tbl_parameters_real_log` JOIN `tbl_users` ON `tbl_parameters_real_log`.`user_id` = `tbl_users`.`id` WHERE `parameter_id` = %s AND `date` = (SELECT MAX(`date`) FROM `tbl_parameters_real_log` WHERE `parameter_id` = %s AND `date` <= %s) ORDER BY `date_time_modified` DESC;"
         values = parameter_id, parameter_id, date
         self.cursor.execute(query, values)
         return self.cursor.fetchall()
