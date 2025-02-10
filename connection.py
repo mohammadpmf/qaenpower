@@ -396,21 +396,33 @@ class Connection():
                 temp_dict[variable_name]=None
         return temp_dict
     
-    def change_log_by_computer_id(self, log:ParameterLog):
+    def change_log_by_computer_id(self, log: ParameterLog, user_id: int):
+        if not log.has_change:
+            return ("ok", 0)
         if log.type==PARAMETER_TYPES[2]: # برای محاسباتی ها، مقدار ولیو و ورک اوت با یک مقدار ثبت میشن
             query = "UPDATE `tbl_parameters_log` SET `value` = %s, `workout` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
-            values = (log.workout, log.workout, datetime.now(), log.user_id, log.id)
+            values = (log.workout, log.workout, datetime.now(), user_id, log.id)
+            self.cursor.execute(query, values)
+            self.connection.commit()
+            query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `failure_reason`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
+            values = (log.value, log.workout, log.is_ok, log.date, datetime.now(), log.parameter_id, user_id, log.failure_reason)
+            self.cursor.execute(query, values)
+            self.connection.commit()
         elif log.type==PARAMETER_TYPES[1]: # پارامترهای ثابت لازم نیست تغییر داده بشن
-            return ("ok", 0)
+            pass
         elif log.type==PARAMETER_TYPES[0] and log.is_ok==False: # پارامترهای از جنس کنتور که خراب بودن لازم نیست تغییر داده بشن. مقدار ورک اوتشون دستی وارد شده بود
-            return ("ok", 0)
+            pass
         elif log.type==PARAMETER_TYPES[0] and log.is_ok:
             query = "UPDATE `tbl_parameters_log` SET `workout` = %s, `date_time_modified` = %s, `user_id` = %s WHERE (`id` = %s);"
-            values = (log.workout, datetime.now(), log.user_id, log.id)
+            values = (log.workout, datetime.now(), user_id, log.id)
+            self.cursor.execute(query, values)
+            self.connection.commit()
             # دقت کنم که تو این حالت به مقدارش ما دست نمیزنیم. چون مقدارش قبلا ثبت شده و فقط کارکردش رو
             # حساب میکنیم. اگه مقدار عوض بشه همینطوری زنجیروار تا روز آخر باید عوض کنیم همه رو
-        self.cursor.execute(query, values)
-        self.connection.commit()
+            query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `failure_reason`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
+            values = (log.value, log.workout, log.is_ok, log.date, datetime.now(), log.parameter_id, user_id, log.failure_reason)
+            self.cursor.execute(query, values)
+            self.connection.commit()
         return ("ok", 0)
 
     def get_previous_value_of_parameter_by_id_and_date(self, id, date):

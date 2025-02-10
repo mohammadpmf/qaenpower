@@ -1587,7 +1587,9 @@ class StaffWindow(MyWindows):
                             values.append(0.0)
                     answer = calculate_fn(counter.formula, parameters, values)
                     if updated_next_logs.get(counter.variable_name)!=None:
-                        updated_next_logs[counter.variable_name].workout=answer
+                        if updated_next_logs[counter.variable_name].workout!=answer:
+                            updated_next_logs[counter.variable_name].workout=answer
+                            updated_next_logs[counter.variable_name].has_change=True
                 elif counter.type==PARAMETER_TYPES[1]:
                     continue # پارامترهای ثابت، وابسته به بقیه نیستند. پس تغییری نمیکنند و لازم نیست الکی بررسیشون کنیم و چون تغییر نمیکنند به دیتابیس هم لازم نیست دستوری بدیم پس میریم سراغ پارامتر بعدی
                 elif counter.type==PARAMETER_TYPES[0]:
@@ -1607,16 +1609,14 @@ class StaffWindow(MyWindows):
                     if updated_next_logs.get(counter.variable_name)!=None:
                         # پارامترهای کنتور، اگه سالم باشن باید تغییر کنند. اما اگه خراب باشن، به مقدار ورک اوتشون دست نمیزنیم و همون قبلی میمونن
                         if updated_next_logs[counter.variable_name].is_ok:
-                            updated_next_logs[counter.variable_name].workout=answer
+                            if updated_next_logs[counter.variable_name].workout!=answer:
+                                updated_next_logs[counter.variable_name].workout=answer
+                                updated_next_logs[counter.variable_name].has_change=True
         for log in updated_next_logs.values():
             log: ParameterLog
             if log!=None:
-                if log.type==PARAMETER_TYPES[2]:
-                    self.connection.change_log_by_computer_id(log)
-                elif log.type==PARAMETER_TYPES[1]:
-                    pass
-                elif log.type==PARAMETER_TYPES[0]:
-                    self.connection.change_log_by_computer_id(log)
+                if log.type in {PARAMETER_TYPES[2], PARAMETER_TYPES[0]}:
+                    self.connection.change_log_by_computer_id(log, self.user.id)
         del updated_logs
         del updated_next_logs
 
