@@ -1533,7 +1533,7 @@ class StaffWindow(MyWindows):
                 self.enable_for_safety()
                 return
         message = "لطفا یک بار دیگر به دقت اطلاعات را بررسی نمایید\n"
-        message += "با انتخاب دکمه تایید، تمامی اطلاعات این بخش در دیتابیس ویرایش میشوند\n"
+        message += "با انتخاب دکمه تایید، تمامی اطلاعات تغییر یافته در این بخش در دیتابیس ویرایش میشوند\n"
         message += "در صورت اطمنیان، دکمه تایید را فشار دهید"
         self.root.bell()
         answer = msb.askyesno("هشدار", message)

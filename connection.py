@@ -322,21 +322,31 @@ class Connection():
         return ("ok", 0)
 
     def update_parameter_log(self, value, workout, is_ok, date, parameter_id, user_id, failure_reason=""):
-        query = "SELECT `id` FROM `tbl_parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
+        query = "SELECT * FROM `tbl_parameters_log` WHERE `parameter_id`=%s AND `date`<=%s ORDER BY `date` DESC LIMIT 1;"
         values = (parameter_id, date)
         self.cursor.execute(query, values)
         temp = self.cursor.fetchone() # پارامتری هایی که از قبل وجود دارند، لاگ هم دارند. اما ممکنه برای یک مکان پارامتر جدیدی اضافه بشه که لاگ قبلی نداره. در این صورت پس برای این پارامتر هیچ جوابی نمیده و این طوری به ارور میخوریم. پس در این حالت میگیم براش بسازه و آپدیت نکنه.
         if temp in [None, '', ()]:
             return self.create_parameter_log(value, workout, is_ok, date, parameter_id, user_id, failure_reason)
-        parameter_log_id=temp[0]
-        query = "UPDATE `tbl_parameters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s, `failure_reason` = %s WHERE (`id` = %s);"
-        values = (value, workout, is_ok, datetime.now(), user_id, failure_reason, parameter_log_id)
-        self.cursor.execute(query, values)
-        self.connection.commit()
-        query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `failure_reason`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
-        values = (value, workout, is_ok, date, datetime.now(), parameter_id, user_id, failure_reason)
-        self.cursor.execute(query, values)
-        self.connection.commit()
+        parameter_log_id = temp[0]
+        previous_value = temp[1]
+        previous_workout = temp[2]
+        previous_is_ok = temp[3]
+        # previous_date = temp[4]  # از این استفاده ای نمیکنیم. به خاطر همین نگرفتم
+        # previous_date_time_modified = temp[5]  # از این هم استفاده ای نمیکنیم. به خاطر همین نگرفتم
+        # previous_parameter_id = temp[6]  # از این هم استفاده ای نمیکنیم. به خاطر همین نگرفتم
+        # previous_user_id = temp[7]  # از این هم استفاده ای نمیکنیم. به خاطر همین نگرفتم
+        previous_failure_reason = temp[8]
+        if value != previous_value or workout != previous_workout \
+            or is_ok != previous_is_ok or failure_reason != previous_failure_reason:
+            query = "UPDATE `tbl_parameters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s, `failure_reason` = %s WHERE (`id` = %s);"
+            values = (value, workout, is_ok, datetime.now(), user_id, failure_reason, parameter_log_id)
+            self.cursor.execute(query, values)
+            self.connection.commit()
+            query = "INSERT INTO `tbl_parameters_real_log` (`value`, `workout`, `is_ok`, `date`, `date_time_modified`, `parameter_id`, `user_id`, `failure_reason`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);"
+            values = (value, workout, is_ok, date, datetime.now(), parameter_id, user_id, failure_reason)
+            self.cursor.execute(query, values)
+            self.connection.commit()
         return ("ok", 0)
 
     def get_parameter_log_by_parameter_id_and_date(self, parameter_id, date):
