@@ -1858,7 +1858,7 @@ class DatePicker(MyWindows):
             self.btn_today.pack_forget()
 
     def refresh_date(self, date=None):
-        if not self.check_if_ohter_parts_are_filled():
+        if not self.check_if_other_parts_are_filled():
             return
         if date==None: # این برای اول کار هست. وقتی که تابع تایم دلتا این رو صدا میکنه بهش روز رو میده و نان نیست. پس این ایف اجرا نمیشه.
             date=get_jnow()
@@ -1883,7 +1883,7 @@ class DatePicker(MyWindows):
 
     def check_date(self, event=None):
         global signal
-        if not self.check_if_ohter_parts_are_filled():
+        if not self.check_if_other_parts_are_filled():
             return
         y = int(self.year.get())
         m = int(self.month.get())
@@ -1934,13 +1934,12 @@ class DatePicker(MyWindows):
         except:
             return None
     
-    def check_if_ohter_parts_are_filled(self):
+    def check_if_other_parts_are_filled(self):
         global number_of_all_logged_counters, number_of_all_counters, date_picker
         today = self.get_date()
         last_log_date = self.connection.get_last_log_date()
         if (
-            number_of_all_logged_counters != 0
-            and number_of_all_logged_counters != number_of_all_counters
+            0 < number_of_all_logged_counters < number_of_all_counters
             and today >= last_log_date
             and today != date_picker.get_date()
         ):
