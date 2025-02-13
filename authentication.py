@@ -1580,9 +1580,15 @@ class StaffWindow(MyWindows):
                             # if p=='b':  نباید باشه. معامله به هم میریزه کلا این طوری.
                             #     values.append(float(updated_next_logs.get(counter.variable_name).value))
                             if p=='a':
-                                values.append(float(updated_logs.get(counter.variable_name).workout))
+                                try:
+                                    values.append(float(updated_logs.get(counter.variable_name).workout))
+                                except AttributeError:
+                                    values.append(0.0)
                             else:
-                                values.append(float(updated_next_logs.get(p).workout))
+                                try:
+                                    values.append(float(updated_next_logs.get(p).workout))
+                                except AttributeError:
+                                    values.append(0.0)
                         elif updated_next_logs.get(counter.variable_name)==None:
                             values.append(0.0)
                     answer = calculate_fn(counter.formula, parameters, values)
@@ -1598,11 +1604,20 @@ class StaffWindow(MyWindows):
                     for p in parameters:
                         if updated_next_logs.get(counter.variable_name)!=None:
                             if p=='b':
-                                values.append(float(updated_next_logs.get(counter.variable_name).value))
+                                try:
+                                    values.append(float(updated_next_logs.get(counter.variable_name).value))
+                                except AttributeError:
+                                    values.append(0.0)
                             elif p=='a':
-                                values.append(float(updated_logs.get(counter.variable_name).value))
+                                try:
+                                    values.append(float(updated_logs.get(counter.variable_name).value))
+                                except AttributeError:
+                                    values.append(0.0)
                             else:
-                                values.append(float(updated_next_logs.get(p).workout))
+                                try:
+                                    values.append(float(updated_next_logs.get(p).workout))
+                                except AttributeError:
+                                    values.append(0.0)
                         elif updated_next_logs.get(counter.variable_name)==None:
                             values.append(0.0)
                     answer = calculate_fn(counter.formula, parameters, values)
@@ -1938,11 +1953,9 @@ class DatePicker(MyWindows):
         global number_of_all_logged_counters, number_of_all_counters, date_picker
         today = self.get_date()
         last_log_date = self.connection.get_last_log_date()
-        if (
-            0 < number_of_all_logged_counters < number_of_all_counters
-            and today >= last_log_date
-            and today != date_picker.get_date()
-        ):
+        if today < last_log_date:
+            freeze = False
+        elif 0 < number_of_all_logged_counters < number_of_all_counters:
             msb.showwarning("هشدار", "لطفا داده سایر بخش ها تکمیل و ذخیره شود.")
             freeze = True
         else:
