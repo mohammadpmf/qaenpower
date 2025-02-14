@@ -2109,6 +2109,8 @@ class CounterWidget(Parameter, MyWindows):
     
     def show_whole_log(self, event=None):
         temp_log_window = Toplevel(self.root)
+        temp_log_window.bind("<Escape>", lambda e:temp_log_window.destroy())
+        temp_log_window.grab_set()
         title = f"لاگ های ثبت شده از کنتور {self.name} واقع در مکان {self.place_title} از بخش {self.part_title}"
         label_title_temp_log_window = Label(temp_log_window, text=title, cnf=CNF_LABEL)
         label_title_temp_log_window.pack(side=TOP, fill="x")
@@ -2154,6 +2156,8 @@ class CounterWidget(Parameter, MyWindows):
     def show_one_day_log(self, event=None):
         global date_picker
         temp_log_window = Toplevel(self.root)
+        temp_log_window.bind("<Escape>", lambda e:temp_log_window.destroy())
+        temp_log_window.grab_set()
         title = f"لاگ های ثبت شده از کنتور {self.name} واقع در مکان {self.place_title} از بخش {self.part_title}"
         label_title_temp_log_window = Label(temp_log_window, text=title, cnf=CNF_LABEL)
         label_title_temp_log_window.pack(side=TOP, fill="x")
