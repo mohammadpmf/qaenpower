@@ -1593,7 +1593,7 @@ class StaffWindow(MyWindows):
                             values.append(0.0)
                     answer = calculate_fn(counter.formula, parameters, values)
                     if updated_next_logs.get(counter.variable_name)!=None:
-                        if updated_next_logs[counter.variable_name].workout!=answer:
+                        if round4(updated_next_logs[counter.variable_name].workout)!=answer:
                             updated_next_logs[counter.variable_name].workout=answer
                             updated_next_logs[counter.variable_name].has_change=True
                 elif counter.type==PARAMETER_TYPES[1]:
@@ -1624,7 +1624,7 @@ class StaffWindow(MyWindows):
                     if updated_next_logs.get(counter.variable_name)!=None:
                         # پارامترهای کنتور، اگه سالم باشن باید تغییر کنند. اما اگه خراب باشن، به مقدار ورک اوتشون دست نمیزنیم و همون قبلی میمونن
                         if updated_next_logs[counter.variable_name].is_ok:
-                            if updated_next_logs[counter.variable_name].workout!=answer:
+                            if round4(updated_next_logs[counter.variable_name].workout)!=answer:
                                 updated_next_logs[counter.variable_name].workout=answer
                                 updated_next_logs[counter.variable_name].has_change=True
         for log in updated_next_logs.values():
