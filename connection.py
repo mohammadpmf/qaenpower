@@ -1,6 +1,6 @@
 import pymysql
 from models import ParameterLog, Part, Place, Staff, Parameter
-from functions import hash_password, datetime
+from functions import hash_password, datetime, round4
 from ui_settings import PARAMETER_TYPES
 
 WRONG_LIMIT=10
@@ -337,7 +337,7 @@ class Connection():
         # previous_parameter_id = temp[6]  # از این هم استفاده ای نمیکنیم. به خاطر همین نگرفتم
         # previous_user_id = temp[7]  # از این هم استفاده ای نمیکنیم. به خاطر همین نگرفتم
         previous_failure_reason = temp[8]
-        if value != previous_value or workout != previous_workout \
+        if value != round4(previous_value) or workout != round4(previous_workout) \
             or is_ok != previous_is_ok or failure_reason != previous_failure_reason:
             query = "UPDATE `tbl_parameters_log` SET `value` = %s, `workout` = %s, `is_ok` = %s, `date_time_modified` = %s, `user_id` = %s, `failure_reason` = %s WHERE (`id` = %s);"
             values = (value, workout, is_ok, datetime.now(), user_id, failure_reason, parameter_log_id)
