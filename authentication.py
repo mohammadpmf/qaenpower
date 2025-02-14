@@ -1569,9 +1569,12 @@ class StaffWindow(MyWindows):
         global all_counter_widgets, date_picker
         updated_logs = self.connection.get_parameters_log_by_date(date_picker.get_date())
         updated_next_logs = self.connection.get_parameters_next_log_by_date(date_picker.get_date())
+        part_name = self.tab_control_frame.tab(self.tab_control_frame.select(), "text")
         for counters in self.all_counters_2d:
             for counter in counters:
                 counter: Parameter
+                if counter.part_title!=part_name:
+                    continue
                 if counter.type==PARAMETER_TYPES[2]:
                     parameters = get_formula_parameters(counter.formula)
                     values = []
